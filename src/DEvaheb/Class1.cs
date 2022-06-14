@@ -251,7 +251,19 @@ namespace DEvaheb
                         var parser = new IBIParser();
                         while (!EndOfFile(reader))
                         {
-                            OutputLine(parser.ReadToken(reader).ToString());
+                            var node = parser.ReadToken(reader);
+                            
+                            Output(node.ToString());
+
+                            if (!(node is Nodes.BlockNode))
+                            {
+                                OutputLine(";");
+                            }
+                            else
+                            {
+                                OutputLine("");
+                            }
+
                             //ReadToken(reader, root: true);
                         }
                     }

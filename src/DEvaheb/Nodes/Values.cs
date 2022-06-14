@@ -10,14 +10,16 @@ namespace DEvaheb.Nodes
     {
         public char? Char { get { return (char?)Value; } set { Value = value; } }
 
+        public override int Size => 1;
+
         internal protected CharValue()
             : base()
         {
         }
 
-        public override string ToString()
+        public override string ToString(string indent)
         {
-            return Char?.ToString() ?? "0";
+            return indent + Char?.ToString() ?? "0";
         }
 
         public override byte[] ToBinary()
@@ -30,14 +32,16 @@ namespace DEvaheb.Nodes
     {
         public string? String { get { return (string?)Value; } set { Value = value; } }
 
+        public override int Size => 1;
+
         internal protected StringValue()
             : base()
         {
         }
 
-        public override string ToString()
+        public override string ToString(string indent)
         {
-            return String != null ? $"\"{String.ToString()}\"" : "\"\"";
+            return indent + String != null ? $"\"{String.ToString()}\"" : "\"\"";
         }
 
         public override byte[] ToBinary()
@@ -50,14 +54,16 @@ namespace DEvaheb.Nodes
     {
         public Int16? Integer { get { return (Int16?)Value; } set { Value = value; } }
 
+        public override int Size => 1;
+
         internal protected IntegerValue()
             : base()
         {
         }
 
-        public override string ToString()
+        public override string ToString(string indent)
         {
-            return Integer?.ToString() ?? "0";
+            return indent + Integer?.ToString() ?? "0";
         }
 
         public override byte[] ToBinary()
@@ -70,14 +76,16 @@ namespace DEvaheb.Nodes
     {
         public float? Float { get { return (float?)Value; } set { Value = value; } }
 
+        public override int Size => 1;
+
         internal protected FloatValue()
             : base()
         {
         }
 
-        public override string ToString()
+        public override string ToString(string indent)
         {
-            return Float?.ToString() ?? "0.000";
+            return indent + Float?.ToString("0.000") ?? "0.000";
         }
 
         public override byte[] ToBinary()
@@ -95,9 +103,9 @@ namespace DEvaheb.Nodes
         {
         }
 
-        public override string ToString()
+        public override string ToString(string indent)
         {
-            return IdentifierName?.ToString() ?? "0.000";
+            return indent + IdentifierName?.ToString() ?? "0.000";
         }
 
         public override byte[] ToBinary()
@@ -106,25 +114,30 @@ namespace DEvaheb.Nodes
         }
     }
 
-    //public class VectorValue : ValueNode
-    //{
-    //    public float[] Float { get { return (float[])Value; } set { Value = value; } }
+    public class VectorValue : ValueNode
+    {
+        public Tuple<float, float, float> Vector { get { return (Tuple<float, float, float>)Value; } set { Value = value; } }
 
-    //    internal protected VectorValue()
-    //        : base()
-    //    {
-    //    }
+        public override int Size => 4;
 
-    //    public override string ToString()
-    //    {
-    //        return (Float != null && Float.Length == 3)
-    //            ? $"< {Float[0].ToString("0.000")} {Float[1].ToString("0.000")} {Float[2].ToString("0.000")} >"
-    //            : "< 0.000 0.000 0.000 >";
-    //    }
+        internal protected VectorValue()
+            : this(0.0f, 0.0f, 0.0f)
+        {
+        }
 
-    //    public override byte[] ToBinary()
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-    //}
+        internal protected VectorValue(float x, float y, float z)
+            : base()
+        {
+        }
+
+        public override string ToString(string indent)
+        {
+            return indent + Vector != null ? $"< {Vector.Item1.ToString("0.000")} {Vector.Item2.ToString("0.000")} {Vector.Item3.ToString("0.000")} >" : "< 0.000 0.000 0.000 >";
+        }
+
+        public override byte[] ToBinary()
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

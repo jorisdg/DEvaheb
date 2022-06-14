@@ -68,6 +68,8 @@ namespace DEvaheb.Parser
 
     public class IBIParser
     {
+        bool debugWrite = false;
+
         public Node ReadToken(BinaryReader reader)
         {
             var b = reader.ReadByte();
@@ -77,7 +79,8 @@ namespace DEvaheb.Parser
                 reader.BaseStream.Seek(-2, SeekOrigin.Current);
 
                 var empty = reader.ReadBytes(2);
-                //Output($"{{ {empty[0].ToString()} {empty[1].ToString()} : {i}}}");
+                if (debugWrite) Console.WriteLine($"{{ {empty[0].ToString()} {empty[1].ToString()} : {i}}}");
+
                 return null;
             }
 
@@ -91,6 +94,8 @@ namespace DEvaheb.Parser
             bs = reader.ReadBytes(3);
             if (bs[0] != 0 || bs[1] != 0 || bs[2] != 0)
                 File.AppendAllText("log.txt", $"Token {b} ({t.ToString()} 2nd 3 bytes: {bs[0]}, {bs[1]}, {bs[2]}\r\n");
+
+            if (debugWrite) Console.WriteLine($"{b} ({t.ToString()}) : {size}");
 
             if (b > 7)
             {
@@ -114,13 +119,29 @@ namespace DEvaheb.Parser
                 case IBIToken.Vector:
                     if (ReadToken(reader) != null) throw new Exception("Vector expected 0 token");
 
-                    parms = new List<Node>();
-                    parms.Add(ReadToken(reader));
-                    parms.Add(ReadToken(reader));
-                    parms.Add(ReadToken(reader));
+                    newNode = ValueNode.CreateVector(x: (float)((FloatValue)ReadToken(reader)).Float, y: (float)((FloatValue)ReadToken(reader)).Float, z: (float)((FloatValue)ReadToken(reader)).Float);
+                    break;
+                case IBIToken.Gt:
+                case IBIToken.Lt:
+                case IBIToken.Eq:
+                case IBIToken.Ne:
+                    if (ReadToken(reader) != null) throw new Exception("operator expected 0 token");
 
-                    newNode = FunctionNode.CreateGeneric("vector", parms);
-                    
+                    newNode = If.CreateOperator((Operators)t);
+                    break;
+                case IBIToken.@if:
+                    newNode = BlockNode.CreateIf(ReadToken(reader), (OperatorNode)ReadToken(reader), ReadToken(reader));
+                    break;
+                case IBIToken.random:
+                    if (ReadToken(reader) != null) throw new Exception("random expected 0 token");
+
+                    newNode = FunctionNode.CreateRandom(ReadToken(reader), ReadToken(reader));
+                    break;
+                case IBIToken.task:
+                    newNode = BlockNode.CreateTask(name: ReadToken(reader));
+                    break;
+                case IBIToken.affect:
+                    newNode = BlockNode.CreateAffect(name: ReadToken(reader), type: (Nodes.AffectType)(float)((FloatValue)ReadToken(reader)).Float);
                     break;
                 //case IBIToken.affect:
                 //case IBIToken.task:
@@ -135,41 +156,73 @@ namespace DEvaheb.Parser
                 //    OutputLine("}");
                 //    break;
                 case IBIToken.tag:
-                case IBIToken.get:
-                    if (ReadToken(reader) != null) throw new Exception("tag/vector expected 0 token");
+                    if (ReadToken(reader) != null) throw new Exception("tag expected 0 token");
 
-                    parms = new List<Node>();
-                    parms.Add(ReadToken(reader));
-                    parms.Add(ReadToken(reader));
-
-                    newNode = FunctionNode.CreateGeneric(t.ToString(), parms);
+                    newNode = FunctionNode.CreateTag(name: ReadToken(reader), type: (Nodes.TagType)(float)((FloatValue)ReadToken(reader)).Float);
                     break;
-                //case IBIToken.camera:
-                //    Output($"{t.ToString()} ( ");
-                //    ReadSubTokens(reader, size);
-                //    Output(")");
-                //    if (root) OutputLine(";");
-                //    break;
+                case IBIToken.get:
+                    if (ReadToken(reader) != null) throw new Exception("get expected 0 token");
+
+                    newNode = FunctionNode.CreateGet(type: (Nodes.ValueType)(float)((FloatValue)ReadToken(reader)).Float, variableName: ReadToken(reader));
+                    break;
+                case IBIToken.camera:
+                    parms = new List<Node>();
+                    for (int i = 0; i < size; i++)
+                    {
+                        if (debugWrite) Console.WriteLine($"- Param {i} ");
+                        var node = ReadToken(reader);
+                        if (node != null)
+                        {
+                            parms.Add(node);
+
+                            i += node.Size - 1;
+                        }
+
+                        if (debugWrite) Console.WriteLine($"- Param {i}: {node?.Size} ");
+                    }
+
+                    newNode = FunctionNode.CreateCamera(parms);
+                    break;
                 default:
                     parms = new List<Node>();
                     if (size > 0)
                     {
+                        if (debugWrite) Console.WriteLine($"Params ({size}): ");
                         for (int i = 0; i < size; i++)
                         {
+                            if (debugWrite) Console.WriteLine($"- Param {i} ");
                             var node = ReadToken(reader);
                             if (node != null)
                             {
                                 parms.Add(node);
 
-                                if (node is FunctionNode func)
-                                {
-                                    i += func.RecursiveArgumentCount;
-                                }
+                                i += node.Size - 1;
                             }
+
+                            if (debugWrite) Console.WriteLine($"- Param {i}: {node?.Size } ");
                         }
                     }
                     newNode = FunctionNode.CreateGeneric(t.ToString(), parms);
                     break;
+            }
+
+            if (newNode is BlockNode blockNode)
+            {
+                bool blockEnd = false;
+                do
+                {
+                    var blockChild = ReadToken(reader);
+
+                    if (blockChild is GenericFunction func && func.Name.Equals("blockEnd"))
+                    {
+                        blockEnd = true;
+                    }
+                    else
+                    {
+                        blockNode.ChildNodes.Add(blockChild);
+                    }
+                }
+                while (!blockEnd);
             }
 
             return newNode;
