@@ -49,7 +49,7 @@ namespace DEvaheb.Nodes
             else
                 sbuild.Append($"{Expr1.ToString()}, ");
 
-            sbuild.Append(Operator.ToString(indent));
+            sbuild.Append(Operator.ToString());
             sbuild.Append(", ");
 
             if (Expr2 is ValueNode)
@@ -61,7 +61,10 @@ namespace DEvaheb.Nodes
             sbuild.Append(indent);
             sbuild.AppendLine("{");
 
-            sbuild.AppendLine(ChildrenToString(indent + "\t"));
+            if (ChildNodes.Count > 0)
+            {
+                sbuild.AppendLine(ChildrenToString(indent + "\t"));
+            }
 
             sbuild.Append(indent);
             sbuild.Append("}");
@@ -111,6 +114,7 @@ namespace DEvaheb.Nodes
             {
                 sbuild.AppendLine(ChildrenToString(indent + "\t"));
             }
+
             sbuild.Append(indent);
             sbuild.Append("}");
 
@@ -147,7 +151,7 @@ namespace DEvaheb.Nodes
             Type = type;
         }
 
-        public override int Size => 2;
+        public override int Size => 3;
 
         public override string ToString(string indent)
         {
@@ -165,6 +169,85 @@ namespace DEvaheb.Nodes
             {
                 sbuild.AppendLine(ChildrenToString(indent + "\t"));
             }
+
+            sbuild.Append(indent);
+            sbuild.Append("}");
+
+            return sbuild.ToString();
+        }
+
+        public override byte[] ToBinary()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class Else : BlockNode
+    {
+        internal protected Else()
+            : base()
+        {
+        }
+
+        public override int Size => 1;
+
+        public override string ToString(string indent)
+        {
+            StringBuilder sbuild = new StringBuilder($"{indent}else (  )");
+
+            sbuild.AppendLine();
+            sbuild.Append(indent);
+            sbuild.AppendLine("{");
+
+            if (ChildNodes.Count > 0)
+            {
+                sbuild.AppendLine(ChildrenToString(indent + "\t"));
+            }
+
+            sbuild.Append(indent);
+            sbuild.Append("}");
+
+            return sbuild.ToString();
+        }
+
+        public override byte[] ToBinary()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class Loop : BlockNode
+    {
+        public int Count { get; set; }
+
+        public AffectType Type { get; set; }
+
+        internal protected Loop()
+            : this(10)
+        {
+        }
+
+        internal protected Loop(int count)
+            : base()
+        {
+            Count = count;
+        }
+
+        public override int Size => 2;
+
+        public override string ToString(string indent)
+        {
+            StringBuilder sbuild = new StringBuilder($"{indent}loop ( {Count} )");
+
+            sbuild.AppendLine();
+            sbuild.Append(indent);
+            sbuild.AppendLine("{");
+
+            if (ChildNodes.Count > 0)
+            {
+                sbuild.AppendLine(ChildrenToString(indent + "\t"));
+            }
+
             sbuild.Append(indent);
             sbuild.Append("}");
 

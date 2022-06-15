@@ -81,7 +81,7 @@ namespace DEvaheb.Parser
                 var empty = reader.ReadBytes(2);
                 if (debugWrite) Console.WriteLine($"{{ {empty[0].ToString()} {empty[1].ToString()} : {i}}}");
 
-                return null;
+                return new ReturnFlagNode(empty[0], empty[1]);
             }
 
             IBIToken t = Enum.IsDefined(typeof(IBIToken), (Int32)b) ? (IBIToken)b : IBIToken.UNKNOWN;
@@ -91,6 +91,7 @@ namespace DEvaheb.Parser
                 File.AppendAllText("log.txt", $"Token {b} ({t.ToString()} 1st 3 bytes: {bs[0]}, {bs[1]}, {bs[2]}\r\n");
 
             var size = reader.ReadByte();
+
             bs = reader.ReadBytes(3);
             if (bs[0] != 0 || bs[1] != 0 || bs[2] != 0)
                 File.AppendAllText("log.txt", $"Token {b} ({t.ToString()} 2nd 3 bytes: {bs[0]}, {bs[1]}, {bs[2]}\r\n");
@@ -112,28 +113,34 @@ namespace DEvaheb.Parser
                     break;
                 case IBIToken.Identifier:
                     newNode = ValueNode.Create(new string(reader.ReadChars(size)));
+                    ((StringValue)newNode).String = ((StringValue)newNode).String.Substring(0, ((StringValue)newNode).String.Length - 1);
                     break;
                 case IBIToken.Float:
                     newNode = ValueNode.Create(reader.ReadSingle());
                     break;
                 case IBIToken.Vector:
-                    if (ReadToken(reader) != null) throw new Exception("Vector expected 0 token");
+                    if (!(ReadToken(reader) is ReturnFlagNode)) throw new Exception("Vector expected 0 token");
 
                     newNode = ValueNode.CreateVector(x: (float)((FloatValue)ReadToken(reader)).Float, y: (float)((FloatValue)ReadToken(reader)).Float, z: (float)((FloatValue)ReadToken(reader)).Float);
                     break;
+
                 case IBIToken.Gt:
                 case IBIToken.Lt:
                 case IBIToken.Eq:
                 case IBIToken.Ne:
-                    if (ReadToken(reader) != null) throw new Exception("operator expected 0 token");
+                    if (!(ReadToken(reader) is ReturnFlagNode)) throw new Exception("operator expected 0 token");
 
                     newNode = If.CreateOperator((Operators)t);
                     break;
+
                 case IBIToken.@if:
                     newNode = BlockNode.CreateIf(ReadToken(reader), (OperatorNode)ReadToken(reader), ReadToken(reader));
                     break;
+                case IBIToken.@else:
+                    newNode = BlockNode.CreateElse();
+                    break;
                 case IBIToken.random:
-                    if (ReadToken(reader) != null) throw new Exception("random expected 0 token");
+                    if (!(ReadToken(reader) is ReturnFlagNode)) throw new Exception("random expected 0 token");
 
                     newNode = FunctionNode.CreateRandom(ReadToken(reader), ReadToken(reader));
                     break;
@@ -143,25 +150,17 @@ namespace DEvaheb.Parser
                 case IBIToken.affect:
                     newNode = BlockNode.CreateAffect(name: ReadToken(reader), type: (Nodes.AffectType)(float)((FloatValue)ReadToken(reader)).Float);
                     break;
-                //case IBIToken.affect:
-                //case IBIToken.task:
-                //    Output($"{t.ToString()} (");
-                //    ReadSubTokens(reader, size);
-                //    OutputLine(")");
-                //    OutputLine("{");
-                //    currentIndent += "  ";
-                //    break;
-                //case IBIToken.blockEnd:
-                //    currentIndent = currentIndent.Length > 2 ? currentIndent.Substring(2) : string.Empty;
-                //    OutputLine("}");
-                //    break;
+                case IBIToken.loop:
+                    newNode = BlockNode.CreateLoop(count: (int)((FloatValue)ReadToken(reader)).Float);
+                    break;
+
                 case IBIToken.tag:
-                    if (ReadToken(reader) != null) throw new Exception("tag expected 0 token");
+                    if (!(ReadToken(reader) is ReturnFlagNode)) throw new Exception("tag expected 0 token");
 
                     newNode = FunctionNode.CreateTag(name: ReadToken(reader), type: (Nodes.TagType)(float)((FloatValue)ReadToken(reader)).Float);
                     break;
                 case IBIToken.get:
-                    if (ReadToken(reader) != null) throw new Exception("get expected 0 token");
+                    if (!(ReadToken(reader) is ReturnFlagNode)) throw new Exception("get expected 0 token");
 
                     newNode = FunctionNode.CreateGet(type: (Nodes.ValueType)(float)((FloatValue)ReadToken(reader)).Float, variableName: ReadToken(reader));
                     break;
@@ -183,8 +182,17 @@ namespace DEvaheb.Parser
 
                     newNode = FunctionNode.CreateCamera(parms);
                     break;
+                case IBIToken.declare:
+                    newNode = FunctionNode.CreateDeclare(type: (Nodes.ValueType)(float)((FloatValue)ReadToken(reader)).Float, variableName: ReadToken(reader));
+                    break;
+                case IBIToken.sound:
+                    newNode = FunctionNode.CreateSound(channel: ((StringValue)ReadToken(reader)).String, filename: ReadToken(reader));
+                    break;
+
                 default:
                     parms = new List<Node>();
+                    ReturnFlagNode returnNode = null;
+
                     if (size > 0)
                     {
                         if (debugWrite) Console.WriteLine($"Params ({size}): ");
@@ -194,15 +202,26 @@ namespace DEvaheb.Parser
                             var node = ReadToken(reader);
                             if (node != null)
                             {
-                                parms.Add(node);
+                                if (node is ReturnFlagNode flag)
+                                {
+                                    if (flag.B2 == 66)
+                                    {
+                                        returnNode = flag;
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    parms.Add(node);
 
-                                i += node.Size - 1;
+                                    i += node.Size - 1;
+                                }
                             }
 
                             if (debugWrite) Console.WriteLine($"- Param {i}: {node?.Size } ");
                         }
                     }
-                    newNode = FunctionNode.CreateGeneric(t.ToString(), parms);
+                    newNode = FunctionNode.CreateGeneric(t.ToString(), parms, returnNode);
                     break;
             }
 

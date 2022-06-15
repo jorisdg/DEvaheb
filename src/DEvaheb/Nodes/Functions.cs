@@ -20,10 +20,16 @@ namespace DEvaheb.Nodes
             { 
                 int count = 1; // count ourselves
 
+                if (Return != null)
+                {
+                    count++;
+                }
+
                 foreach(var node in arguments)
                 {
-                    if (node is FunctionNode func)
-                        count += func.Size;
+                    //if (node is FunctionNode func)
+                    //    count += func.Size;
+                    count += node.Size;
                 }
 
                 return count;
@@ -69,7 +75,7 @@ namespace DEvaheb.Nodes
         }
     }
 
-    public enum CameraTypes
+    public enum CameraType
     {
         PAN = 57,
         ZOOM = 58,
@@ -103,7 +109,7 @@ namespace DEvaheb.Nodes
                 if (args.MoveNext())
                 {
                     if (args.Current is FloatValue f)
-                        text.Append(((CameraTypes)f.Float).ToString());
+                        text.Append(((CameraType)f.Float).ToString());
                     else
                         text.Append(args.Current.ToString());
                 }
@@ -227,6 +233,89 @@ namespace DEvaheb.Nodes
         public override string ToString(string indent)
         {
             return $"{indent}$random( {Min.ToString()}, {Max.ToString()} )$";
+        }
+
+        public override byte[] ToBinary()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class Declare : FunctionNode
+    {
+        public Node VariableName { get; set; }
+        public ValueType Type { get; set; }
+
+        public override int ArgumentCount => 2;
+
+        public override int Size => 3;
+
+        internal protected Declare()
+            : this(ValueType.FLOAT, ValueNode.Create(""))
+        {
+        }
+
+        internal protected Declare(ValueType type, Node nameExpression)
+            : base()
+        {
+            Name = "declare";
+            VariableName = nameExpression;
+            Type = type;
+        }
+
+        public override string ToString(string indent)
+        {
+            return $"{indent}declare ( {Type.ToString()}, {VariableName.ToString()} )";
+        }
+
+        public override byte[] ToBinary()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    //public enum SoundChannel
+    //{
+	   // CHAN_AUTO,
+    //    CHAN_LOCAL,
+    //    CHAN_WEAPON,
+    //    CHAN_VOICE,
+    //    CHAN_VOICE_ATTEN,
+    //    CHAN_VOICE_GLOBAL,
+    //    CHAN_ITEM,
+    //    CHAN_BODY,
+    //    CHAN_AMBIENT,
+    //    CHAN_LOCAL_SOUND,
+    //    CHAN_ANNOUNCER,
+    //    CHAN_LESS_ATTEN,
+    //    CHAN_MUSIC
+    //}
+
+    public class Sound : FunctionNode
+    {
+        public Node FileName { get; set; }
+        public string Channel { get; set; }
+
+        public override int ArgumentCount => 2;
+
+        public override int Size => 3;
+
+        internal protected Sound()
+            : this("CHAN_AUTO", ValueNode.Create(""))
+        {
+        }
+
+        internal protected Sound(string channel, Node filenameExpression)
+            : base()
+        {
+            Name = "sound";
+            FileName = filenameExpression;
+            Channel = channel;
+        }
+
+        public override string ToString(string indent)
+        {
+            return $"{indent}sound ( {Channel.ToString()}, {FileName.ToString()} )";
         }
 
         public override byte[] ToBinary()

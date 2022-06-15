@@ -24,6 +24,37 @@ namespace DEvaheb.Nodes
         public abstract byte[] ToBinary();
     }
 
+    public class ReturnFlagNode : Node
+    {
+        public override int Size => 1;
+
+        public byte B1 { get; set; }
+
+        public byte B2 { get; set; }
+
+        public ReturnFlagNode()
+            : this(0, 0)
+        {
+        }
+
+        public ReturnFlagNode(byte b1, byte b2)
+            : base()
+        {
+            B1 = b1;
+            B2 = b2;
+        }
+
+        public override string ToString(string indent)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override byte[] ToBinary()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public abstract class BlockNode : Node
     {
         public List<Node> ChildNodes = new List<Node>();
@@ -60,6 +91,11 @@ namespace DEvaheb.Nodes
             return new If(expression1, opr, expression2);
         }
 
+        public static Else CreateElse()
+        {
+            return new Else();
+        }
+
         public static Task CreateTask(Node name)
         {
             return new Task(name);
@@ -69,24 +105,38 @@ namespace DEvaheb.Nodes
         {
             return new Affect(name, type);
         }
+
+        public static Loop CreateLoop(int count)
+        {
+            return new Loop(count);
+        }
     }
 
     public abstract class FunctionNode : Node
     {
         public string Name { get; protected set; }
 
-        //public ValueNode ReturnType { get; protected set; } // TODO?
+        public ReturnFlagNode Return { get; set; }
 
         abstract public int ArgumentCount { get; }
 
         internal protected FunctionNode()
             : base()
         {
+            Return = null;
         }
 
         static public FunctionNode CreateGeneric(string name, List<Node> arguments)
         {
             return new GenericFunction(name, arguments);
+        }
+
+        static public FunctionNode CreateGeneric(string name, List<Node> arguments, ReturnFlagNode returnNode)
+        {
+            var node = CreateGeneric(name, arguments);
+            node.Return = returnNode;
+
+            return node;
         }
 
         static public Tag CreateTag(Node name, TagType type)
@@ -107,6 +157,16 @@ namespace DEvaheb.Nodes
         static public Random CreateRandom(Node min, Node max)
         {
             return new Random(min, max);
+        }
+
+        public static Declare CreateDeclare(ValueType type, Node variableName)
+        {
+            return new Declare(type, variableName);
+        }
+
+        public static Sound CreateSound(string channel, Node filename)
+        {
+            return new Sound(channel, filename);
         }
     }
 
