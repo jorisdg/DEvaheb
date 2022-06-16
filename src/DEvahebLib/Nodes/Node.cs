@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DEvaheb.Nodes
+namespace DEvahebLib.Nodes
 {
     public abstract class Node
     {
@@ -181,6 +181,13 @@ namespace DEvaheb.Nodes
 
         static public ValueNode Create(string stringValue)
         {
+            // TODO should this expect to ALWAYS get a 0?
+            // or does that imply the IBI connection and this code shouldn't be responsible for it?
+            if (stringValue[stringValue.Length - 1] == '\0')
+            {
+                stringValue = stringValue.Substring(0, stringValue.Length - 1);
+            }
+
             return new StringValue() { String = stringValue };
         }
 

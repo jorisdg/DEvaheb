@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DEvaheb.Nodes
+namespace DEvahebLib.Nodes
 {
     public class GenericFunction : FunctionNode
     {

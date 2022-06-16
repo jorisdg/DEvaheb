@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DEvaheb.Nodes
+namespace DEvahebLib.Nodes
 {
     public class CharValue : ValueNode
     {
@@ -105,7 +105,7 @@ namespace DEvaheb.Nodes
 
         public override string ToString(string indent)
         {
-            return indent + IdentifierName?.ToString() ?? "0.000";
+            return indent + IdentifierName?.ToString() ?? "";
         }
 
         public override byte[] ToBinary()

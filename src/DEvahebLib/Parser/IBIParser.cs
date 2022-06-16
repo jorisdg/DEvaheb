@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DEvaheb.Nodes;
+using DEvahebLib.Nodes;
 
-namespace DEvaheb.Parser
+namespace DEvahebLib.Parser
 {
     public enum IBIToken
     {
@@ -113,7 +113,7 @@ namespace DEvaheb.Parser
                     break;
                 case IBIToken.Identifier:
                     newNode = ValueNode.Create(new string(reader.ReadChars(size)));
-                    ((StringValue)newNode).String = ((StringValue)newNode).String.Substring(0, ((StringValue)newNode).String.Length - 1);
+                    //((StringValue)newNode).String = ((StringValue)newNode).String.Substring(0, ((StringValue)newNode).String.Length - 1);
                     break;
                 case IBIToken.Float:
                     newNode = ValueNode.Create(reader.ReadSingle());

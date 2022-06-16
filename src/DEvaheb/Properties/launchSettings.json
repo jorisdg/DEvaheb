@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ConsoleApp": {
+      "commandName": "Project",
+      "commandLineArgs": "\"D:\\Repos\\DEvaheb JEDI_Academy_SDK\\Tools\\EFScripts\\PAK3\\_holodeck_garden\\boothby_workloop.IBI\" -open \"C:\\Program Files\\Microsoft VS Code\\Code.exe\""
+    }
+  }
+}
