@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using DEvahebLib.Nodes;
 using DEvahebLib.Parser;
 
 namespace DEvahebLib
@@ -108,60 +110,64 @@ namespace DEvahebLib
 
     public class IBIReader
     {
-        string currentIndent = string.Empty;
+        //public string Read(string filename)
+        //{
+        //    StringBuilder output = new StringBuilder();
 
-        public string Read(string filename)
-        {
-            StringBuilder output = new StringBuilder();
-            currentIndent = string.Empty;
+        //    try
+        //    {
+        //        List<Node> nodes = new List<Node>();
 
-            try
-            {
-                using (var file = new FileStream(filename, FileMode.Open))
-                {
-                    using (var reader = new BinaryReader(file))
-                    {
-                        var header = reader.ReadChars(3);
+        //        using (var file = new FileStream(filename, FileMode.Open))
+        //        {
+        //            using (var reader = new BinaryReader(file))
+        //            {
+        //                var header = reader.ReadChars(3);
 
-                        if (new string(header) != "IBI")
-                            throw new Exception($"File {filename} is not a valid IBI file");
+        //                if (new string(header) != "IBI")
+        //                    throw new Exception($"File {filename} is not a valid IBI file");
 
-                        reader.ReadByte(); // IBI string terminating
-                        Console.WriteLine($"IBI File Version: {reader.ReadSingle()}");
+        //                reader.ReadByte(); // IBI string terminating
+        //                Console.WriteLine($"IBI File Version: {reader.ReadSingle()}");
 
-                        var parser = new IBIParser();
-                        while (!EndOfFile(reader))
-                        {
-                            var node = parser.ReadToken(reader);
+        //                var parser = new IBIParser();
+        //                while (reader != null && reader.BaseStream.Position < reader.BaseStream.Length)
+        //                {
+        //                    var node = parser.ReadIBIBlock(reader);
+        //                    nodes.Add(node);
                             
-                            output.Append(node.ToString());
+        //                    output.Append(node.ToString());
 
-                            if (!(node is Nodes.BlockNode))
-                            {
-                                output.AppendLine(";");
-                            }
-                            else
-                            {
-                                output.AppendLine();
-                            }
-                        }
-                    }
-                }
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine();
-                Console.WriteLine(ex.ToString());
-            }
+        //                    if (!(node is BlockNode))
+        //                    {
+        //                        output.AppendLine(";");
+        //                    }
+        //                    else
+        //                    {
+        //                        output.AppendLine();
+        //                    }
+        //                }
+        //            }
+        //        }
 
-            return output.ToString();
-        }
+        //        var icarusText = new Visitors.GenerateIcarus() { Parity = Visitors.SourceCodeParity.BehavED };
+        //        icarusText.Visit(nodes);
+        //        Console.WriteLine(icarusText.SourceCode.ToString());
+        //    }
+        //    catch(Exception ex)
+        //    {
+        //        Console.WriteLine();
+        //        Console.WriteLine(ex.ToString());
+        //    }
 
-        private static bool EndOfFile(BinaryReader reader)
-        {
-            bool eof = reader == null || reader.BaseStream.Position >= reader.BaseStream.Length;
+        //    return output.ToString();
+        //}
 
-            return eof;
-        }
+        //private static bool EndOfFile(BinaryReader reader)
+        //{
+        //    bool eof = reader == null || reader.BaseStream.Position >= reader.BaseStream.Length;
+
+        //    return eof;
+        //}
     }
 }

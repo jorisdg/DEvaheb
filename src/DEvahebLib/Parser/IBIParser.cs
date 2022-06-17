@@ -67,12 +67,12 @@ namespace DEvahebLib.Parser
 
     public class IBIParser
     {
-        public Node ReadToken(BinaryReader reader)
+        public Node ReadIBIBlock(BinaryReader reader)
         {
-            return ReadToken(reader, IBIToken.UNKNOWN);
+            return ReadIBIBlock(reader, IBIToken.UNKNOWN);
         }
 
-        protected Node ReadToken(BinaryReader reader, IBIToken parent)
+        protected Node ReadIBIBlock(BinaryReader reader, IBIToken parent)
         {
             var b = reader.ReadInt32();
 
@@ -96,18 +96,16 @@ namespace DEvahebLib.Parser
             switch (t)
             {
                 case IBIToken.String:
+                case IBIToken.Identifier:
                     var str = new string(reader.ReadChars(size));
                     str = str.Substring(0, str.Length - 1);
                     newNode = new StringValue(str);
-                    break;
-                case IBIToken.Identifier:
-                    newNode = new StringValue(new string(reader.ReadChars(size)));
                     break;
                 case IBIToken.Float:
                     newNode = new FloatValue(reader.ReadSingle());
                     break;
                 case IBIToken.Vector:
-                    newNode = new VectorValue(x: ReadToken(reader, t), y: ReadToken(reader, t), z: ReadToken(reader, t));
+                    newNode = new VectorValue(x: ReadIBIBlock(reader, t), y: ReadIBIBlock(reader, t), z: ReadIBIBlock(reader, t));
                     break;
 
                 case IBIToken.Gt:
@@ -118,35 +116,35 @@ namespace DEvahebLib.Parser
                     break;
 
                 case IBIToken.@if:
-                    newNode = new If(expression1: ReadToken(reader, t), operatorNode: (OperatorNode)ReadToken(reader, t), expression2: ReadToken(reader, t));
+                    newNode = new If(expression1: ReadIBIBlock(reader, t), operatorNode: (OperatorNode)ReadIBIBlock(reader, t), expression2: ReadIBIBlock(reader, t));
                     break;
                 case IBIToken.@else:
                     newNode = new Else();
                     break;
                 case IBIToken.random:
-                    newNode = new Nodes.Random(min: ReadToken(reader, t), max: ReadToken(reader, t));
+                    newNode = new Nodes.Random(min: ReadIBIBlock(reader, t), max: ReadIBIBlock(reader, t));
                     break;
                 case IBIToken.task:
-                    newNode = new Task(name: ReadToken(reader, t));
+                    newNode = new Task(name: ReadIBIBlock(reader, t));
                     break;
                 case IBIToken.affect:
-                    newNode = new Affect(name: ReadToken(reader, t), type: ReadToken(reader, t));
+                    newNode = new Affect(name: ReadIBIBlock(reader, t), type: ReadIBIBlock(reader, t));
                     break;
                 case IBIToken.loop:
-                    newNode = new Loop(count: ReadToken(reader, t));
+                    newNode = new Loop(count: ReadIBIBlock(reader, t));
                     break;
 
                 case IBIToken.tag:
-                    newNode = new Tag(tagName: ReadToken(reader, t), tagType: ReadToken(reader, t));
+                    newNode = new Tag(tagName: ReadIBIBlock(reader, t), tagType: ReadIBIBlock(reader, t));
                     break;
                 case IBIToken.get:
-                    newNode = new Get(type: ReadToken(reader, t), variableName: ReadToken(reader, t));
+                    newNode = new Get(type: ReadIBIBlock(reader, t), variableName: ReadIBIBlock(reader, t));
                     break;
                 case IBIToken.camera:
                     parms = new List<Node>();
                     for (int i = 0; i < size; i++)
                     {
-                        var node = ReadToken(reader, t);
+                        var node = ReadIBIBlock(reader, t);
                         if (node != null)
                         {
                             parms.Add(node);
@@ -158,10 +156,10 @@ namespace DEvahebLib.Parser
                     newNode = new Camera(parms);
                     break;
                 case IBIToken.declare:
-                    newNode = new Declare(type: ReadToken(reader, t), variableName: ReadToken(reader, t));
+                    newNode = new Declare(type: ReadIBIBlock(reader, t), variableName: ReadIBIBlock(reader, t));
                     break;
                 case IBIToken.sound:
-                    newNode = new Sound(channel: ReadToken(reader, t), filename: ReadToken(reader, t));
+                    newNode = new Sound(channel: ReadIBIBlock(reader, t), filename: ReadIBIBlock(reader, t));
                     break;
 
                 default:
@@ -171,7 +169,7 @@ namespace DEvahebLib.Parser
                     {
                         for (int i = 0; i < size; i++)
                         {
-                            var node = ReadToken(reader, t);
+                            var node = ReadIBIBlock(reader, t);
 
                             parms.Add(node);
 
@@ -187,7 +185,7 @@ namespace DEvahebLib.Parser
                 bool blockEnd = false;
                 do
                 {
-                    var blockChild = ReadToken(reader);
+                    var blockChild = ReadIBIBlock(reader);
 
                     if (blockChild is GenericFunction func && func.Name.Equals("blockEnd"))
                     {

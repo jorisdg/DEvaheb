@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DEvahebLib
+namespace DEvahebLib.Enums
 {
-    public class Visitor
+    public enum SetType // TODO where is this used?
     {
+        ANGLES = 53,
+        ORIGIN = 54
     }
 }

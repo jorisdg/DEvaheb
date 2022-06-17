@@ -36,10 +36,9 @@ namespace DEvahebLib.Nodes
                 }
                 else
                 {
-                    text.Append(",");
+                    text.Append(", ");
+                    text.Append(arguments[i].ToString());
                 }
-
-                text.Append(arguments[i].ToString());
             }
             text.Append($" )");
 

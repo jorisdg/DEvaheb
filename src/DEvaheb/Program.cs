@@ -1,4 +1,8 @@
 ﻿using System.Diagnostics;
+using System.Text;
+using DEvahebLib.Nodes;
+using DEvahebLib.Parser;
+using DEvahebLib.Visitors;
 
 namespace ConsoleApp
 {
@@ -83,15 +87,87 @@ namespace ConsoleApp
                 //ibi.Read(@"D:\temp\barrel_costa_loopbck.IBI");
                 //var output = ibi.Read(@"D:\Repos\DEvaheb JEDI_Academy_SDK\Tools\EFScripts\PAK3\_holodeck_garden\boothby_workloop.IBI");
 
-                var output = ibi.Read(sourceFile);
+                var output = Read(sourceFile);
 
-                File.WriteAllText(targetFile, output);
+                File.WriteAllText(targetFile, NodesToString(output));
 
                 if (!string.IsNullOrWhiteSpace(editor))
                 {
                     Process.Start(editor, $"\"{targetFile}\"");
                 }
+
+
+
+                File.WriteAllText(targetFile + ".visitor", GenerateSource(output));
+
+                if (!string.IsNullOrWhiteSpace(editor))
+                {
+                    Process.Start(editor, $"\"{targetFile + ".visitor"}\"");
+                }
             }
+        }
+
+        public static string NodesToString(List<Node> nodes)
+        {
+            StringBuilder output = new StringBuilder();
+
+            foreach (var node in nodes)
+            {
+                output.Append(node.ToString());
+
+                if (!(node is BlockNode))
+                {
+                    output.AppendLine(";");
+                }
+                else
+                {
+                    output.AppendLine();
+                }
+            }
+
+            return output.ToString();
+        }
+
+        public static string GenerateSource(List<Node> nodes, SourceCodeParity parity = SourceCodeParity.BehavED)
+        {
+            var icarusText = new GenerateIcarus() { Parity = parity };
+            icarusText.Visit(nodes);
+            
+            return icarusText.SourceCode.ToString();
+        }
+
+        public static List<Node> Read(string filename)
+        {
+            List<Node> nodes = new List<Node>();
+
+            try
+            {
+                using (var file = new FileStream(filename, FileMode.Open))
+                {
+                    using (var reader = new BinaryReader(file))
+                    {
+                        var header = reader.ReadChars(4);
+
+                        if (new string(header) != "IBI\0") // IBI string terminating
+                            throw new Exception($"File {filename} is not a valid IBI file");
+
+                        Console.WriteLine($"IBI File Version: {reader.ReadSingle()}");
+
+                        var parser = new IBIParser();
+                        while (reader != null && reader.BaseStream.Position < reader.BaseStream.Length)
+                        {
+                            nodes.Add(parser.ReadIBIBlock(reader));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine(ex.ToString());
+            }
+
+            return nodes;
         }
     }
 }

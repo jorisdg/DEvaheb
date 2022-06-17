@@ -48,7 +48,10 @@ namespace DEvahebLib.Nodes
 
         public override string ToString(string indent)
         {
-            StringBuilder sbuild = new StringBuilder($"{indent}if ( ");
+            StringBuilder sbuild = new StringBuilder();
+
+            sbuild.AppendLine();
+            sbuild.Append($"{indent}if ( ");
 
             if (Expr1 is ValueNode)
                 sbuild.Append($"${Expr1.ToString()}$, ");
@@ -74,7 +77,7 @@ namespace DEvahebLib.Nodes
             }
 
             sbuild.Append(indent);
-            sbuild.Append("}");
+            sbuild.AppendLine("}");
 
             return sbuild.ToString();
         }
@@ -104,7 +107,10 @@ namespace DEvahebLib.Nodes
 
         public override string ToString(string indent)
         {
-            StringBuilder sbuild = new StringBuilder($"{indent}task ( ");
+            StringBuilder sbuild = new StringBuilder();
+
+            sbuild.AppendLine();
+            sbuild.Append($"{indent}task ( ");
 
             sbuild.Append(TaskName.ToString());
 
@@ -119,7 +125,7 @@ namespace DEvahebLib.Nodes
             }
 
             sbuild.Append(indent);
-            sbuild.Append("}");
+            sbuild.AppendLine("}");
 
             return sbuild.ToString();
         }
@@ -147,7 +153,10 @@ namespace DEvahebLib.Nodes
 
         public override string ToString(string indent)
         {
-            StringBuilder sbuild = new StringBuilder($"{indent}affect ( ");
+            StringBuilder sbuild = new StringBuilder();
+
+            sbuild.AppendLine();
+            sbuild.Append($"{indent}affect ( ");
 
             sbuild.Append(EntityName.ToString());
             sbuild.Append(", ");
@@ -164,13 +173,13 @@ namespace DEvahebLib.Nodes
             }
 
             sbuild.Append(indent);
-            sbuild.Append("}");
+            sbuild.AppendLine("}");
 
             return sbuild.ToString();
         }
     }
 
-    public class Else : BlockNode
+    public class Else : BlockNode // TODO newlines before and after?
     {
         public override IEnumerable<Node> Arguments => new List<Node>();
 
@@ -200,7 +209,7 @@ namespace DEvahebLib.Nodes
         }
     }
 
-    public class Loop : BlockNode
+    public class Loop : BlockNode // TODO newlines before and after?
     {
         public override IEnumerable<Node> Arguments => new List<Node>() { Count };
 
