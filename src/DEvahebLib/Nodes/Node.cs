@@ -116,27 +116,16 @@ namespace DEvahebLib.Nodes
     {
         public string Name { get; protected set; }
 
-        public ReturnFlagNode Return { get; set; }
-
         abstract public int ArgumentCount { get; }
 
         internal protected FunctionNode()
             : base()
         {
-            Return = null;
         }
 
         static public FunctionNode CreateGeneric(string name, List<Node> arguments)
         {
             return new GenericFunction(name, arguments);
-        }
-
-        static public FunctionNode CreateGeneric(string name, List<Node> arguments, ReturnFlagNode returnNode)
-        {
-            var node = CreateGeneric(name, arguments);
-            node.Return = returnNode;
-
-            return node;
         }
 
         static public Tag CreateTag(Node name, TagType type)

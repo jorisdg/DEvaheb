@@ -20,11 +20,6 @@ namespace DEvahebLib.Nodes
             { 
                 int count = 1; // count ourselves
 
-                if (Return != null)
-                {
-                    count++;
-                }
-
                 foreach(var node in arguments)
                 {
                     //if (node is FunctionNode func)
@@ -138,7 +133,7 @@ namespace DEvahebLib.Nodes
 
         public override int ArgumentCount => 2;
 
-        public override int Size => 3;
+        public override int Size => 2 + TagName.Size;
 
         internal protected Tag()
             : this(ValueNode.Create(""), TagType.ORIGIN)
@@ -182,7 +177,7 @@ namespace DEvahebLib.Nodes
 
         public override int ArgumentCount => 2;
 
-        public override int Size => 3;
+        public override int Size => 2 + VariableName.Size;
 
         internal protected Get()
             : this(ValueType.FLOAT, ValueNode.Create(""))
@@ -215,7 +210,7 @@ namespace DEvahebLib.Nodes
 
         public override int ArgumentCount => 2;
 
-        public override int Size => 3;
+        public override int Size => 1 + Min.Size + Max.Size;
 
         internal protected Random()
             : this(ValueNode.Create(0.0f), ValueNode.Create(0.0f))
