@@ -116,9 +116,22 @@ namespace DEvahebLib.Nodes
 
     public class VectorValue : ValueNode
     {
-        public Node[] Values { get; protected set; }
+        public override int Size
+        {
+            get
+            {
+                int count = 1; // count ourselves
 
-        public override int Size => 4;
+                foreach (var node in Values)
+                {
+                    count += node.Size;
+                }
+
+                return count;
+            }
+        }
+
+        public Node[] Values { get; protected set; }
 
         public VectorValue()
             : this(x: new FloatValue(0.0f), y: new FloatValue(0.0f), z: new FloatValue(0.0f))
