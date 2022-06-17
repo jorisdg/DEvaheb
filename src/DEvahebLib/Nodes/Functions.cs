@@ -1,96 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
+using DEvahebLib.Enums;
 
 namespace DEvahebLib.Nodes
 {
-    public class GenericFunction : FunctionNode
+    public class Camera : FunctionNode
     {
-        protected List<Node> arguments;
+        List<Node> arguments;
 
-        public IEnumerable<Node> Arguments => arguments;
+        public override IEnumerable<Node> Arguments => arguments;
 
-        public override int ArgumentCount => arguments.Count;
-
-        public override int Size
-        { 
-            get 
-            { 
-                int count = 1; // count ourselves
-
-                foreach(var node in arguments)
-                {
-                    //if (node is FunctionNode func)
-                    //    count += func.Size;
-                    count += node.Size;
-                }
-
-                return count;
-            } 
-        }
-
-        internal protected GenericFunction(string name, List<Node> arguments)
-            : base()
+        public Camera(List<Node> arguments)
+            : base(name: "camera")
         {
-            this.Name = name;
             this.arguments = arguments ?? new List<Node>();
-        }
-
-        internal protected GenericFunction(string name)
-            : this(name, new List<Node>())
-        {
-        }
-
-        public override string ToString(string indent)
-        {
-            var text = new StringBuilder();
-
-            text.Append($"{indent}{Name} ( ");
-            if (ArgumentCount > 0)
-            {
-                var args = Arguments.GetEnumerator();
-                if (args.MoveNext())
-                    text.Append(args.Current.ToString());
-
-                while (args.MoveNext())
-                {
-                    text.Append($", {args.Current.ToString()}");
-                }
-            }
-            text.Append($" )");
-
-            return text.ToString();
-        }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public enum CameraType
-    {
-        PAN = 57,
-        ZOOM = 58,
-        MOVE = 59,
-        FADE = 60,
-        PATH = 61,
-        ENABLE = 62,
-        DISABLE = 63,
-        SHAKE = 64,
-        ROLL = 65,
-        TRACK = 66,
-        DISTANCE = 67,
-        FOLLOW = 68
-    }
-
-    public class Camera : GenericFunction
-    {
-        internal protected Camera(List<Node> arguments)
-            : base("camera", arguments)
-        {
         }
 
         public override string ToString(string indent)
@@ -98,21 +21,25 @@ namespace DEvahebLib.Nodes
             var text = new StringBuilder();
 
             text.Append($"{indent}camera ( ");
-            if (ArgumentCount > 0)
+            for (int i = 0; i < arguments.Count; i++)
             {
-                var args = Arguments.GetEnumerator();
-                if (args.MoveNext())
+                if (i == 0)
                 {
-                    if (args.Current is FloatValue f)
+                    if (arguments[i] is FloatValue f)
+                    {
                         text.Append(((CameraType)f.Float).ToString());
+                    }
                     else
-                        text.Append(args.Current.ToString());
+                    {
+                        text.Append(arguments[i].ToString());
+                    }
+                }
+                else
+                {
+                    text.Append(",");
                 }
 
-                while (args.MoveNext())
-                {
-                    text.Append($", {args.Current.ToString()}");
-                }
+                text.Append(arguments[i].ToString());
             }
             text.Append($" )");
 
@@ -120,107 +47,85 @@ namespace DEvahebLib.Nodes
         }
     }
 
-    public enum TagType
-    {
-        ANGLES = 53,
-        ORIGIN = 54
-    }
-
     public class Tag : FunctionNode
     {
+        public override IEnumerable<Node> Arguments => new List<Node>() { TagName, TagType };
+
         public Node TagName { get; set; }
-        public TagType Type { get; set; }
 
-        public override int ArgumentCount => 2;
+        public Node TagType { get; set; }
 
-        public override int Size => 2 + TagName.Size;
-
-        internal protected Tag()
-            : this(ValueNode.Create(""), TagType.ORIGIN)
+        public Tag()
+            : this(new StringValue(""), Enums.TagType.ORIGIN)
         {
         }
 
-        internal protected Tag(Node name, TagType type)
-            : base()
+        public Tag(Node tagName, TagType tagType)
+            : this(tagName, new FloatValue((int)tagType))
         {
-            Name = "tag";
-            TagName = name;
-            Type = type;
+
+        }
+
+        public Tag(Node tagName, Node tagType)
+            : base(name: "tag")
+        {
+            TagName = tagName;
+            TagType = tagType;
         }
 
         public override string ToString(string indent)
         {
-            return $"{indent}$tag( {TagName.ToString()}, {Type.ToString()})$";
+            return $"{indent}$tag( {TagName.ToString()}, {(TagType is FloatValue ? (TagType)((FloatValue)TagType).Float : TagType.ToString())})$";
         }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public enum ValueType
-    {
-        //CHAR = 3, // Behaved doesn't show this as an option
-        STRING = 4,
-        //INTEGER = 5, // Behaved doesn't show this as an option
-        FLOAT = 6,
-        //IDENTIFIER = 7, // Behaved doesn't show this as an option
-
-        VECTOR = 14
     }
 
     public class Get : FunctionNode
     {
+        public override IEnumerable<Node> Arguments => new List<Node>() { Type, VariableName };
+
+        public Node Type { get; set; }
+
         public Node VariableName { get; set; }
-        public ValueType Type { get; set; }
 
-        public override int ArgumentCount => 2;
-
-        public override int Size => 2 + VariableName.Size;
-
-        internal protected Get()
-            : this(ValueType.FLOAT, ValueNode.Create(""))
+        public Get()
+            : this(Enums.Type.FLOAT, new StringValue(""))
         {
         }
 
-        internal protected Get(ValueType type, Node nameExpression)
-            : base()
+        public Get(Type type, Node nameExpression)
+            : this(new FloatValue((int)type), nameExpression)
         {
-            Name = "get";
-            VariableName = nameExpression;
+        }
+
+        public Get(Node type, Node variableName)
+            : base(name: "get")
+        {
             Type = type;
+            VariableName = variableName;
         }
 
         public override string ToString(string indent)
         {
-            return $"{indent}$get( {Type.ToString()}, {VariableName.ToString()})$";
-        }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
+            return $"{indent}$get( {(Type is FloatValue ? (Enums.Type)((FloatValue)Type).Float : Type.ToString())}, {VariableName.ToString()})$";
         }
     }
 
     public class Random : FunctionNode
     {
+        public override IEnumerable<Node> Arguments => new List<Node>() { Min, Max };
+
         public Node Min { get; set; }
+
         public Node Max { get; set; }
 
-        public override int ArgumentCount => 2;
-
-        public override int Size => 1 + Min.Size + Max.Size;
-
-        internal protected Random()
-            : this(ValueNode.Create(0.0f), ValueNode.Create(0.0f))
+        public Random()
+            : this(new FloatValue(0.0f), new FloatValue(0.0f))
         {
         }
 
-        internal protected Random(Node min, Node max)
-            : base()
+        public Random(Node min, Node max)
+            : base("random")
         {
-            Name = "random";
             Min = min;
             Max = max;
         }
@@ -229,93 +134,69 @@ namespace DEvahebLib.Nodes
         {
             return $"{indent}$random( {Min.ToString()}, {Max.ToString()} )$";
         }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
-        }
     }
 
     public class Declare : FunctionNode
     {
+        public override IEnumerable<Node> Arguments => new List<Node>() { Type, VariableName };
+
+        public Node Type { get; set; }
+
         public Node VariableName { get; set; }
-        public ValueType Type { get; set; }
 
-        public override int ArgumentCount => 2;
-
-        public override int Size => 3;
-
-        internal protected Declare()
-            : this(ValueType.FLOAT, ValueNode.Create(""))
+        public Declare()
+            : this(Enums.Type.FLOAT, new StringValue(""))
         {
         }
 
-        internal protected Declare(ValueType type, Node nameExpression)
-            : base()
+        public Declare(Enums.Type type, Node nameExpression)
+            : this(new FloatValue((int)type), nameExpression)
         {
-            Name = "declare";
-            VariableName = nameExpression;
+        }
+
+        public Declare(Node type, Node variableName)
+            : base("declare")
+        {
             Type = type;
+            VariableName = variableName;
         }
 
         public override string ToString(string indent)
         {
-            return $"{indent}declare ( {Type.ToString()}, {VariableName.ToString()} )";
-        }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
+            return $"{indent}declare ( {(Type is FloatValue ? (Enums.Type)((FloatValue)Type).Float : VariableName.ToString())}, {VariableName.ToString()} )";
         }
     }
 
-    //public enum SoundChannel
-    //{
-	   // CHAN_AUTO,
-    //    CHAN_LOCAL,
-    //    CHAN_WEAPON,
-    //    CHAN_VOICE,
-    //    CHAN_VOICE_ATTEN,
-    //    CHAN_VOICE_GLOBAL,
-    //    CHAN_ITEM,
-    //    CHAN_BODY,
-    //    CHAN_AMBIENT,
-    //    CHAN_LOCAL_SOUND,
-    //    CHAN_ANNOUNCER,
-    //    CHAN_LESS_ATTEN,
-    //    CHAN_MUSIC
-    //}
-
     public class Sound : FunctionNode
     {
-        public Node FileName { get; set; }
-        public string Channel { get; set; }
+        public override IEnumerable<Node> Arguments => new List<Node>() { Channel, Filename };
 
-        public override int ArgumentCount => 2;
+        public Node Channel { get; set; }
 
-        public override int Size => 3;
+        public Node Filename { get; set; }
 
-        internal protected Sound()
-            : this("CHAN_AUTO", ValueNode.Create(""))
+        public Sound()
+            : this(SoundChannel.CHAN_AUTO, new StringValue(""))
         {
         }
 
-        internal protected Sound(string channel, Node filenameExpression)
-            : base()
+        public Sound(SoundChannel channel, Node filename)
+            : this(new FloatValue((int)channel), filename)
         {
-            Name = "sound";
-            FileName = filenameExpression;
+
+        }
+
+        public Sound(Node channel, Node filename)
+            : base("sound")
+        {
             Channel = channel;
+            Filename = filename;
         }
 
         public override string ToString(string indent)
         {
-            return $"{indent}sound ( {Channel.ToString()}, {FileName.ToString()} )";
-        }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
+            // TODO this comes from IBI as string, not float
+            return $"{indent}sound ( {(Channel is FloatValue ? (SoundChannel)((FloatValue)Channel).Float : Channel.ToString())}, {Filename.ToString()} )";
         }
     }
 }

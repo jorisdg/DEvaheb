@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using DEvahebLib.Enums;
 using DEvahebLib.Nodes;
 
 namespace DEvahebLib.Parser
@@ -68,8 +67,6 @@ namespace DEvahebLib.Parser
 
     public class IBIParser
     {
-        bool debugWrite = false;
-
         public Node ReadToken(BinaryReader reader)
         {
             return ReadToken(reader, IBIToken.UNKNOWN);
@@ -77,33 +74,16 @@ namespace DEvahebLib.Parser
 
         protected Node ReadToken(BinaryReader reader, IBIToken parent)
         {
-            //if (reader.ReadByte() == 0)
-            //{
-            //    var i = reader.ReadInt16();
-            //    reader.BaseStream.Seek(-2, SeekOrigin.Current);
-
-            //    var empty = reader.ReadBytes(2);
-            //    if (debugWrite) Console.WriteLine($"{{ {empty[0].ToString()} {empty[1].ToString()} : {i}}}");
-
-            //    return new ReturnFlagNode(empty[0], empty[1]);
-            //}
-
-            //reader.BaseStream.Seek(-1, SeekOrigin.Current);
             var b = reader.ReadInt32();
 
             IBIToken t = Enum.IsDefined(typeof(IBIToken), (Int32)b) ? (IBIToken)b : IBIToken.UNKNOWN;
 
             var size = reader.ReadInt32();
 
-            if (debugWrite) Console.WriteLine($"{b} ({t.ToString()}) : {size}");
-
             //if (b > 7)
             if (parent == IBIToken.UNKNOWN)
             {
                 b = reader.ReadByte(); // TODO functions have 1 extra byte here? values do not?
-
-                if (b != 0)
-                    Console.WriteLine($"{t} flags: {b}");
             }
             else if (b > 7)
             {
@@ -116,72 +96,56 @@ namespace DEvahebLib.Parser
             switch (t)
             {
                 case IBIToken.String:
-                    newNode = ValueNode.Create(new string(reader.ReadChars(size)));
+                    var str = new string(reader.ReadChars(size));
+                    str = str.Substring(0, str.Length - 1);
+                    newNode = new StringValue(str);
                     break;
                 case IBIToken.Identifier:
-                    newNode = ValueNode.Create(new string(reader.ReadChars(size)));
-                    //((StringValue)newNode).String = ((StringValue)newNode).String.Substring(0, ((StringValue)newNode).String.Length - 1);
+                    newNode = new StringValue(new string(reader.ReadChars(size)));
                     break;
                 case IBIToken.Float:
-                    newNode = ValueNode.Create(reader.ReadSingle());
+                    newNode = new FloatValue(reader.ReadSingle());
                     break;
                 case IBIToken.Vector:
-                    //if (!(ReadToken(reader) is ReturnFlagNode)) throw new Exception("Vector expected 0 token");
-                    //bts = reader.ReadBytes(size);
-
-                    newNode = ValueNode.CreateVector(x: (float)((FloatValue)ReadToken(reader, t)).Float, y: (float)((FloatValue)ReadToken(reader, t)).Float, z: (float)((FloatValue)ReadToken(reader, t)).Float);
+                    newNode = new VectorValue(x: ReadToken(reader, t), y: ReadToken(reader, t), z: ReadToken(reader, t));
                     break;
 
                 case IBIToken.Gt:
                 case IBIToken.Lt:
                 case IBIToken.Eq:
                 case IBIToken.Ne:
-                    //if (!(ReadToken(reader) is ReturnFlagNode)) throw new Exception("operator expected 0 token");
-                    //bts = reader.ReadBytes(size);
-
-                    newNode = If.CreateOperator((Operators)t);
+                    newNode = new OperatorNode((Operator)t);
                     break;
 
                 case IBIToken.@if:
-                    newNode = BlockNode.CreateIf(ReadToken(reader, t), (OperatorNode)ReadToken(reader, t), ReadToken(reader, t));
+                    newNode = new If(expression1: ReadToken(reader, t), operatorNode: (OperatorNode)ReadToken(reader, t), expression2: ReadToken(reader, t));
                     break;
                 case IBIToken.@else:
-                    newNode = BlockNode.CreateElse();
+                    newNode = new Else();
                     break;
                 case IBIToken.random:
-                    //if (!(ReadToken(reader) is ReturnFlagNode)) throw new Exception("random expected 0 token");
-                    //bts = reader.ReadBytes(size);
-
-                    newNode = FunctionNode.CreateRandom(ReadToken(reader, t), ReadToken(reader, t));
+                    newNode = new Nodes.Random(min: ReadToken(reader, t), max: ReadToken(reader, t));
                     break;
                 case IBIToken.task:
-                    newNode = BlockNode.CreateTask(name: ReadToken(reader, t));
+                    newNode = new Task(name: ReadToken(reader, t));
                     break;
                 case IBIToken.affect:
-                    newNode = BlockNode.CreateAffect(name: ReadToken(reader, t), type: (Nodes.AffectType)(float)((FloatValue)ReadToken(reader, t)).Float);
+                    newNode = new Affect(name: ReadToken(reader, t), type: ReadToken(reader, t));
                     break;
                 case IBIToken.loop:
-                    newNode = BlockNode.CreateLoop(count: (int)((FloatValue)ReadToken(reader, t)).Float);
+                    newNode = new Loop(count: ReadToken(reader, t));
                     break;
 
                 case IBIToken.tag:
-                    //if (!(ReadToken(reader) is ReturnFlagNode)) throw new Exception("tag expected 0 token");
-                    //bts = reader.ReadBytes(size);
-
-                    newNode = FunctionNode.CreateTag(name: ReadToken(reader, t), type: (Nodes.TagType)(float)((FloatValue)ReadToken(reader, t)).Float);
+                    newNode = new Tag(tagName: ReadToken(reader, t), tagType: ReadToken(reader, t));
                     break;
                 case IBIToken.get:
-                    //var rflag = ReadToken(reader);
-                    //if (!(rflag is ReturnFlagNode)) throw new Exception("get expected 0 token");
-                    //bts = reader.ReadBytes(size);
-
-                    newNode = FunctionNode.CreateGet(type: (Nodes.ValueType)(float)((FloatValue)ReadToken(reader, t)).Float, variableName: ReadToken(reader, t));
+                    newNode = new Get(type: ReadToken(reader, t), variableName: ReadToken(reader, t));
                     break;
                 case IBIToken.camera:
                     parms = new List<Node>();
                     for (int i = 0; i < size; i++)
                     {
-                        if (debugWrite) Console.WriteLine($"- Param {i} ");
                         var node = ReadToken(reader, t);
                         if (node != null)
                         {
@@ -189,17 +153,15 @@ namespace DEvahebLib.Parser
 
                             i += node.Size - 1;
                         }
-
-                        if (debugWrite) Console.WriteLine($"- Param {i}: {node?.Size} ");
                     }
 
-                    newNode = FunctionNode.CreateCamera(parms);
+                    newNode = new Camera(parms);
                     break;
                 case IBIToken.declare:
-                    newNode = FunctionNode.CreateDeclare(type: (Nodes.ValueType)(float)((FloatValue)ReadToken(reader, t)).Float, variableName: ReadToken(reader, t));
+                    newNode = new Declare(type: ReadToken(reader, t), variableName: ReadToken(reader, t));
                     break;
                 case IBIToken.sound:
-                    newNode = FunctionNode.CreateSound(channel: ((StringValue)ReadToken(reader, t)).String, filename: ReadToken(reader, t));
+                    newNode = new Sound(channel: ReadToken(reader, t), filename: ReadToken(reader, t));
                     break;
 
                 default:
@@ -207,20 +169,16 @@ namespace DEvahebLib.Parser
 
                     if (size > 0)
                     {
-                        if (debugWrite) Console.WriteLine($"Params ({size}): ");
                         for (int i = 0; i < size; i++)
                         {
-                            if (debugWrite) Console.WriteLine($"- Param {i} ");
                             var node = ReadToken(reader, t);
 
                             parms.Add(node);
 
                             i += node.Size - 1;
-
-                            if (debugWrite) Console.WriteLine($"- Param {i}: {node?.Size } ");
                         }
                     }
-                    newNode = FunctionNode.CreateGeneric(t.ToString(), parms);
+                    newNode = new GenericFunction(t.ToString(), parms);
                     break;
             }
 
@@ -237,7 +195,7 @@ namespace DEvahebLib.Parser
                     }
                     else
                     {
-                        blockNode.ChildNodes.Add(blockChild);
+                        blockNode.SubNodes.Add(blockChild);
                     }
                 }
                 while (!blockEnd);

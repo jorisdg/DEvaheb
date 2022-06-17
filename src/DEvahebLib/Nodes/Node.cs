@@ -10,7 +10,7 @@ namespace DEvahebLib.Nodes
     {
         abstract public int Size { get; }
 
-        internal protected Node()
+        public Node()
         {
         }
 
@@ -20,95 +20,15 @@ namespace DEvahebLib.Nodes
         }
 
         public abstract string ToString(string indent);
-
-        public abstract byte[] ToBinary();
     }
 
-    public class ReturnFlagNode : Node
+    public abstract class ValueNode : Node
     {
-        public override int Size => 1;
+        public object Value { get; set; } = null;
 
-        public byte B1 { get; set; }
-
-        public byte B2 { get; set; }
-
-        public ReturnFlagNode()
-            : this(0, 0)
-        {
-        }
-
-        public ReturnFlagNode(byte b1, byte b2)
+        public ValueNode()
             : base()
         {
-            B1 = b1;
-            B2 = b2;
-        }
-
-        public override string ToString(string indent)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public abstract class BlockNode : Node
-    {
-        public List<Node> ChildNodes = new List<Node>();
-
-        internal protected BlockNode()
-            : base()
-        {
-        }
-
-        protected string ChildrenToString(string indent)
-        {
-            StringBuilder build = new StringBuilder();
-
-            for (int i = 0; i < ChildNodes.Count; i++)
-            {
-                build.Append(ChildNodes[i].ToString(indent));
-
-                if (!(ChildNodes[i] is BlockNode))
-                {
-                    build.Append(";");
-                }
-                
-                if (i < ChildNodes.Count - 1)
-                {
-                    build.AppendLine("");
-                }
-            }
-
-            return build.ToString();
-        }
-
-        public static If CreateIf(Node expression1, OperatorNode opr, Node expression2)
-        {
-            return new If(expression1, opr, expression2);
-        }
-
-        public static Else CreateElse()
-        {
-            return new Else();
-        }
-
-        public static Task CreateTask(Node name)
-        {
-            return new Task(name);
-        }
-
-        public static Affect CreateAffect(Node name, AffectType type)
-        {
-            return new Affect(name, type);
-        }
-
-        public static Loop CreateLoop(int count)
-        {
-            return new Loop(count);
         }
     }
 
@@ -116,147 +36,99 @@ namespace DEvahebLib.Nodes
     {
         public string Name { get; protected set; }
 
-        abstract public int ArgumentCount { get; }
+        public abstract IEnumerable<Node> Arguments { get; }
 
-        internal protected FunctionNode()
-            : base()
+        public override int Size
         {
-        }
-
-        static public FunctionNode CreateGeneric(string name, List<Node> arguments)
-        {
-            return new GenericFunction(name, arguments);
-        }
-
-        static public Tag CreateTag(Node name, TagType type)
-        {
-            return new Tag(name, type);
-        }
-
-        static public Get CreateGet(ValueType type, Node variableName)
-        {
-            return new Get(type, variableName);
-        }
-
-        static public Camera CreateCamera(List<Node> arguments)
-        {
-            return new Camera(arguments);
-        }
-
-        static public Random CreateRandom(Node min, Node max)
-        {
-            return new Random(min, max);
-        }
-
-        public static Declare CreateDeclare(ValueType type, Node variableName)
-        {
-            return new Declare(type, variableName);
-        }
-
-        public static Sound CreateSound(string channel, Node filename)
-        {
-            return new Sound(channel, filename);
-        }
-    }
-
-    public abstract class ValueNode : Node
-    {
-        public object? Value { get; set; } = null;
-
-        internal protected ValueNode()
-            : base()
-        {
-        }
-
-        static public ValueNode Create(string stringValue)
-        {
-            // TODO should this expect to ALWAYS get a 0?
-            // or does that imply the IBI connection and this code shouldn't be responsible for it?
-            if (stringValue[stringValue.Length - 1] == '\0')
+            get
             {
-                stringValue = stringValue.Substring(0, stringValue.Length - 1);
+                int count = 1; // count ourselves
+
+                foreach(var arg in Arguments)
+                {
+                    count += arg.Size;
+                }
+
+                return count;
             }
-
-            return new StringValue() { String = stringValue };
         }
 
-        static public ValueNode Create(float floatValue)
-        {
-            return new FloatValue() { Float = floatValue };
-        }
-
-        static public ValueNode CreateVector(float x, float y, float z)
-        {
-            return new VectorValue() { Vector = new Tuple<float, float, float>(x, y, z) };
-        }
-
-        static public ValueNode Create(Int16 integerValue)
-        {
-            return new IntegerValue() { Integer = integerValue };
-        }
-
-        static public ValueNode CreateIdentifier(string identifierName)
-        {
-            return new IdentifierValue() { IdentifierName = identifierName };
-        }
-
-        static public ValueNode CreateIdentifier(float identifierNumber)
-        {
-            return new IdentifierValue() { Float = identifierNumber };
-        }
-    }
-
-    public enum Operators
-    {
-        Gt = 15,
-        Lt = 16,
-        Eq = 17,
-        Ne = 18
-    }
-
-    public class OperatorNode : Node
-    {
-        public Operators Operator;
-
-        public override int Size => 1;
-
-        internal protected OperatorNode()
-            : this(Operators.Eq)
-        {
-        }
-
-        internal protected OperatorNode(Operators op)
+        public FunctionNode(string name)
             : base()
         {
-            Operator = op;
+            Name = name;
         }
 
         public override string ToString(string indent)
         {
-            string op = string.Empty;
+            var text = new StringBuilder();
 
-            switch (Operator)
+            text.Append($"{indent}{Name} ( ");
+            bool first = true;
+            foreach(var arg in Arguments)
             {
-                case Operators.Gt:
-                    op = ">";
-                    break;
-                case Operators.Lt:
-                    op = "<";
-                    break;
-                case Operators.Eq:
-                    op = "=";
-                    break;
-                case Operators.Ne:
-                    op = "!";
-                    break;
-            }
+                if (!first)
+                {
+                    text.Append(", ");
+                }
+                text.Append(arg.ToString());
 
-            return $"{indent}${op}$";
+                first = false;
+            }
+            text.Append($" )");
+
+            return text.ToString();
+        }
+    }
+
+    public class GenericFunction : FunctionNode
+    {
+        List<Node> arguments;
+
+        public override IEnumerable<Node> Arguments => arguments;
+
+        public GenericFunction(string name, List<Node> arguments)
+            : base(name)
+        {
+            this.arguments = arguments ?? new List<Node>();
+        }
+    }
+
+    public abstract class BlockNode : FunctionNode
+    {
+        public List<Node> SubNodes { get; protected set; }
+
+        public BlockNode(string name)
+            : this(name, childNodes: new List<Node>())
+        {
         }
 
-        public override byte[] ToBinary()
+        public BlockNode(string name, List<Node> childNodes)
+            : base(name)
         {
-            throw new NotImplementedException();
+            SubNodes = childNodes ?? new List<Node>();
+        }
+
+        protected string ChildrenToString(string indent)
+        {
+            StringBuilder build = new StringBuilder();
+
+            for (int i = 0; i < SubNodes.Count; i++)
+            {
+                build.Append(SubNodes[i].ToString(indent));
+
+                if (!(SubNodes[i] is BlockNode))
+                {
+                    build.Append(";");
+                }
+
+                if (i < SubNodes.Count - 1)
+                {
+                    build.AppendLine("");
+                }
+            }
+
+            return build.ToString();
         }
     }
 }

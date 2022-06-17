@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DEvahebLib.Enums;
 
 namespace DEvahebLib.Nodes
 {
@@ -12,7 +13,12 @@ namespace DEvahebLib.Nodes
 
         public override int Size => 1;
 
-        internal protected CharValue()
+        public CharValue()
+            : this('\0')
+        {
+        }
+
+        public CharValue(char character)
             : base()
         {
         }
@@ -21,54 +27,51 @@ namespace DEvahebLib.Nodes
         {
             return indent + Char?.ToString() ?? "0";
         }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
-        }
     }
 
     public class StringValue : ValueNode
     {
-        public string? String { get { return (string?)Value; } set { Value = value; } }
+        public string String { get { return (string)Value; } set { Value = value; } }
 
         public override int Size => 1;
 
-        internal protected StringValue()
+        public StringValue()
+            : this(string.Empty)
+        {
+        }
+
+        public StringValue(string value)
             : base()
         {
+            String = value;
         }
 
         public override string ToString(string indent)
         {
             return indent + String != null ? $"\"{String.ToString()}\"" : "\"\"";
         }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
-        }
     }
 
     public class IntegerValue : ValueNode
     {
-        public Int16? Integer { get { return (Int16?)Value; } set { Value = value; } }
+        public Int32? Integer { get { return (Int32?)Value; } set { Value = value; } }
 
         public override int Size => 1;
 
-        internal protected IntegerValue()
+        public IntegerValue()
+            : this(0)
+        {
+        }
+
+        public IntegerValue(Int32 integer)
             : base()
         {
+            Integer = integer;
         }
 
         public override string ToString(string indent)
         {
             return indent + Integer?.ToString() ?? "0";
-        }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
         }
     }
 
@@ -78,27 +81,29 @@ namespace DEvahebLib.Nodes
 
         public override int Size => 1;
 
-        internal protected FloatValue()
+        public FloatValue()
+            : this(0.0f)
+        {
+        }
+
+        public FloatValue(float f)
             : base()
         {
+            Float = f;
         }
 
         public override string ToString(string indent)
         {
             return indent + Float?.ToString("0.000") ?? "0.000";
         }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
-        }
     }
 
+    // TODO: identifier
     public class IdentifierValue : FloatValue
     {
-        public string? IdentifierName { get { return ((float?)Value)?.ToString(); } set { Value = 0; /* TODO */ } }
+        public string? IdentifierName { get { return ((float?)Value)?.ToString(); } set { Value = 0; } }
 
-        internal protected IdentifierValue()
+        public IdentifierValue()
             : base()
         {
         }
@@ -107,37 +112,69 @@ namespace DEvahebLib.Nodes
         {
             return indent + IdentifierName?.ToString() ?? "";
         }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
-        }
     }
 
     public class VectorValue : ValueNode
     {
-        public Tuple<float, float, float> Vector { get { return (Tuple<float, float, float>)Value; } set { Value = value; } }
+        public Node[] Values { get; protected set; }
 
         public override int Size => 4;
 
-        internal protected VectorValue()
-            : this(0.0f, 0.0f, 0.0f)
+        public VectorValue()
+            : this(x: new FloatValue(0.0f), y: new FloatValue(0.0f), z: new FloatValue(0.0f))
         {
         }
 
-        internal protected VectorValue(float x, float y, float z)
+        public VectorValue(Node x, Node y, Node z)
             : base()
         {
+            Values = new Node[3] { x, y, z};
         }
 
         public override string ToString(string indent)
         {
-            return indent + Vector != null ? $"< {Vector.Item1.ToString("0.000")} {Vector.Item2.ToString("0.000")} {Vector.Item3.ToString("0.000")} >" : "< 0.000 0.000 0.000 >";
+            return indent + $"< {(Values[0] != null ? Values[0].ToString() : "0.000")} {(Values[1] != null ? Values[1].ToString() : "0.000")} {(Values[2] != null ? Values[2].ToString() : "0.000")} >";
+        }
+    }
+
+    public class OperatorNode : ValueNode
+    {
+        public Operator Operator {  get { return (Operator)Value; } set { Value = value; } }
+
+        public override int Size => 1;
+
+        public OperatorNode()
+            : this(Operator.Eq)
+        {
         }
 
-        public override byte[] ToBinary()
+        public OperatorNode(Operator op)
+            : base()
         {
-            throw new NotImplementedException();
+            Operator = op;
+        }
+
+        public override string ToString(string indent)
+        {
+            string op = string.Empty;
+
+            switch (Operator)
+            {
+                case Operator.Gt:
+                    op = ">";
+                    break;
+                case Operator.Lt:
+                    op = "<";
+                    break;
+                case Operator.Eq:
+                    op = "=";
+                    break;
+                case Operator.Ne:
+                    op = "!";
+                    break;
+            }
+
+            return $"{indent}${op}$";
         }
     }
 }

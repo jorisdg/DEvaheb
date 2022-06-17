@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using System.IO;
+using System.Text;
 using DEvahebLib.Parser;
 
 namespace DEvahebLib
@@ -64,173 +66,49 @@ namespace DEvahebLib
         tag = 49,
     }
 
-    public enum Types // Icarus
-    {
-        CHAR = 3,
-        STRING = 4,
-        INTEGER = 5,
-        FLOAT = 6,
-        IDENTIFIER = 7,
+    //public enum Types
+    //{
+    //    CHAR = 3,
+    //    STRING = 4,
+    //    INTEGER = 5,
+    //    FLOAT = 6,
+    //    IDENTIFIER = 7,
 
-        VECTOR = 14,
+    //    VECTOR = 14,
 
-        //Wait types
-        WAIT_COMPLETE = 51,
-        WAIT_TRIGGERED = 52,
+    //    //Wait types
+    //    WAIT_COMPLETE = 51,
+    //    WAIT_TRIGGERED = 52,
 
-        //Set types
-        ANGLES = 53,
-        ORIGIN = 54,
+    //    //Set types
+    //    ANGLES = 53,
+    //    ORIGIN = 54,
 
-        //Affect types
-        INSERT = 55,
-        FLUSH = 56,
+    //    //Affect types
+    //    INSERT = 55,
+    //    FLUSH = 56,
 
-        //Camera types
-        PAN = 57,
-        ZOOM = 58,
-        MOVE = 59,
-        FADE = 60,
-        PATH = 61,
-        ENABLE = 62,
-        DISABLE = 63,
-        SHAKE = 64,
-        ROLL = 65,
-        TRACK = 66,
-        DISTANCE = 67,
-        FOLLOW = 68,
+    //    //Camera types
+    //    PAN = 57,
+    //    ZOOM = 58,
+    //    MOVE = 59,
+    //    FADE = 60,
+    //    PATH = 61,
+    //    ENABLE = 62,
+    //    DISABLE = 63,
+    //    SHAKE = 64,
+    //    ROLL = 65,
+    //    TRACK = 66,
+    //    DISTANCE = 67,
+    //    FOLLOW = 68,
 
-        //Variable type
-        VARIABLE = 69
-    }
+    //    //Variable type
+    //    VARIABLE = 69
+    //}
 
     public class IBIReader
     {
         string currentIndent = string.Empty;
-
-        //private int ReadToken(BinaryReader reader, bool root = false)
-        //{
-        //    int numCommandsRead = 0;
-
-        //    var b = reader.ReadByte();
-        //    if (b == 0)
-        //    {
-        //        var i = reader.ReadInt16();
-        //        reader.BaseStream.Seek(-2, SeekOrigin.Current);
-
-        //        var empty = reader.ReadBytes(2);
-        //        //Output($"{{ {empty[0].ToString()} {empty[1].ToString()} : {i}}}");
-        //        return -1; // TODO don't count this as a token in a loop
-        //    }
-
-        //    Token t = Enum.IsDefined(typeof(Token), (Int32)b) ? (Token)b : Token.UNKNOWN;
-
-        //    var bs = reader.ReadBytes(3);
-        //    if (bs[0] != 0 || bs[1] != 0 || bs[2] != 0)
-        //        File.AppendAllText("log.txt", $"Token {b} ({t.ToString()} 1st 3 bytes: {bs[0]}, {bs[1]}, {bs[2]}\r\n");
-                
-        //    var size = reader.ReadByte();
-        //    bs = reader.ReadBytes(3);
-        //    if (bs[0] != 0 || bs[1] != 0 || bs[2] != 0)
-        //        File.AppendAllText("log.txt", $"Token {b} ({t.ToString()} 2nd 3 bytes: {bs[0]}, {bs[1]}, {bs[2]}\r\n");
-
-        //    if (b > 7)
-        //    {
-        //        b = reader.ReadByte(); // TODO functions have 1 extra byte here? values not?
-        //        numCommandsRead = size;
-        //    }
-
-
-        //    switch (t)
-        //    {
-        //        case Token.String:
-        //            Output($"\"{new string(reader.ReadChars(size))}\"");
-        //            break;
-        //        case Token.Identifier:
-        //            Output($"{new string(reader.ReadChars(size))}");
-        //            break;
-        //        case Token.Float:
-        //            Output($"{reader.ReadSingle().ToString("0.000")}");
-        //            break;
-        //        case Token.Vector:
-        //            Output($"<");
-        //            ReadSubTokens(reader, 3);
-        //            Output(">");
-        //            if (root) OutputLine(";");
-        //            numCommandsRead = 3;
-        //            break;
-        //        case Token.affect:
-        //        case Token.task:
-        //            Output($"{t.ToString()} (");
-        //            ReadSubTokens(reader, size);
-        //            OutputLine(")");
-        //            OutputLine("{");
-        //            currentIndent += "  ";
-        //            break;
-        //        case Token.blockEnd:
-        //            currentIndent = currentIndent.Length > 2 ? currentIndent.Substring(2) : string.Empty;
-        //            OutputLine("}");
-        //            break;
-        //        case Token.tag:
-        //        case Token.get:
-        //            Output($"${t.ToString()}(");
-        //            ReadSubTokens(reader, 2);
-        //            Output(")$");
-        //            if (root) OutputLine(";");
-        //            numCommandsRead = 2;
-        //            break;
-        //        case Token.camera:
-        //            Output($"{t.ToString()} ( ");
-        //            ReadSubTokens(reader, size);
-        //            Output(")");
-        //            if (root) OutputLine(";");
-        //            break;
-        //        default:
-        //            Output($"{t.ToString()} (");
-        //            ReadSubTokens(reader, size);
-        //            Output(")");
-        //            if (root) OutputLine(";");
-        //            break;
-        //    }
-
-        //    return numCommandsRead;
-        //}
-
-        //private void ReadSubTokens(BinaryReader reader, int size)
-        //{
-        //    if (size > 0)
-        //    {
-        //        Output(" ");
-        //        for (int i = 0; i < size; i++)
-        //        {
-        //            if (i > 0) Output(", ");
-        //            i += ReadToken(reader);
-        //        }
-        //        Output(" ");
-        //    }
-        //}
-
-        //bool newLine = true;
-        //private void Output(string text)
-        //{
-        //    if (newLine)
-        //    {
-        //        Console.Write(currentIndent);
-        //        newLine = false;
-        //    }
-        //    Console.Write(text);
-        //}
-
-        //private void OutputLine(string text)
-        //{
-        //    if (newLine)
-        //    {
-        //        Console.Write(currentIndent);
-        //    }
-
-        //    newLine = true;
-        //    Console.WriteLine(text);
-        //}
 
         public string Read(string filename)
         {
@@ -256,21 +134,16 @@ namespace DEvahebLib
                         {
                             var node = parser.ReadToken(reader);
                             
-                            //Output(node.ToString());
                             output.Append(node.ToString());
 
                             if (!(node is Nodes.BlockNode))
                             {
                                 output.AppendLine(";");
-                                //OutputLine(";");
                             }
                             else
                             {
                                 output.AppendLine();
-                                //OutputLine("");
                             }
-
-                            //ReadToken(reader, root: true);
                         }
                     }
                 }

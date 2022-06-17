@@ -1,29 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
+using DEvahebLib.Enums;
 
 namespace DEvahebLib.Nodes
 {
     public class If : BlockNode
     {
+        public override IEnumerable<Node> Arguments => new List<Node> { Expr1, Operator, Expr2 };
+
         public Node Expr1 { get; set; }
 
         public OperatorNode Operator { get; set; }
 
         public Node Expr2 { get; set; }
 
-        internal protected If()
-            : this(expression1: null, new OperatorNode(Operators.Eq), expression2: null)
+        public If()
+            : this(expression1: null, operatorNode: new OperatorNode(Enums.Operator.Eq), expression2: null, childNodes: null)
         {
         }
 
-        internal protected If(Node expression1, OperatorNode opr, Node expression2)
-            : base()
+        public If(Node expression1, OperatorNode operatorNode, Node expression2)
+            : this(expression1, operatorNode, expression2, childNodes: null)
+        {
+
+        }
+
+        public If(Node expression1, OperatorNode operatorNode, Node expression2, List<Node> childNodes)
+            : base(name: "if", childNodes)
         {
             Expr1 = expression1;
-            Operator = opr;
+            Operator = operatorNode;
             Expr2 = expression2;
         }
 
@@ -61,58 +67,55 @@ namespace DEvahebLib.Nodes
             sbuild.Append(indent);
             sbuild.AppendLine("{");
 
-            if (ChildNodes.Count > 0)
+            string children = ChildrenToString(indent + "\t");
+            if (children.Length > 0)
             {
-                sbuild.AppendLine(ChildrenToString(indent + "\t"));
+                sbuild.AppendLine(children);
             }
 
             sbuild.Append(indent);
             sbuild.Append("}");
 
             return sbuild.ToString();
-        }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
-        }
-
-        static public OperatorNode CreateOperator(Operators op)
-        {
-            return new OperatorNode(op);
         }
     }
 
     public class Task : BlockNode
     {
-        public Node Name { get; set; }
+        public override IEnumerable<Node> Arguments => new List<Node>() { TaskName };
 
-        internal protected Task()
-            : this(ValueNode.Create("DEFAULT"))
+        public Node TaskName { get; set; }
+
+        public Task()
+            : this(new StringValue("DEFAULT"))
         {
         }
 
-        internal protected Task(Node name)
-            : base()
+        public Task(Node name)
+            : this(name, childNodes: new List<Node>())
         {
-            Name = name;
         }
 
-        public override int Size => 2;
+        public Task(Node name, List<Node> childNodes)
+            : base(name: "task", childNodes)
+        {
+            TaskName = name;
+        }
 
         public override string ToString(string indent)
         {
             StringBuilder sbuild = new StringBuilder($"{indent}task ( ");
 
-            sbuild.Append(Name.ToString());
+            sbuild.Append(TaskName.ToString());
 
             sbuild.AppendLine(" )");
             sbuild.Append(indent);
             sbuild.AppendLine("{");
 
-            if (ChildNodes.Count > 0)
+            string children = ChildrenToString(indent + "\t");
+            if (children.Length > 0)
             {
-                sbuild.AppendLine(ChildrenToString(indent + "\t"));
+                sbuild.AppendLine(children);
             }
 
             sbuild.Append(indent);
@@ -120,44 +123,33 @@ namespace DEvahebLib.Nodes
 
             return sbuild.ToString();
         }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public enum AffectType
-    {
-        INSERT = 55,
-        FLUSH = 56
     }
 
     public class Affect : BlockNode
     {
-        public Node Name { get; set; }
+        public override IEnumerable<Node> Arguments => new List<Node>() { EntityName, Type };
 
-        public AffectType Type { get; set; }
+        public Node EntityName { get; set; }
 
-        internal protected Affect()
-            : this(ValueNode.Create("DEFAULT"), AffectType.INSERT)
+        public Node Type { get; set; }
+
+        public Affect()
+            : this(new StringValue("DEFAULT"), new FloatValue((float)AffectType.INSERT))
         {
         }
 
-        internal protected Affect(Node name, AffectType type)
-            : base()
+        public Affect(Node name, Node type)
+            : base(name: "affect")
         {
-            Name = name;
+            EntityName = name;
             Type = type;
         }
-
-        public override int Size => 3;
 
         public override string ToString(string indent)
         {
             StringBuilder sbuild = new StringBuilder($"{indent}affect ( ");
 
-            sbuild.Append(Name.ToString());
+            sbuild.Append(EntityName.ToString());
             sbuild.Append(", ");
             sbuild.Append(Type.ToString());
 
@@ -165,9 +157,10 @@ namespace DEvahebLib.Nodes
             sbuild.Append(indent);
             sbuild.AppendLine("{");
 
-            if (ChildNodes.Count > 0)
+            string children = ChildrenToString(indent + "\t");
+            if (children.Length > 0)
             {
-                sbuild.AppendLine(ChildrenToString(indent + "\t"));
+                sbuild.AppendLine(children);
             }
 
             sbuild.Append(indent);
@@ -175,21 +168,16 @@ namespace DEvahebLib.Nodes
 
             return sbuild.ToString();
         }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
-        }
     }
 
     public class Else : BlockNode
     {
-        internal protected Else()
-            : base()
+        public override IEnumerable<Node> Arguments => new List<Node>();
+
+        public Else()
+            : base(name: "else")
         {
         }
-
-        public override int Size => 1;
 
         public override string ToString(string indent)
         {
@@ -199,9 +187,10 @@ namespace DEvahebLib.Nodes
             sbuild.Append(indent);
             sbuild.AppendLine("{");
 
-            if (ChildNodes.Count > 0)
+            string children = ChildrenToString(indent + "\t");
+            if (children.Length > 0)
             {
-                sbuild.AppendLine(ChildrenToString(indent + "\t"));
+                sbuild.AppendLine(children);
             }
 
             sbuild.Append(indent);
@@ -209,31 +198,31 @@ namespace DEvahebLib.Nodes
 
             return sbuild.ToString();
         }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
-        }
     }
 
     public class Loop : BlockNode
     {
-        public int Count { get; set; }
+        public override IEnumerable<Node> Arguments => new List<Node>() { Count };
+
+        public Node Count { get; set; }
 
         public AffectType Type { get; set; }
 
-        internal protected Loop()
+        public Loop()
             : this(10)
         {
         }
 
-        internal protected Loop(int count)
-            : base()
+        public Loop(int count)
+            : this(new FloatValue(count))
+        {
+        }
+
+        public Loop(Node count)
+            : base(name: "loop")
         {
             Count = count;
         }
-
-        public override int Size => 2;
 
         public override string ToString(string indent)
         {
@@ -243,20 +232,16 @@ namespace DEvahebLib.Nodes
             sbuild.Append(indent);
             sbuild.AppendLine("{");
 
-            if (ChildNodes.Count > 0)
+            var children = ChildrenToString(indent + "\t");
+            if (children.Length > 0)
             {
-                sbuild.AppendLine(ChildrenToString(indent + "\t"));
+                sbuild.AppendLine(children);
             }
 
             sbuild.Append(indent);
             sbuild.Append("}");
 
             return sbuild.ToString();
-        }
-
-        public override byte[] ToBinary()
-        {
-            throw new NotImplementedException();
         }
     }
 }
