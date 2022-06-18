@@ -15,39 +15,6 @@ namespace DEvahebLib.Nodes
         {
             this.arguments = arguments ?? new List<Node>();
         }
-
-        public override string ToString(string indent)
-        {
-            var text = new StringBuilder();
-
-            text.Append($"{indent}camera ( ");
-            for (int i = 0; i < arguments.Count; i++)
-            {
-                if (i == 0)
-                {
-                    if (arguments[i] is FloatValue f)
-                    {
-                        text.Append(((CAMERA_COMMANDS)f.Float).ToString());
-                    }
-                    else if (arguments[i] is EnumValue e && e.ValueNodeType == typeof(FloatValue))
-                    {
-                        text.Append(((CAMERA_COMMANDS)((float)e.Value)).ToString());
-                    }
-                    else
-                    {
-                        text.Append(arguments[i].ToString());
-                    }
-                }
-                else
-                {
-                    text.Append(", ");
-                    text.Append(arguments[i].ToString());
-                }
-            }
-            text.Append($" )");
-
-            return text.ToString();
-        }
     }
 
     public class Tag : FunctionNode
@@ -75,22 +42,6 @@ namespace DEvahebLib.Nodes
             TagName = tagName;
             TagType = tagType;
         }
-
-        public override string ToString(string indent)
-        {
-            string type = TagType.ToString();
-
-            if (TagType is FloatValue f)
-            {
-                type = ((TagType)f.Float).ToString();
-            }
-            else if (TagType is EnumValue e && e.ValueNodeType == typeof(FloatValue))
-            {
-                type = ((TagType)((float)e.Value)).ToString();
-            }
-
-            return $"{indent}$tag( {TagName.ToString()}, {type})$";
-        }
     }
 
     public class Get : FunctionNode
@@ -117,22 +68,6 @@ namespace DEvahebLib.Nodes
             Type = type;
             VariableName = variableName;
         }
-
-        public override string ToString(string indent)
-        {
-            string type = Type.ToString();
-
-            if (Type is FloatValue f)
-            {
-                type = ((Enums.DECLARE_TYPE)((FloatValue)Type).Float).ToString();
-            }
-            else if (Type is EnumValue e && e.ValueNodeType == typeof(FloatValue))
-            {
-                type = ((Enums.DECLARE_TYPE)((float)e.Value)).ToString();
-            }
-
-            return $"{indent}$get( {type}, {VariableName.ToString()})$";
-        }
     }
 
     public class Random : FunctionNode
@@ -153,11 +88,6 @@ namespace DEvahebLib.Nodes
         {
             Min = min;
             Max = max;
-        }
-
-        public override string ToString(string indent)
-        {
-            return $"{indent}$random( {Min.ToString()}, {Max.ToString()} )$";
         }
     }
 
@@ -185,22 +115,6 @@ namespace DEvahebLib.Nodes
             Type = type;
             VariableName = variableName;
         }
-
-        public override string ToString(string indent)
-        {
-            string type = Type.ToString();
-
-            if (Type is FloatValue f)
-            {
-                type = ((Enums.DECLARE_TYPE)((FloatValue)Type).Float).ToString();
-            }
-            else if (Type is EnumValue e && e.ValueNodeType == typeof(FloatValue))
-            {
-                type = ((Enums.DECLARE_TYPE)((float)e.Value)).ToString();
-            }
-
-            return $"{indent}declare ( {type}, {VariableName.ToString()} )";
-        }
     }
 
     public class Sound : FunctionNode
@@ -227,23 +141,6 @@ namespace DEvahebLib.Nodes
         {
             Channel = channel;
             Filename = filename;
-        }
-
-        public override string ToString(string indent)
-        {
-            string type = Channel.ToString();
-
-            if (Channel is StringValue s)
-            {
-                type = System.Enum.Parse(typeof(CHANNELS), s.String).ToString();
-            }
-            else if (Channel is EnumValue e && e.ValueNodeType == typeof(StringValue))
-            {
-                type = System.Enum.Parse(typeof(CHANNELS), (string)e.Value).ToString();
-            }
-
-            // TODO this comes from IBI as string, not float
-            return $"{indent}sound ( {type}, {Filename.ToString()} )";
         }
     }
 }

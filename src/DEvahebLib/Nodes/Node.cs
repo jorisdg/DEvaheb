@@ -13,13 +13,6 @@ namespace DEvahebLib.Nodes
         public Node()
         {
         }
-
-        sealed public override string ToString()
-        {
-            return ToString(string.Empty);
-        }
-
-        public abstract string ToString(string indent);
     }
 
     public abstract class ValueNode : Node
@@ -29,6 +22,11 @@ namespace DEvahebLib.Nodes
         public ValueNode()
             : base()
         {
+        }
+
+        public override string ToString()
+        {
+            return $"{this.GetType().Name} : {(Value?.ToString())}";
         }
     }
 
@@ -59,25 +57,9 @@ namespace DEvahebLib.Nodes
             Name = name;
         }
 
-        public override string ToString(string indent)
+        public override string ToString()
         {
-            var text = new StringBuilder();
-
-            text.Append($"{indent}{Name} ( ");
-            bool first = true;
-            foreach(var arg in Arguments)
-            {
-                if (!first)
-                {
-                    text.Append(", ");
-                }
-                text.Append(arg.ToString());
-
-                first = false;
-            }
-            text.Append($" )");
-
-            return text.ToString();
+            return $"function {Name}()";
         }
     }
 
@@ -109,26 +91,9 @@ namespace DEvahebLib.Nodes
             SubNodes = childNodes ?? new List<Node>();
         }
 
-        protected string ChildrenToString(string indent)
+        public override string ToString()
         {
-            StringBuilder build = new StringBuilder();
-
-            for (int i = 0; i < SubNodes.Count; i++)
-            {
-                build.Append(SubNodes[i].ToString(indent));
-
-                if (!(SubNodes[i] is BlockNode))
-                {
-                    build.Append(";");
-                }
-
-                if (i < SubNodes.Count - 1)
-                {
-                    build.AppendLine("");
-                }
-            }
-
-            return build.ToString();
+            return $"block {Name}() {{ }}";
         }
     }
 }

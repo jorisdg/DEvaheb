@@ -22,11 +22,6 @@ namespace DEvahebLib.Nodes
             : base()
         {
         }
-
-        public override string ToString(string indent)
-        {
-            return indent + Char?.ToString() ?? "0";
-        }
     }
 
     public class StringValue : ValueNode
@@ -44,11 +39,6 @@ namespace DEvahebLib.Nodes
             : base()
         {
             String = value;
-        }
-
-        public override string ToString(string indent)
-        {
-            return indent + String != null ? $"\"{String.ToString()}\"" : "\"\"";
         }
     }
 
@@ -68,11 +58,6 @@ namespace DEvahebLib.Nodes
         {
             Integer = integer;
         }
-
-        public override string ToString(string indent)
-        {
-            return indent + Integer?.ToString() ?? "0";
-        }
     }
 
     public class FloatValue : ValueNode
@@ -91,11 +76,6 @@ namespace DEvahebLib.Nodes
         {
             Float = f;
         }
-
-        public override string ToString(string indent)
-        {
-            return indent + Float?.ToString("0.000") ?? "0.000";
-        }
     }
 
     public class IdentifierValue : StringValue
@@ -110,11 +90,6 @@ namespace DEvahebLib.Nodes
         public IdentifierValue(string identifierName)
             : base(value: identifierName)
         {
-        }
-
-        public override string ToString(string indent)
-        {
-            return indent + IdentifierName ?? "";
         }
     }
 
@@ -148,9 +123,9 @@ namespace DEvahebLib.Nodes
             Values = new Node[3] { x, y, z};
         }
 
-        public override string ToString(string indent)
+        public override string ToString()
         {
-            return indent + $"< {(Values[0] != null ? Values[0].ToString() : "0.000")} {(Values[1] != null ? Values[1].ToString() : "0.000")} {(Values[2] != null ? Values[2].ToString() : "0.000")} >";
+            return $"VectorValue : < {(Values[0] != null ? Values[0].ToString() : "0.000")} {(Values[1] != null ? Values[1].ToString() : "0.000")} {(Values[2] != null ? Values[2].ToString() : "0.000")} >";
         }
     }
 
@@ -169,29 +144,6 @@ namespace DEvahebLib.Nodes
             : base()
         {
             Operator = op;
-        }
-
-        public override string ToString(string indent)
-        {
-            string op = string.Empty;
-
-            switch (Operator)
-            {
-                case Operator.Gt:
-                    op = ">";
-                    break;
-                case Operator.Lt:
-                    op = "<";
-                    break;
-                case Operator.Eq:
-                    op = "=";
-                    break;
-                case Operator.Ne:
-                    op = "!";
-                    break;
-            }
-
-            return $"{indent}${op}$";
         }
     }
 
@@ -234,6 +186,7 @@ namespace DEvahebLib.Nodes
 
                 return text ?? valueNode.ToString();
             }
+            // TODO Set?
             //set
             //{
             //}
@@ -277,9 +230,9 @@ namespace DEvahebLib.Nodes
             this.valueNode = valueNode;
         }
 
-        public override string ToString(string indent)
+        public override string ToString()
         {
-            return valueNode.ToString(indent);
+            return $"EnumValue : {Text} =  {valueNode.ToString()}";
         }
 
         public static Node CreateOrPassThrough(Node enumNode, Type enumType)

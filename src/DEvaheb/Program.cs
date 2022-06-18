@@ -6,9 +6,6 @@ using DEvahebLib.Visitors;
 
 namespace ConsoleApp
 {
-    // TO TRY:
-    //   - if's $ signs for literals, are they necessary? does ibize compile without, and does the runtime work if so?
-
     internal class Program
     {
         static void Main(string[] args)
@@ -79,53 +76,21 @@ namespace ConsoleApp
                     }
                 }
 
-                var ibi = new DEvahebLib.IBIReader();
-
-                //ibi.Read(@"D:\temp\real_scripts\_brig\poormunro.IBI");
-                //ibi.Read(@"D:\Repos\DEvaheb JEDI_Academy_SDK\Tools\test.IBI");
-                //ibi.Read(@"D:\Repos\DEvaheb JEDI_Academy_SDK\Tools\JAscripts\scripts\academy1\intro.IBI");
-                //ibi.Read(@"D:\temp\barrel_costa_loopbck.IBI");
-                //var output = ibi.Read(@"D:\Repos\DEvaheb JEDI_Academy_SDK\Tools\EFScripts\PAK3\_holodeck_garden\boothby_workloop.IBI");
+                // "D:\temp\real_scripts\_brig\poormunro.IBI"
+                // "D:\Repos\DEvaheb JEDI_Academy_SDK\Tools\test.IBI"
+                // "D:\Repos\DEvaheb JEDI_Academy_SDK\Tools\JAscripts\scripts\academy1\intro.IBI"
+                // "D:\temp\barrel_costa_loopbck.IBI"
+                // "D:\Repos\DEvaheb JEDI_Academy_SDK\Tools\EFScripts\PAK3\_holodeck_garden\boothby_workloop.IBI"
 
                 var output = Read(sourceFile);
 
-                File.WriteAllText(targetFile, NodesToString(output));
+                File.WriteAllText(targetFile, GenerateSource(output));
 
                 if (!string.IsNullOrWhiteSpace(editor))
                 {
                     Process.Start(editor, $"\"{targetFile}\"");
                 }
-
-
-
-                File.WriteAllText(targetFile + ".visitor", GenerateSource(output));
-
-                if (!string.IsNullOrWhiteSpace(editor))
-                {
-                    Process.Start(editor, $"\"{targetFile + ".visitor"}\"");
-                }
             }
-        }
-
-        public static string NodesToString(List<Node> nodes)
-        {
-            StringBuilder output = new StringBuilder();
-
-            foreach (var node in nodes)
-            {
-                output.Append(node.ToString());
-
-                if (!(node is BlockNode))
-                {
-                    output.AppendLine(";");
-                }
-                else
-                {
-                    output.AppendLine();
-                }
-            }
-
-            return output.ToString();
         }
 
         public static string GenerateSource(List<Node> nodes, SourceCodeParity parity = SourceCodeParity.BehavED)

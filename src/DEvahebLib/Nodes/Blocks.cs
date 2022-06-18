@@ -45,42 +45,6 @@ namespace DEvahebLib.Nodes
                 return count;
             }
         }
-
-        public override string ToString(string indent)
-        {
-            StringBuilder sbuild = new StringBuilder();
-
-            sbuild.AppendLine();
-            sbuild.Append($"{indent}if ( ");
-
-            if (Expr1 is ValueNode)
-                sbuild.Append($"${Expr1.ToString()}$, ");
-            else
-                sbuild.Append($"{Expr1.ToString()}, ");
-
-            sbuild.Append(Operator.ToString());
-            sbuild.Append(", ");
-
-            if (Expr2 is ValueNode)
-                sbuild.Append($"${Expr2.ToString()}$");
-            else
-                sbuild.Append($"{Expr2.ToString()}");
-
-            sbuild.AppendLine(" )");
-            sbuild.Append(indent);
-            sbuild.AppendLine("{");
-
-            string children = ChildrenToString(indent + "\t");
-            if (children.Length > 0)
-            {
-                sbuild.AppendLine(children);
-            }
-
-            sbuild.Append(indent);
-            sbuild.AppendLine("}");
-
-            return sbuild.ToString();
-        }
     }
 
     public class Task : BlockNode
@@ -104,31 +68,6 @@ namespace DEvahebLib.Nodes
         {
             TaskName = name;
         }
-
-        public override string ToString(string indent)
-        {
-            StringBuilder sbuild = new StringBuilder();
-
-            sbuild.AppendLine();
-            sbuild.Append($"{indent}task ( ");
-
-            sbuild.Append(TaskName.ToString());
-
-            sbuild.AppendLine(" )");
-            sbuild.Append(indent);
-            sbuild.AppendLine("{");
-
-            string children = ChildrenToString(indent + "\t");
-            if (children.Length > 0)
-            {
-                sbuild.AppendLine(children);
-            }
-
-            sbuild.Append(indent);
-            sbuild.AppendLine("}");
-
-            return sbuild.ToString();
-        }
     }
 
     public class Affect : BlockNode
@@ -150,48 +89,9 @@ namespace DEvahebLib.Nodes
             EntityName = name;
             Type = type;
         }
-
-        public override string ToString(string indent)
-        {
-            StringBuilder sbuild = new StringBuilder();
-
-            sbuild.AppendLine();
-            sbuild.Append($"{indent}affect ( ");
-
-            sbuild.Append(EntityName.ToString());
-            sbuild.Append(", ");
-
-            string type = Type.ToString();
-
-            if (Type is FloatValue f)
-            {
-                type = ((Enums.AFFECT_TYPE)((FloatValue)Type).Float).ToString();
-            }
-            else if (Type is EnumValue e && e.ValueNodeType == typeof(FloatValue))
-            {
-                type = ((Enums.AFFECT_TYPE)((float)e.Value)).ToString();
-            }
-
-            sbuild.Append(type);
-
-            sbuild.AppendLine(" )");
-            sbuild.Append(indent);
-            sbuild.AppendLine("{");
-
-            string children = ChildrenToString(indent + "\t");
-            if (children.Length > 0)
-            {
-                sbuild.AppendLine(children);
-            }
-
-            sbuild.Append(indent);
-            sbuild.AppendLine("}");
-
-            return sbuild.ToString();
-        }
     }
 
-    public class Else : BlockNode // TODO newlines before and after?
+    public class Else : BlockNode
     {
         public override IEnumerable<Node> Arguments => new List<Node>();
 
@@ -199,29 +99,9 @@ namespace DEvahebLib.Nodes
             : base(name: "else")
         {
         }
-
-        public override string ToString(string indent)
-        {
-            StringBuilder sbuild = new StringBuilder($"{indent}else (  )");
-
-            sbuild.AppendLine();
-            sbuild.Append(indent);
-            sbuild.AppendLine("{");
-
-            string children = ChildrenToString(indent + "\t");
-            if (children.Length > 0)
-            {
-                sbuild.AppendLine(children);
-            }
-
-            sbuild.Append(indent);
-            sbuild.Append("}");
-
-            return sbuild.ToString();
-        }
     }
 
-    public class Loop : BlockNode // TODO newlines before and after?
+    public class Loop : BlockNode
     {
         public override IEnumerable<Node> Arguments => new List<Node>() { Count };
 
@@ -243,27 +123,6 @@ namespace DEvahebLib.Nodes
             : base(name: "loop")
         {
             Count = count;
-        }
-
-        public override string ToString(string indent)
-        {
-            StringBuilder sbuild = new StringBuilder();
-
-            sbuild.AppendLine();
-            sbuild.AppendLine($"{indent}loop ( {Count} )");
-            sbuild.Append(indent);
-            sbuild.AppendLine("{");
-
-            var children = ChildrenToString(indent + "\t");
-            if (children.Length > 0)
-            {
-                sbuild.AppendLine(children);
-            }
-
-            sbuild.Append(indent);
-            sbuild.AppendLine("}");
-
-            return sbuild.ToString();
         }
     }
 }
