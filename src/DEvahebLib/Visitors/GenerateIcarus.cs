@@ -102,7 +102,10 @@ namespace DEvahebLib.Visitors
                 {
                     if (Parity == SourceCodeParity.BehavED && (!(argumentStack.Peek().Item1 is Tag)))
                     {
-                        SourceCode.Append($"/*@{enumValue.EnumType.Name}*/ ");
+                        if (enumValue.EnumValueText != null)
+                        {
+                            SourceCode.Append($"/*@{enumValue.EnumType.Name}*/ ");
+                        }
                     }
 
                     SourceCode.Append(enumValue.Text);
@@ -127,7 +130,7 @@ namespace DEvahebLib.Visitors
         {
             SourceCode.Append(" (");
 
-            if (Parity == SourceCodeParity.BehavED && node is Else)
+            if (Parity == SourceCodeParity.BehavED && node.Arguments?.FirstOrDefault() == null)
             {
                 SourceCode.Append(" ");
             }
@@ -245,6 +248,11 @@ namespace DEvahebLib.Visitors
             else
             {
                 SourceCode.Append($"{node.Name} (");
+            }
+
+            if (Parity == SourceCodeParity.BehavED && node.Arguments?.FirstOrDefault() == null)
+            {
+                SourceCode.Append(" ");
             }
 
             base.VisitFunctionNode(node);

@@ -45,7 +45,7 @@ namespace DEvahebLib.Parser
         print = 29,
         use = 30,
         flush = 31,
-        runscript = 32,
+        run = 32,
         kill = 33,
         remove = 34,
         camera = 35,
@@ -142,7 +142,7 @@ namespace DEvahebLib.Parser
                     newNode = new Tag(tagName: ReadIBIBlock(reader, t), tagType: EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), enumType: typeof(TagType)));
                     break;
                 case IBIToken.get:
-                    newNode = new Get(type: EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(Enums.DECLARE_TYPE)), variableName: ReadIBIBlock(reader, t));
+                    newNode = new Get(type: EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(DECLARE_TYPE)), variableName: ReadIBIBlock(reader, t));
                     break;
                 case IBIToken.camera:
                     parms = new List<Node>();
@@ -163,10 +163,42 @@ namespace DEvahebLib.Parser
                     newNode = new Camera(parms);
                     break;
                 case IBIToken.declare:
-                    newNode = new Declare(type: EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(Enums.DECLARE_TYPE)), variableName: ReadIBIBlock(reader, t));
+                    newNode = new Declare(type: EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(DECLARE_TYPE)), variableName: ReadIBIBlock(reader, t));
                     break;
                 case IBIToken.sound:
-                    newNode = new Sound(channel: EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(Enums.CHANNELS)), filename: ReadIBIBlock(reader, t));
+                    newNode = new Sound(channel: EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(CHANNELS)), filename: ReadIBIBlock(reader, t));
+                    break;
+
+                case IBIToken.set:
+                    parms = new List<Node>();
+
+                    Node setNode = EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(SET_TYPES));
+                    parms.Add(setNode);
+
+                    for (int i = 1; i < size; i++)
+                    {
+                        setNode = ReadIBIBlock(reader, t);
+                        parms.Add(setNode);
+
+                        i += setNode.Size - 1;
+                    }
+                    newNode = new GenericFunction(t.ToString(), parms);
+                    break;
+
+                case IBIToken.play:
+                    parms = new List<Node>();
+
+                    Node playNode = EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(PLAY_TYPES));
+                    parms.Add(playNode);
+
+                    for (int i = 1; i < size; i++)
+                    {
+                        playNode = ReadIBIBlock(reader, t);
+                        parms.Add(playNode);
+
+                        i += playNode.Size - 1;
+                    }
+                    newNode = new GenericFunction(t.ToString(), parms);
                     break;
 
                 default:
@@ -177,7 +209,6 @@ namespace DEvahebLib.Parser
                         for (int i = 0; i < size; i++)
                         {
                             var node = ReadIBIBlock(reader, t);
-
                             parms.Add(node);
 
                             i += node.Size - 1;

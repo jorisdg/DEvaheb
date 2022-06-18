@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace DEvahebLib.Enums
 {
-    public enum SetType // TODO where is this used?
+    public enum PLAY_TYPES
     {
-        // TODO list of names for set?
+        PLAY_ROFF = 0
     }
 }

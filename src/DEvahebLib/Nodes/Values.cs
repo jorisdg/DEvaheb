@@ -173,6 +173,32 @@ namespace DEvahebLib.Nodes
         {
             get
             {
+                string text = EnumValueText;
+
+                if (text == null)
+                {
+                    if (valueNode is IdentifierValue ident)
+                    {
+                        text = ident.String;
+                    }
+                    else if (Value is String str)
+                    {
+                        text = $"\"{str}\"";
+                    }
+                }
+
+                return text ?? valueNode.ToString();
+            }
+            // TODO Set?
+            //set
+            //{
+            //}
+        }
+
+        public string EnumValueText
+        {
+            get
+            {
                 string text = null;
 
                 if (Value is Single s)
@@ -183,13 +209,17 @@ namespace DEvahebLib.Nodes
                 {
                     text = (from e in enumValues where e.Value == i select e.Key).FirstOrDefault();
                 }
+                else if (valueNode is IdentifierValue ident)
+                {
+                    text = (from e in enumValues where e.Key == ident.String select e.Key).FirstOrDefault();
+                }
+                else if (valueNode is StringValue str)
+                {
+                    text = (from e in enumValues where e.Key == str.String select $"\"{e.Key}\"").FirstOrDefault();
+                }
 
-                return text ?? valueNode.ToString();
+                return text;
             }
-            // TODO Set?
-            //set
-            //{
-            //}
         }
 
         public override int Size => valueNode.Size;
