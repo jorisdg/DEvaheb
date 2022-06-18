@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Compile
-        run: dotnet build
+        run: dotnet build src/
 
       - name: Run a multi-line script
         run: dotnet test
