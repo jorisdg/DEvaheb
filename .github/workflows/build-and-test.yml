@@ -28,4 +28,4 @@ jobs:
         run: dotnet build src/
 
       - name: Run a multi-line script
-        run: dotnet test
+        run: dotnet test src/
