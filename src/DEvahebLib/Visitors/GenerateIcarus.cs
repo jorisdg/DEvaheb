@@ -103,9 +103,10 @@ namespace DEvahebLib.Visitors
                     if (Parity == SourceCodeParity.BehavED &&
                         (!(argumentStack.Peek().Item1 is Tag) && !(argumentStack.Peek().Item1 is Get)))
                     {
-                        if (enumValue.EnumValueText != null)
+                        // TODO fix for set signatures "varname" versus SET_Types enum
+                        if (argumentStack.Peek().Item1.Name != "set" || enumValue.KnowsValue(enumValue.Value))
                         {
-                            SourceCode.Append($"/*@{enumValue.EnumType.Name}*/ ");
+                            SourceCode.Append($"/*@{enumValue.Name}*/ ");
                         }
                     }
 

@@ -147,15 +147,13 @@ namespace DEvahebLib.Nodes
         }
     }
 
-    public class EnumValue : ValueNode
+    public abstract class EnumValue : ValueNode
     {
-        ValueNode valueNode = null;
+        public abstract string Name { get; }
 
-        public Type ValueNodeType => valueNode.GetType();
+        protected ValueNode valueNode = null;
 
-        public Type EnumType { get; protected set; }
-
-        Dictionary<string, int> enumValues;
+        public override int Size => valueNode.Size;
 
         public override object Value
         {
@@ -169,100 +167,18 @@ namespace DEvahebLib.Nodes
             }
         }
 
-        public string Text
+        public abstract string Text { get; set; }
+
+        public EnumValue(ValueNode node)
         {
-            get
-            {
-                string text = EnumValueText;
-
-                if (text == null)
-                {
-                    if (valueNode is IdentifierValue ident)
-                    {
-                        text = ident.String;
-                    }
-                    else if (Value is String str)
-                    {
-                        text = $"\"{str}\"";
-                    }
-                }
-
-                return text ?? valueNode.ToString();
-            }
-            // TODO Set?
-            //set
-            //{
-            //}
+            valueNode = node;
         }
 
-        public string EnumValueText
-        {
-            get
-            {
-                string text = null;
-
-                if (Value is Single s)
-                {
-                    text = (from e in enumValues where e.Value == (int)s select e.Key).FirstOrDefault();
-                }
-                else if (Value is Int32 i)
-                {
-                    text = (from e in enumValues where e.Value == i select e.Key).FirstOrDefault();
-                }
-                else if (valueNode is IdentifierValue ident)
-                {
-                    text = (from e in enumValues where e.Key == ident.String select e.Key).FirstOrDefault();
-                }
-                else if (valueNode is StringValue str)
-                {
-                    text = (from e in enumValues where e.Key == str.String select $"\"{e.Key}\"").FirstOrDefault();
-                }
-
-                return text;
-            }
-        }
-
-        public override int Size => valueNode.Size;
-
-        public EnumValue(ValueNode valueNode, Type enumType)
-            : this(valueNode)
-        {
-            if (!enumType.IsEnum)
-                throw new Exception("EnumValue node has to be instantiated with an type that is an enumeration"); // TODO specific exception
-
-            EnumType = enumType;
-
-            enumValues = new Dictionary<string, int>();
-            var values = EnumType.GetEnumValues();
-            for (int i = 0; i < values.Length; i++)
-            {
-                var value = (int)values.GetValue(i);
-
-                enumValues.Add(EnumType.GetEnumName(value), value);
-            }
-        }
-
-        public EnumValue(ValueNode valueNode, Dictionary<string, int> enumValues)
-            : this(valueNode)
-        {
-            if (enumValues == null)
-                throw new Exception("Cannot instantiate EnumValue without a list of enumeration values"); // TODO specific exception
-
-            this.enumValues = enumValues;
-        }
-
-        private EnumValue(ValueNode valueNode)
-            : base()
-        {
-            if (valueNode == null)
-                throw new Exception("Cannot instantiate EnumValue without a ValueNode instance"); // TODO specific exception
-
-            this.valueNode = valueNode;
-        }
+        public abstract bool KnowsValue(object value);
 
         public override string ToString()
         {
-            return $"EnumValue : {Text} =  {valueNode.ToString()}";
+            return $"EnumValue : {Text} = {valueNode.ToString()}";
         }
 
         public static Node CreateOrPassThrough(Node enumNode, Type enumType)
@@ -272,9 +188,21 @@ namespace DEvahebLib.Nodes
 
             Node finalNode = null;
 
-            if (enumNode is ValueNode valueNode)
+            if (enumNode is FloatValue f)
             {
-                finalNode = new EnumValue(valueNode, enumType);
+                finalNode = new EnumFloatValue(f, EnumTableFloat.FromEnum(enumType));
+            }
+            else if (enumNode is IntegerValue i)
+            {
+                finalNode = new EnumIntValue(i, EnumTableInt.FromEnum(enumType));
+            }
+            else if (enumNode is IdentifierValue id) // this inherits from String so check ident first
+            {
+                finalNode = new EnumIdentifierValue(id, EnumTableString.FromEnum(enumType));
+            }
+            else if (enumNode is StringValue s)
+            {
+                finalNode = new EnumStringValue(s, EnumTableString.FromEnum(enumType));
             }
             else //if (enumNode is FunctionNode && !(enumNode is BlockNode))
             {
@@ -282,6 +210,240 @@ namespace DEvahebLib.Nodes
             }
 
             return finalNode;
+        }
+    }
+
+    public class EnumFloatValue : EnumValue
+    {
+        EnumTableFloat enumTable;
+
+        public override string Name => enumTable.EnumName;
+
+        public float Float
+        {
+            get
+            {
+                return (float)valueNode.Value;
+            }
+            set
+            {
+                valueNode.Value = value;
+            }
+        }
+
+        public override string Text
+        {
+            get
+            {
+                if (enumTable.HasValue(Float))
+                {
+                    return enumTable.GetEnum(Float);
+                }
+                else
+                {
+                    return Float.ToString("0.000");
+                }
+            }
+
+            set
+            {
+                if (enumTable.HasEnum(value))
+                {
+                    Float = enumTable.GetValue(value);
+                }
+                // TODO else?!?
+                else
+                {
+                    throw new Exception($"Unknown enum text {value}");
+                }
+            }
+        }
+
+        public EnumFloatValue(ValueNode valueNode, EnumTableFloat enumTableFloat)
+            : base(valueNode)
+        {
+            if (valueNode.Value.GetType() != typeof(float))
+                throw new Exception($"EnumFloatValue cannot use value node {valueNode.GetType().Name}");
+
+            enumTable = enumTableFloat;
+        }
+
+        public override bool KnowsValue(object value)
+        {
+            return enumTable.HasValue((float)value);
+        }
+    }
+
+    public class EnumIntValue : EnumValue
+    {
+        EnumTableInt enumTable;
+
+        public override string Name => enumTable.EnumName;
+
+        public Int32 Integer
+        {
+            get
+            {
+                return (Int32)valueNode.Value;
+            }
+            set
+            {
+                valueNode.Value = value;
+            }
+        }
+
+        public override string Text
+        {
+            get
+            {
+                if (enumTable.HasValue(Integer))
+                {
+                    return enumTable.GetEnum(Integer);
+                }
+                else
+                {
+                    return Integer.ToString();
+                }
+            }
+
+            set
+            {
+                if (enumTable.HasEnum(value))
+                {
+                    Integer = enumTable.GetValue(value);
+                }
+                // TODO else?!?
+                else
+                {
+                    throw new Exception($"Unknown enum text {value}");
+                }
+            }
+        }
+
+        public EnumIntValue(ValueNode valueNode, EnumTableInt enumTableInt)
+            : base(valueNode)
+        {
+            if (valueNode.Value.GetType() != typeof(Int32))
+                throw new Exception($"EnumIntValue cannot use value node {valueNode.GetType().Name}");
+
+            enumTable = enumTableInt;
+        }
+
+        public override bool KnowsValue(object value)
+        {
+            return enumTable.HasValue((Int32)value);
+        }
+    }
+
+    public class EnumStringValue : EnumValue
+    {
+        protected EnumTableString enumTable;
+
+        public override string Name => enumTable.EnumName;
+
+        public string String
+        {
+            get
+            {
+                return (string)valueNode.Value;
+            }
+            set
+            {
+                valueNode.Value = value;
+            }
+        }
+
+        public override string Text
+        {
+            get
+            {
+                if (enumTable.HasValue(String))
+                {
+                    return $"\"{enumTable.GetEnum(String)}\"";
+                }
+                else
+                {
+                    return $"\"{String}\"";
+                }
+            }
+
+            set
+            {
+                if (enumTable.HasEnum(value))
+                {
+                    // TODO strip quotes?
+                    String = enumTable.GetValue(value);
+                }
+                // TODO else?!?
+                else
+                {
+                    // TODO could assign String = value ?
+                    throw new Exception($"Unknown enum text {value}");
+                }
+            }
+        }
+
+        public EnumStringValue(ValueNode valueNode, EnumTableString enumTableString)
+            : base(valueNode)
+        {
+            if (valueNode.Value.GetType() != typeof(string))
+                throw new Exception($"{this.GetType().Name} cannot use value node {valueNode.GetType().Name}");
+
+            enumTable = enumTableString;
+        }
+
+        public override bool KnowsValue(object value)
+        {
+            return enumTable.HasValue((string)value);
+        }
+    }
+
+    public class EnumIdentifierValue : EnumStringValue
+    {
+        public override string Text
+        {
+            get
+            {
+                if (enumTable.HasValue(String))
+                {
+                    return enumTable.GetEnum(String);
+                }
+                else
+                {
+                    return String;
+                }
+            }
+
+            set
+            {
+                if (enumTable.HasEnum(value))
+                {
+                    String = enumTable.GetValue(value);
+                }
+                // TODO else?!?
+                else
+                {
+                    // TODO could assign String = value ?
+                    throw new Exception($"Unknown enum text {value}");
+                }
+            }
+        }
+
+        public string IdentifierName
+        {
+            get
+            {
+                return (string)valueNode.Value;
+            }
+            set
+            {
+                valueNode.Value = value;
+            }
+        }
+
+        public EnumIdentifierValue(ValueNode valueNode, EnumTableString enumTableString)
+            : base(valueNode, enumTableString)
+        {
         }
     }
 }
