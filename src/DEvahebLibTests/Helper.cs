@@ -101,5 +101,16 @@ namespace DEvahebLibTests
 
             //return differences.ToString();
         }
+
+        public static void GenerateSourceFromIBIAndCompareOriginal(string filenameBase)
+        {
+            var ibiFile = filenameBase + ".IBI";
+            var originalSourceFile = filenameBase + ".txt";
+            var outputFile = filenameBase + ".test";
+
+            Helper.GenerateSourceFromIBI(ibiFile, outputFile);
+
+            Helper.GetSourceFilesDifferences(originalSourceFile, outputFile);
+        }
     }
 }

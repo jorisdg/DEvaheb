@@ -100,7 +100,8 @@ namespace DEvahebLib.Visitors
                 }
                 else if (node is EnumValue enumValue)
                 {
-                    if (Parity == SourceCodeParity.BehavED && (!(argumentStack.Peek().Item1 is Tag)))
+                    if (Parity == SourceCodeParity.BehavED &&
+                        (!(argumentStack.Peek().Item1 is Tag) && !(argumentStack.Peek().Item1 is Get)))
                     {
                         if (enumValue.EnumValueText != null)
                         {
@@ -241,7 +242,8 @@ namespace DEvahebLib.Visitors
 
         public override void VisitFunctionNode(FunctionNode node)
         {
-            if (Parity == SourceCodeParity.BehavED && (node is Tag || node is Nodes.Random))
+            if (Parity == SourceCodeParity.BehavED &&
+                (node is Tag || node is Get || node is Nodes.Random))
             {
                 SourceCode.Append($"{node.Name}(");
             }
