@@ -16,7 +16,7 @@ In 2022, a Google search related to myself revealed a search result containing "
 ## DEvaheb 2.0
 With an education and 20+ years as an IT professional under my belt, I dare say my programming skills have somewhat improved. As Scott Hanselman would say: "I'm the world's okayest programmer". Kind of a 3.6: not great, not terrible.
 
-I wrote this code in .NET 6.0 and you can find the source under[src](src/). This it's .NET6 it can be compiled for other platforms, although *for MacOS it would have to deal with endianness* which it currently doesn't do.
+I wrote this code in .NET 6.0 and you can find the source under [src](src/). This it's .NET6 it can be compiled for other platforms, although *for MacOS it would have to deal with endianness* which it currently doesn't do.
 
 ## Node Structure Approach
 Although I've professionally worked on teams owning compilers, I'm not a compiler expert by a long shot. However, I do know the value of representing code in an intermediate tree. I wouldn't call this implementation a proper AST or any of the sorts, but it does its job.
