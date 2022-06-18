@@ -140,7 +140,7 @@ namespace DEvahebLib.Nodes
         public Node Type { get; set; }
 
         public Affect()
-            : this(new StringValue("DEFAULT"), new FloatValue((float)AffectType.INSERT))
+            : this(new StringValue("DEFAULT"), new FloatValue((float)AFFECT_TYPE.INSERT))
         {
         }
 
@@ -160,7 +160,19 @@ namespace DEvahebLib.Nodes
 
             sbuild.Append(EntityName.ToString());
             sbuild.Append(", ");
-            sbuild.Append(Type.ToString());
+
+            string type = Type.ToString();
+
+            if (Type is FloatValue f)
+            {
+                type = ((Enums.AFFECT_TYPE)((FloatValue)Type).Float).ToString();
+            }
+            else if (Type is EnumValue e && e.ValueNodeType == typeof(FloatValue))
+            {
+                type = ((Enums.AFFECT_TYPE)((float)e.Value)).ToString();
+            }
+
+            sbuild.Append(type);
 
             sbuild.AppendLine(" )");
             sbuild.Append(indent);
@@ -215,7 +227,7 @@ namespace DEvahebLib.Nodes
 
         public Node Count { get; set; }
 
-        public AffectType Type { get; set; }
+        public AFFECT_TYPE Type { get; set; }
 
         public Loop()
             : this(10)
@@ -235,9 +247,10 @@ namespace DEvahebLib.Nodes
 
         public override string ToString(string indent)
         {
-            StringBuilder sbuild = new StringBuilder($"{indent}loop ( {Count} )");
+            StringBuilder sbuild = new StringBuilder();
 
             sbuild.AppendLine();
+            sbuild.AppendLine($"{indent}loop ( {Count} )");
             sbuild.Append(indent);
             sbuild.AppendLine("{");
 
@@ -248,7 +261,7 @@ namespace DEvahebLib.Nodes
             }
 
             sbuild.Append(indent);
-            sbuild.Append("}");
+            sbuild.AppendLine("}");
 
             return sbuild.ToString();
         }

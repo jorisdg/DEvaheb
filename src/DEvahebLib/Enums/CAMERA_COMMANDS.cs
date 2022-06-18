@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DEvahebLib.Enums
 {
-    public enum CameraType
+    public enum CAMERA_COMMANDS
     {
         PAN = 57,
         ZOOM = 58,

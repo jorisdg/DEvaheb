@@ -24,7 +24,7 @@ namespace DEvahebLib.Nodes
 
     public abstract class ValueNode : Node
     {
-        public object Value { get; set; } = null;
+        public virtual object Value { get; set; } = null;
 
         public ValueNode()
             : base()

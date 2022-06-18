@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DEvahebLib.Enums
 { 
-	public enum SoundChannel
+	public enum CHANNELS
 	{
 		CHAN_AUTO,
 		CHAN_LOCAL,

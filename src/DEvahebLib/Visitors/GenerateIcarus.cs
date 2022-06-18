@@ -77,6 +77,13 @@ namespace DEvahebLib.Visitors
 
                     SourceCode.Append(integerValue.Integer.ToString());
                 }
+                else if (node is IdentifierValue identifierValue)
+                {
+                    if (string.IsNullOrWhiteSpace(identifierValue.String))
+                        throw new MissingArgumentException("String is missing a value");
+
+                    SourceCode.Append(identifierValue.String);
+                }
                 else if (node is StringValue stringValue)
                 {
                     if (stringValue.String == null)
@@ -90,6 +97,15 @@ namespace DEvahebLib.Visitors
                         throw new MissingArgumentException("Char is missing a value");
 
                     SourceCode.Append(charValue.Char);
+                }
+                else if (node is EnumValue enumValue)
+                {
+                    if (Parity == SourceCodeParity.BehavED && (!(argumentStack.Peek().Item1 is Tag)))
+                    {
+                        SourceCode.Append($"/*@{enumValue.EnumType.Name}*/ ");
+                    }
+
+                    SourceCode.Append(enumValue.Text);
                 }
             }
         }
@@ -222,11 +238,18 @@ namespace DEvahebLib.Visitors
 
         public override void VisitFunctionNode(FunctionNode node)
         {
-            SourceCode.Append($"{node.Name} (");
+            if (Parity == SourceCodeParity.BehavED && (node is Tag || node is Nodes.Random))
+            {
+                SourceCode.Append($"{node.Name}(");
+            }
+            else
+            {
+                SourceCode.Append($"{node.Name} (");
+            }
 
             base.VisitFunctionNode(node);
 
-            if (Parity == SourceCodeParity.BehavED && node is Get)
+            if (Parity == SourceCodeParity.BehavED && (node is Get || node is Tag))
             {
                 SourceCode.Append(")");
             }
@@ -235,7 +258,7 @@ namespace DEvahebLib.Visitors
                 SourceCode.Append(" )");
             }
 
-            if (blockStack.Count == 0) // root level, inside blocks is handled by visitblocknodes
+            if (blockStack.Count == 0 && argumentStack.Count == 0) // root level, inside blocks is handled by visitblocknodes
             {
                 SourceCode.AppendLine(";");
             }

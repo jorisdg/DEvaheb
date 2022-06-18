@@ -98,19 +98,23 @@ namespace DEvahebLib.Nodes
         }
     }
 
-    // TODO: identifier
-    public class IdentifierValue : FloatValue
+    public class IdentifierValue : StringValue
     {
-        public string? IdentifierName { get { return ((float?)Value)?.ToString(); } set { Value = 0; } }
+        public string IdentifierName { get { return (string)Value; } set { Value = value; } }
 
         public IdentifierValue()
-            : base()
+            : this("")
+        {
+        }
+
+        public IdentifierValue(string identifierName)
+            : base(value: identifierName)
         {
         }
 
         public override string ToString(string indent)
         {
-            return indent + IdentifierName?.ToString() ?? "";
+            return indent + IdentifierName ?? "";
         }
     }
 
@@ -188,6 +192,113 @@ namespace DEvahebLib.Nodes
             }
 
             return $"{indent}${op}$";
+        }
+    }
+
+    public class EnumValue : ValueNode
+    {
+        ValueNode valueNode = null;
+
+        public Type ValueNodeType => valueNode.GetType();
+
+        public Type EnumType { get; protected set; }
+
+        Dictionary<string, int> enumValues;
+
+        public override object Value
+        {
+            get
+            {
+                return valueNode.Value;
+            }
+            set
+            {
+                valueNode.Value = value;
+            }
+        }
+
+        public string Text
+        {
+            get
+            {
+                string text = null;
+
+                if (Value is Single s)
+                {
+                    text = (from e in enumValues where e.Value == (int)s select e.Key).FirstOrDefault();
+                }
+                else if (Value is Int32 i)
+                {
+                    text = (from e in enumValues where e.Value == i select e.Key).FirstOrDefault();
+                }
+
+                return text ?? valueNode.ToString();
+            }
+            //set
+            //{
+            //}
+        }
+
+        public override int Size => valueNode.Size;
+
+        public EnumValue(ValueNode valueNode, Type enumType)
+            : this(valueNode)
+        {
+            if (!enumType.IsEnum)
+                throw new Exception("EnumValue node has to be instantiated with an type that is an enumeration"); // TODO specific exception
+
+            EnumType = enumType;
+
+            enumValues = new Dictionary<string, int>();
+            var values = EnumType.GetEnumValues();
+            for (int i = 0; i < values.Length; i++)
+            {
+                var value = (int)values.GetValue(i);
+
+                enumValues.Add(EnumType.GetEnumName(value), value);
+            }
+        }
+
+        public EnumValue(ValueNode valueNode, Dictionary<string, int> enumValues)
+            : this(valueNode)
+        {
+            if (enumValues == null)
+                throw new Exception("Cannot instantiate EnumValue without a list of enumeration values"); // TODO specific exception
+
+            this.enumValues = enumValues;
+        }
+
+        private EnumValue(ValueNode valueNode)
+            : base()
+        {
+            if (valueNode == null)
+                throw new Exception("Cannot instantiate EnumValue without a ValueNode instance"); // TODO specific exception
+
+            this.valueNode = valueNode;
+        }
+
+        public override string ToString(string indent)
+        {
+            return valueNode.ToString(indent);
+        }
+
+        public static Node CreateOrPassThrough(Node enumNode, Type enumType)
+        {
+            if (!enumType.IsEnum)
+                throw new Exception("EnumValue node has to be instantiated with an type that is an enumeration"); // TODO specific exception
+
+            Node finalNode = null;
+
+            if (enumNode is ValueNode valueNode)
+            {
+                finalNode = new EnumValue(valueNode, enumType);
+            }
+            else //if (enumNode is FunctionNode && !(enumNode is BlockNode))
+            {
+                finalNode = enumNode;
+            }
+
+            return finalNode;
         }
     }
 }

@@ -6,9 +6,14 @@ using System.Threading.Tasks;
 
 namespace DEvahebLib.Enums
 {
-    public enum AffectType
+    public enum DECLARE_TYPE
     {
-        INSERT = 55,
-        FLUSH = 56
+        CHAR = 3,
+        STRING = 4,
+        INT = 5,
+        FLOAT = 6,
+        IDENTIFIER = 7,
+
+        VECTOR = 14
     }
 }

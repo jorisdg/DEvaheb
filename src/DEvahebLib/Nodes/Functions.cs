@@ -27,7 +27,11 @@ namespace DEvahebLib.Nodes
                 {
                     if (arguments[i] is FloatValue f)
                     {
-                        text.Append(((CameraType)f.Float).ToString());
+                        text.Append(((CAMERA_COMMANDS)f.Float).ToString());
+                    }
+                    else if (arguments[i] is EnumValue e && e.ValueNodeType == typeof(FloatValue))
+                    {
+                        text.Append(((CAMERA_COMMANDS)((float)e.Value)).ToString());
                     }
                     else
                     {
@@ -74,7 +78,18 @@ namespace DEvahebLib.Nodes
 
         public override string ToString(string indent)
         {
-            return $"{indent}$tag( {TagName.ToString()}, {(TagType is FloatValue ? (TagType)((FloatValue)TagType).Float : TagType.ToString())})$";
+            string type = TagType.ToString();
+
+            if (TagType is FloatValue f)
+            {
+                type = ((TagType)f.Float).ToString();
+            }
+            else if (TagType is EnumValue e && e.ValueNodeType == typeof(FloatValue))
+            {
+                type = ((TagType)((float)e.Value)).ToString();
+            }
+
+            return $"{indent}$tag( {TagName.ToString()}, {type})$";
         }
     }
 
@@ -87,11 +102,11 @@ namespace DEvahebLib.Nodes
         public Node VariableName { get; set; }
 
         public Get()
-            : this(Enums.Type.FLOAT, new StringValue(""))
+            : this(Enums.DECLARE_TYPE.FLOAT, new StringValue(""))
         {
         }
 
-        public Get(Type type, Node nameExpression)
+        public Get(DECLARE_TYPE type, Node nameExpression)
             : this(new FloatValue((int)type), nameExpression)
         {
         }
@@ -105,7 +120,18 @@ namespace DEvahebLib.Nodes
 
         public override string ToString(string indent)
         {
-            return $"{indent}$get( {(Type is FloatValue ? (Enums.Type)((FloatValue)Type).Float : Type.ToString())}, {VariableName.ToString()})$";
+            string type = Type.ToString();
+
+            if (Type is FloatValue f)
+            {
+                type = ((Enums.DECLARE_TYPE)((FloatValue)Type).Float).ToString();
+            }
+            else if (Type is EnumValue e && e.ValueNodeType == typeof(FloatValue))
+            {
+                type = ((Enums.DECLARE_TYPE)((float)e.Value)).ToString();
+            }
+
+            return $"{indent}$get( {type}, {VariableName.ToString()})$";
         }
     }
 
@@ -144,11 +170,11 @@ namespace DEvahebLib.Nodes
         public Node VariableName { get; set; }
 
         public Declare()
-            : this(Enums.Type.FLOAT, new StringValue(""))
+            : this(Enums.DECLARE_TYPE.FLOAT, new StringValue(""))
         {
         }
 
-        public Declare(Enums.Type type, Node nameExpression)
+        public Declare(Enums.DECLARE_TYPE type, Node nameExpression)
             : this(new FloatValue((int)type), nameExpression)
         {
         }
@@ -162,7 +188,18 @@ namespace DEvahebLib.Nodes
 
         public override string ToString(string indent)
         {
-            return $"{indent}declare ( {(Type is FloatValue ? (Enums.Type)((FloatValue)Type).Float : VariableName.ToString())}, {VariableName.ToString()} )";
+            string type = Type.ToString();
+
+            if (Type is FloatValue f)
+            {
+                type = ((Enums.DECLARE_TYPE)((FloatValue)Type).Float).ToString();
+            }
+            else if (Type is EnumValue e && e.ValueNodeType == typeof(FloatValue))
+            {
+                type = ((Enums.DECLARE_TYPE)((float)e.Value)).ToString();
+            }
+
+            return $"{indent}declare ( {type}, {VariableName.ToString()} )";
         }
     }
 
@@ -175,11 +212,11 @@ namespace DEvahebLib.Nodes
         public Node Filename { get; set; }
 
         public Sound()
-            : this(SoundChannel.CHAN_AUTO, new StringValue(""))
+            : this(CHANNELS.CHAN_AUTO, new StringValue(""))
         {
         }
 
-        public Sound(SoundChannel channel, Node filename)
+        public Sound(CHANNELS channel, Node filename)
             : this(new FloatValue((int)channel), filename)
         {
 
@@ -194,8 +231,19 @@ namespace DEvahebLib.Nodes
 
         public override string ToString(string indent)
         {
+            string type = Channel.ToString();
+
+            if (Channel is StringValue s)
+            {
+                type = System.Enum.Parse(typeof(CHANNELS), s.String).ToString();
+            }
+            else if (Channel is EnumValue e && e.ValueNodeType == typeof(StringValue))
+            {
+                type = System.Enum.Parse(typeof(CHANNELS), (string)e.Value).ToString();
+            }
+
             // TODO this comes from IBI as string, not float
-            return $"{indent}sound ( {(Channel is FloatValue ? (SoundChannel)((FloatValue)Channel).Float : Channel.ToString())}, {Filename.ToString()} )";
+            return $"{indent}sound ( {type}, {Filename.ToString()} )";
         }
     }
 }

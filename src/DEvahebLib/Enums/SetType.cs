@@ -8,7 +8,6 @@ namespace DEvahebLib.Enums
 {
     public enum SetType // TODO where is this used?
     {
-        ANGLES = 53,
-        ORIGIN = 54
+        // TODO list of names for set?
     }
 }
