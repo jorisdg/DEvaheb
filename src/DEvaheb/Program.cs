@@ -19,16 +19,16 @@ namespace ConsoleApp
                 Console.WriteLine("***                                                ***");
                 Console.WriteLine("******************************************************");
                 Console.WriteLine();
-                Console.WriteLine("DEvaheb v2.0 *ALPHA*");
+                Console.WriteLine("DEvaheb ALPHAv2.0");
                 Console.WriteLine();
 
                 Console.WriteLine("DEvaheb.exe \"path_to_compiled_icarus\" [-output \"path_for_new_source_file\"] [-open \"path_to_editor_to_open\"]");
                 Console.WriteLine();
                 Console.WriteLine("if output file path is ommitted, IBI file name and path are reused, but with extension .icarus");
-                Console.WriteLine("if option third parameter is specified, the generated source file is opened");
+                Console.WriteLine("if optional third parameter is specified, the generated source file is opened");
 
                 Console.WriteLine();
-                Console.WriteLine("Example: DEvaheb.exe \"C:\\Temp\\real_scripts\\intro.IBI\" -open \"notepad\"");
+                Console.WriteLine("Example: DEvaheb.exe \"C:\\Temp\\real_scripts\\intro.IBI\" -open \"C:\\Tools\\JEDI_Academy_SDK\\BehavEd.exe\"");
                 Console.WriteLine();
             }
             else
