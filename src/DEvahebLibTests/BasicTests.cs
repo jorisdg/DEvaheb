@@ -21,7 +21,7 @@ namespace DEvahebLibTests
         [DataRow(@"BasicTests\remove")]
         [DataRow(@"BasicTests\rotate")]
         [DataRow(@"BasicTests\run")]
-        [DataRow(@"BasicTests\set")] // Need enum definition files, especially for SET_TYPES
+        [DataRow(@"BasicTests\set")] // Need function signature definitions as well as enum definition files, especially for SET_TYPES
         [DataRow(@"BasicTests\signal")]
         [DataRow(@"BasicTests\sound")]
         [DataRow(@"BasicTests\tag")]
