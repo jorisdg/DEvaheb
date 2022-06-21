@@ -29,7 +29,7 @@ jobs:
         run: dotnet build src/
 
       - name: Run Tests
-        run: dotnet test src/ --verbosity normal --logger trx --results-directory "TestResults"
+        run: dotnet test src/ --verbosity normal --logger trx --results-directory "TestResults" --filter "!(TestCategory=LocalTest)"
 
       - name: Upload dotnet test results
         uses: actions/upload-artifact@v3
