@@ -123,7 +123,9 @@ namespace ConsoleApp
                 // "D:\Repos\DEvaheb JEDI_Academy_SDK\Tools\EFScripts\PAK3\_holodeck_garden\boothby_workloop.IBI"
                 var output = Read(sourceFile);
 
-                File.WriteAllText(targetFile, GenerateSource(output));
+                var vars = DEvahebLib.Variables.FromCsv("variable_types.csv");
+
+                File.WriteAllText(targetFile, GenerateSource(vars, output));
 
                 if (!string.IsNullOrWhiteSpace(editor))
                 {
@@ -132,9 +134,9 @@ namespace ConsoleApp
             }
         }
 
-        public static string GenerateSource(List<Node> nodes, SourceCodeParity parity = SourceCodeParity.BehavED)
+        public static string GenerateSource(DEvahebLib.Variables variables, List<Node> nodes, SourceCodeParity parity = SourceCodeParity.BehavED)
         {
-            var icarusText = new GenerateIcarus() { Parity = parity };
+            var icarusText = new GenerateIcarus(variables) { Parity = parity };
             icarusText.Visit(nodes);
 
             StringBuilder sb = new StringBuilder();

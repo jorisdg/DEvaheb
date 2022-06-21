@@ -170,19 +170,20 @@ namespace DEvahebLib.Parser
                     break;
 
                 case IBIToken.set:
-                    parms = new List<Node>();
+                    //parms = new List<Node>();
 
-                    Node setNode = EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(SET_TYPES));
-                    parms.Add(setNode);
+                    //Node setNode = EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(SET_TYPES));
+                    //parms.Add(setNode);
 
-                    for (int i = 1; i < size; i++)
-                    {
-                        setNode = ReadIBIBlock(reader, t);
-                        parms.Add(setNode);
+                    //for (int i = 1; i < size; i++)
+                    //{
+                    //    setNode = ReadIBIBlock(reader, t);
+                    //    parms.Add(setNode);
 
-                        i += setNode.Size - 1;
-                    }
-                    newNode = new GenericFunction(t.ToString(), parms);
+                    //    i += setNode.Size - 1;
+                    //}
+                    //newNode = new GenericFunction(t.ToString(), parms);
+                    newNode = new Set(ReadIBIBlock(reader, t), ReadIBIBlock(reader, t));
                     break;
 
                 case IBIToken.play:

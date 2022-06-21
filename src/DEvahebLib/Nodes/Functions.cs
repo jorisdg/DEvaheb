@@ -57,6 +57,22 @@ namespace DEvahebLib.Nodes
         }
     }
 
+    public class Set : FunctionNode
+    {
+        public override IEnumerable<Node> Arguments => new List<Node>() { VariableName, Value };
+
+        public Node Value { get; set; }
+
+        public Node VariableName { get; set; }
+
+        public Set(Node nameExpression, Node valueExpression)
+            : base(name: "set")
+        {
+            VariableName = nameExpression;
+            Value = valueExpression;
+        }
+    }
+
     public class Random : FunctionNode
     {
         public override IEnumerable<Node> Arguments => new List<Node>() { Min, Max };

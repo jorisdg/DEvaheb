@@ -1,4 +1,5 @@
 using System.IO;
+using DEvahebLib;
 using DEvahebLib.Visitors;
 
 namespace DEvahebLibTests
@@ -6,6 +7,17 @@ namespace DEvahebLibTests
     [TestClass]
     public class BasicTests
     {
+        public static Variables variables = null;
+
+        [AssemblyInitialize]
+        public static void Initialize(TestContext testContext)
+        {
+            if (variables == null)
+            {
+                variables = Variables.FromCsv("variable_types.csv");
+            }
+        }
+
         [TestMethod]
         [DataRow(@"BasicTests\camera")] // Need function signature definitions... IBI float is INT text
         [DataRow(@"BasicTests\declare")]
@@ -30,7 +42,7 @@ namespace DEvahebLibTests
         [DataRow(@"BasicTests\waitsignal")]
         public void TestFunctions(string filenameBase)
         {
-            Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase);
+            Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables: variables);
         }
 
 
@@ -42,7 +54,7 @@ namespace DEvahebLibTests
         [DataRow(@"BasicTests\task")]
         public void TestBlocks(string filenameBase)
         {
-            Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase);
+            Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables: variables);
         }
     }
 }

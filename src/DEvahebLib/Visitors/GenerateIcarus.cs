@@ -16,6 +16,8 @@ namespace DEvahebLib.Visitors
 
     public class GenerateIcarus : StackVisitorBase
     {
+        public Variables Variables { get; protected set; }
+
         public SourceCodeParity Parity { get; set; } = SourceCodeParity.BehavED;
 
         public string Indentation { get; set; } = "\t";
@@ -23,6 +25,17 @@ namespace DEvahebLib.Visitors
         public StringBuilder SourceCode { get; protected set; } = new StringBuilder();
 
         protected string indent = String.Empty;
+
+        public GenerateIcarus()
+            : this(variables: null)
+        {
+        }
+
+        public GenerateIcarus(Variables variables)
+            : base()
+        {
+            Variables = variables;
+        }
 
         public override void Visit(Node node)
         {
@@ -44,6 +57,35 @@ namespace DEvahebLib.Visitors
 
         public override void VisitValueNode(ValueNode node)
         {
+            if (Parity == SourceCodeParity.BehavED)
+            {
+                // For the set function with a string variable name, put in type comments for BehavED
+                if (argumentStack.Peek().Item1 is Set set && set.VariableName is StringValue variableName)
+                {
+                    // if we're handling the second argument of the set function
+                    if (node == set.Value)
+                    {
+                        if (Variables.Exists(variableName.String))
+                        {
+                            var typeName = Variables.GetVariableType(variableName.String);
+
+                            if (typeName.StartsWith("\"") && typeName.EndsWith("\""))
+                            {
+                                SourceCode.Append($"/*@{typeName.Substring(1, typeName.Length - 2)}*/ ");
+                            }
+                        }
+                    }
+                    // if we're handling the first argument of the set function
+                    else if (node == set.VariableName)
+                    {
+                        if (Variables.Exists(variableName.String))
+                        {
+                            SourceCode.Append($"/*@SET_TYPES*/ ");
+                        }
+                    }
+                }
+            }
+
             if (node is VectorValue vectorValue)
             {
                 if (vectorValue.Values[0] == null)
@@ -100,11 +142,27 @@ namespace DEvahebLib.Visitors
                 }
                 else if (node is EnumValue enumValue)
                 {
-                    if (Parity == SourceCodeParity.BehavED &&
-                        (!(argumentStack.Peek().Item1 is Tag) && !(argumentStack.Peek().Item1 is Get)))
+                    if (Parity == SourceCodeParity.BehavED)
                     {
-                        // TODO fix for set signatures "varname" versus SET_Types enum
-                        if (argumentStack.Peek().Item1.Name != "set" || enumValue.KnowsValue(enumValue.Value))
+                        string enumName = string.Empty;
+
+                        if (argumentStack.Peek().Item1 is FunctionNode function)
+                        {
+                            string typeName = string.Empty;
+
+                            if (function is Get get && get.VariableName is StringValue getVariable)
+                            {
+                                typeName = Variables.GetVariableType(getVariable.String);
+                            }
+                            
+                            // only care if its an enum type (which is in quotes)
+                            if (typeName.StartsWith("\"") && typeName.EndsWith("\""))
+                            {
+                                enumName = typeName.Substring(1, typeName.Length - 2);
+                            }
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(enumName))
                         {
                             SourceCode.Append($"/*@{enumValue.Name}*/ ");
                         }
