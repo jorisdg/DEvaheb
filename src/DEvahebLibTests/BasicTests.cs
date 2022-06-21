@@ -10,7 +10,7 @@ namespace DEvahebLibTests
         [DataRow(@"BasicTests\camera")] // Need function signature definitions... IBI float is INT text
         [DataRow(@"BasicTests\declare")]
         [DataRow(@"BasicTests\do")]
-        [DataRow(@"BasicTests\dowait")] // TODO aliases Visitor
+        //[DataRow(@"BasicTests\dowait")] // TODO aliases Visitor
         [DataRow(@"BasicTests\flush")]
         [DataRow(@"BasicTests\free")]
         [DataRow(@"BasicTests\get")]
