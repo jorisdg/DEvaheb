@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using DEvahebLib.Enums;
 
@@ -123,6 +124,15 @@ namespace DEvahebLib.Nodes
             : base(name: "loop")
         {
             Count = count;
+
+            if (Count is FloatValue floatValue)
+            {
+                Count = new IntegerValue((Int32)floatValue.Float);
+            }
+            if (!(Count is IntegerValue) && !(Count is FunctionNode))
+            {
+                throw new Exception("Loop argument is not Int or Function");
+            }
         }
     }
 }
