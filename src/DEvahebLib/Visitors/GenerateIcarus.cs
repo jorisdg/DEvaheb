@@ -144,27 +144,28 @@ namespace DEvahebLib.Visitors
                 {
                     if (Parity == SourceCodeParity.BehavED)
                     {
-                        string enumName = string.Empty;
-
-                        if (argumentStack.Peek().Item1 is FunctionNode function)
+                        // skip types for second argument of tag (tag type) and first argument of get (declare type)
+                        if (!(argumentStack.Peek().Item1 is Tag skipTag && node == skipTag.TagType)
+                            && !(argumentStack.Peek().Item1 is Get skipGet && node == skipGet.Type))
                         {
-                            string typeName = string.Empty;
+                            string enumName = enumValue.Name;
 
-                            if (function is Get get && get.VariableName is StringValue getVariable)
+                            if (string.IsNullOrEmpty(enumName) && argumentStack.Peek().Item1 is Get get
+                                && node == get.VariableName && get.VariableName is StringValue getVariable)
                             {
-                                typeName = Variables.GetVariableType(getVariable.String);
-                            }
-                            
-                            // only care if its an enum type (which is in quotes)
-                            if (typeName.StartsWith("\"") && typeName.EndsWith("\""))
-                            {
-                                enumName = typeName.Substring(1, typeName.Length - 2);
-                            }
-                        }
+                                var typeName = Variables.GetVariableType(getVariable.String);
 
-                        if (!string.IsNullOrWhiteSpace(enumName))
-                        {
-                            SourceCode.Append($"/*@{enumValue.Name}*/ ");
+                                // only care if its an enum type (which is in quotes)
+                                if (typeName.StartsWith("\"") && typeName.EndsWith("\""))
+                                {
+                                    enumName = typeName.Substring(1, typeName.Length - 2);
+                                }
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(enumName))
+                            {
+                                SourceCode.Append($"/*@{enumValue.Name}*/ ");
+                            }
                         }
                     }
 
