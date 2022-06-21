@@ -183,6 +183,7 @@ namespace DEvahebLib.Parser
                     //    i += setNode.Size - 1;
                     //}
                     //newNode = new GenericFunction(t.ToString(), parms);
+
                     newNode = new Set(ReadIBIBlock(reader, t), ReadIBIBlock(reader, t));
                     break;
 

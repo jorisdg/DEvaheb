@@ -5,3 +5,4 @@ set ( /*@SET_TYPES*/ "SET_PARM1", "Some String" );
 set ( /*@SET_TYPES*/ "SET_ORIGIN", < 1.023 4.056 7.089 > );
 set ( /*@SET_TYPES*/ "SET_XVELOCITY", 1.234 );
 set ( /*@SET_TYPES*/ "SET_RUNNING", /*@BOOL_TYPES*/ "true" );
+set ( /*@SET_TYPES*/ "SET_WIDTH", 12 );

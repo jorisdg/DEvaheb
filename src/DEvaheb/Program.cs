@@ -80,7 +80,7 @@ namespace ConsoleApp
 
                             if (!string.IsNullOrEmpty(targetFile))
                             {
-                                targetFile = $"{Path.Join(Path.GetFullPath(targetFile), Path.GetFileNameWithoutExtension(targetFile))}.{extension}";
+                                targetFile = Path.ChangeExtension(targetFile, $".{extension}");
                             }
                         }
                         else

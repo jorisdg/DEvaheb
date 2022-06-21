@@ -85,15 +85,25 @@ namespace DEvahebLibTests
 
             while(originalSource.MoveNext())
             {
-                if (!newSource.MoveNext())
-                {
-                    // account for empty lines at the end of the file
-                    if (string.IsNullOrWhiteSpace(originalSource.Current))
-                        continue;
+                // account for empty lines or comment lines
+                if (string.IsNullOrWhiteSpace(originalSource.Current)
+                    || originalSource.Current.TrimStart().StartsWith("rem ")
+                    || originalSource.Current.TrimStart().StartsWith("rem(")
+                    || originalSource.Current.TrimStart().StartsWith("//"))
+                    continue;
 
-                    differences.AppendLine("New source file is shorter");
-                    throw new Exception(differences.ToString());
+                do
+                {
+                    if (!newSource.MoveNext())
+                    {
+                        differences.AppendLine("New source file is shorter");
+                        throw new Exception(differences.ToString());
+                    }
                 }
+                while (string.IsNullOrWhiteSpace(newSource.Current)
+                    || newSource.Current.TrimStart().StartsWith("rem ")
+                    || newSource.Current.TrimStart().StartsWith("rem(")
+                    || newSource.Current.TrimStart().StartsWith("//"));
 
                 Assert.AreEqual<string>(expected: originalSource.Current, actual: newSource.Current);
             }
@@ -119,8 +129,13 @@ namespace DEvahebLibTests
 
         public static void GenerateSourceFromIBIAndCompareOriginal(string filenameBase, Variables variables)
         {
+            GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables, ".txt");
+        }
+
+        public static void GenerateSourceFromIBIAndCompareOriginal(string filenameBase, Variables variables, string originalExtension)
+        {
             var ibiFile = filenameBase + ".IBI";
-            var originalSourceFile = filenameBase + ".txt";
+            var originalSourceFile = filenameBase + originalExtension;
             var outputFile = filenameBase + ".test";
 
             Helper.GenerateSourceFromIBI(ibiFile, outputFile, variables);

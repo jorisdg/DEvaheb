@@ -59,7 +59,6 @@ namespace DEvahebLib.Visitors
         {
             if (Parity == SourceCodeParity.BehavED)
             {
-                // For the set function with a string variable name, put in type comments for BehavED
                 if (argumentStack.Peek().Item1 is Set set && set.VariableName is StringValue variableName)
                 {
                     // if we're handling the second argument of the set function
@@ -72,6 +71,10 @@ namespace DEvahebLib.Visitors
                             if (typeName.StartsWith("\"") && typeName.EndsWith("\""))
                             {
                                 SourceCode.Append($"/*@{typeName.Substring(1, typeName.Length - 2)}*/ ");
+                            }
+                            else if (typeName == "INT" && node is FloatValue f)
+                            {
+                                node = new IntegerValue((Int32)f.Float);
                             }
                         }
                     }
