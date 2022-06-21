@@ -160,7 +160,7 @@ namespace DEvahebLib.Parser
                         }
                     }
 
-                    newNode = new Camera(parms);
+                    newNode = Camera.CreateCameraOverload(parms);
                     break;
                 case IBIToken.declare:
                     newNode = new Declare(type: EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(DECLARE_TYPE)), variableName: ReadIBIBlock(reader, t));

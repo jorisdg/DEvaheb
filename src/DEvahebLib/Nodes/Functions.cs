@@ -4,19 +4,6 @@ using DEvahebLib.Enums;
 
 namespace DEvahebLib.Nodes
 {
-    public class Camera : FunctionNode
-    {
-        List<Node> arguments;
-
-        public override IEnumerable<Node> Arguments => arguments;
-
-        public Camera(List<Node> arguments)
-            : base(name: "camera")
-        {
-            this.arguments = arguments ?? new List<Node>();
-        }
-    }
-
     public class Tag : FunctionNode
     {
         public override IEnumerable<Node> Arguments => new List<Node>() { TagName, TagType };
