@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DEvahebLib.Enums
 {
-    public enum SET_TYPES // TODO where is this used?
+    public enum SET_TYPES
     {
         SET_PARM1,
         SET_PARM2,

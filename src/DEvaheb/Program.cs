@@ -22,58 +22,98 @@ namespace ConsoleApp
                 Console.WriteLine("DEvaheb ALPHAv2.0");
                 Console.WriteLine();
 
-                Console.WriteLine("DEvaheb.exe \"path_to_compiled_icarus\" [-output \"path_for_new_source_file\"] [-open \"path_to_editor_to_open\"]");
+                Console.WriteLine("DEvaheb.exe \"path_to_compiled_icarus\"");
                 Console.WriteLine();
-                Console.WriteLine("if output file path is ommitted, IBI file name and path are reused, but with extension .icarus");
-                Console.WriteLine("if optional third parameter is specified, the generated source file is opened");
-
+                Console.WriteLine("Optional arguments:");
+                Console.WriteLine("   -output \"filepath\"     path and filename to save decompiled source to");
+                Console.WriteLine("   -extension \"icarus\"    file extension for new file");
+                Console.WriteLine("   -open \"filepath\"       path and filename to automatically the new file with");
                 Console.WriteLine();
-                Console.WriteLine("Example: DEvaheb.exe \"C:\\Temp\\real_scripts\\intro.IBI\" -open \"C:\\Tools\\JEDI_Academy_SDK\\BehavEd.exe\"");
+                Console.WriteLine("if output file path is ommitted, IBI file name and path are reused, but with extension .icarus or the extension specified in a -extension argument");
+                Console.WriteLine();
+                Console.WriteLine("Examples:");
+                Console.WriteLine("    DEvaheb.exe \"C:\\Temp\\real_scripts\\intro.IBI\" -open \"C:\\Tools\\JEDI_Academy_SDK\\BehavEd.exe\"");
+                Console.WriteLine("    DEvaheb.exe -open \"notepad\" -extension txt \"C:\\Temp\\real_scripts\\intro.IBI\"");
                 Console.WriteLine();
             }
             else
             {
-                string sourceFile = args[0];
-                string targetFile = Path.ChangeExtension(sourceFile, "icarus");
+                string extension = "icarus";
+                string sourceFile = string.Empty;
+                string targetFile = string.Empty;
                 string editor = string.Empty;
 
-                if (!File.Exists(sourceFile))
+                for (int i = 0; i < args.Length; i++)
                 {
-                    Console.WriteLine($"ERROR! File \"{sourceFile}\" doesn't exist");
-                    return;
-                }
-
-                if (args.Length > 1)
-                {
-                    for (int i = 1; i < args.Length; i++)
+                    if (args[i].Equals("-output", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        if (args[i].Equals("-output", StringComparison.InvariantCultureIgnoreCase))
+                        if (i + 1 < args.Length)
                         {
-                            if (i + 1 < args.Length)
-                            {
-                                i++;
-                                targetFile = args[i];
-                            }
-                            else
-                            {
-                                Console.WriteLine("ERROR! Expected file path after \"output\" parameter");
-                                return;
-                            }
+                            i++;
+                            targetFile = args[i];
                         }
-                        else if (args[i].Equals("-open", StringComparison.InvariantCultureIgnoreCase))
+                        else
                         {
-                            if (i + 1 < args.Length)
-                            {
-                                i++;
-                                editor = args[i];
-                            }
-                            else
-                            {
-                                Console.WriteLine("ERROR! Expected file path after \"open\" parameter");
-                                return;
-                            }
+                            Console.WriteLine("ERROR! Expected file path after \"-output\" parameter");
+                            return;
                         }
                     }
+                    else if (args[i].Equals("-open", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        if (i + 1 < args.Length)
+                        {
+                            i++;
+                            editor = args[i];
+                        }
+                        else
+                        {
+                            Console.WriteLine("ERROR! Expected file path after \"-open\" parameter");
+                            return;
+                        }
+                    }
+                    else if (args[i].Equals("-extension", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        if (i + 1 < args.Length)
+                        {
+                            i++;
+                            extension = args[i].StartsWith(".") ? args[i].Substring(1) : args[i];
+
+                            if (!string.IsNullOrEmpty(targetFile))
+                            {
+                                targetFile = $"{Path.Join(Path.GetFullPath(targetFile), Path.GetFileNameWithoutExtension(targetFile))}.{extension}";
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("ERROR! Expected extension after \"-extension\" parameter");
+                            return;
+                        }
+                    }
+                    else if (!args[i].StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        sourceFile = args[i];
+                        if (string.IsNullOrEmpty(targetFile))
+                        {
+                            targetFile = Path.ChangeExtension(sourceFile, extension);
+                        }
+
+                        if (!File.Exists(sourceFile))
+                        {
+                            Console.WriteLine($"ERROR! File \"{sourceFile}\" doesn't exist");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Unknown argument {args[i]}");
+                        return;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(sourceFile))
+                {
+                    Console.WriteLine("No source file specified");
+                    return;
                 }
 
                 // "D:\temp\real_scripts\_brig\poormunro.IBI"
@@ -81,7 +121,6 @@ namespace ConsoleApp
                 // "D:\Repos\DEvaheb JEDI_Academy_SDK\Tools\JAscripts\scripts\academy1\intro.IBI"
                 // "D:\temp\barrel_costa_loopbck.IBI"
                 // "D:\Repos\DEvaheb JEDI_Academy_SDK\Tools\EFScripts\PAK3\_holodeck_garden\boothby_workloop.IBI"
-
                 var output = Read(sourceFile);
 
                 File.WriteAllText(targetFile, GenerateSource(output));

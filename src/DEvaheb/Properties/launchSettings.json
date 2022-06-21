@@ -2,7 +2,7 @@
   "profiles": {
     "ConsoleApp": {
       "commandName": "Project",
-      "commandLineArgs": "\"D:\\Repos\\DEvaheb JEDI_Academy_SDK\\Tools\\JAscripts\\scripts\\academy1\\intro.IBI\" -output \"D:\\Repos\\DEvaheb JEDI_Academy_SDK\\Tools\\test.icarus\" -open \"C:\\Program Files\\Microsoft VS Code\\Code.exe\""
+      "commandLineArgs": "\"C:\\GitHub\\JEDI_Academy_SDK\\Tools\\JAscripts\\scripts\\academy1\\intro.IBI\" -output \"C:\\GitHub\\JEDI_Academy_SDK\\Tools\\test.icarus\" -open \"C:\\Users\\joris\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe\" -extension \".tblah\""
     }
   }
 }
