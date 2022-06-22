@@ -6,7 +6,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <ApplicationIcon>Devaheb.ico</ApplicationIcon>
+	<Version>2.0</Version>
+	<Description>https://github.com/jorisdg/DEvaheb</Description>
+	<Company>Joris "Interface" de Gruyter</Company>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Devaheb.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DEvahebLib\DEvahebLib.csproj">
