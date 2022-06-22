@@ -10,16 +10,13 @@ namespace ConsoleApp
     {
         static void Main(string[] args)
         {
+            Console.WriteLine();
+            Console.WriteLine($"DEvaheb v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}");
+            Console.WriteLine();
+
             if (args.Length == 0)
             {
-                Console.WriteLine();
-                Console.WriteLine("************** THIS IS AN ALPHA VERSION **************");
-                Console.WriteLine("***                                                ***");
-                Console.WriteLine("***  contact interface@codecrib.com for questions  ***");
-                Console.WriteLine("***                                                ***");
-                Console.WriteLine("******************************************************");
-                Console.WriteLine();
-                Console.WriteLine("DEvaheb ALPHAv2.0");
+                Console.WriteLine($"** Documentation, Contact, Source Code and reporting issues: https://github.com/jorisdg/DEvaheb");
                 Console.WriteLine();
 
                 Console.WriteLine("DEvaheb.exe \"path_to_compiled_icarus\"");
@@ -27,7 +24,7 @@ namespace ConsoleApp
                 Console.WriteLine("Optional arguments:");
                 Console.WriteLine("   -output \"filepath\"     path and filename to save decompiled source to");
                 Console.WriteLine("   -extension \"icarus\"    file extension for new file");
-                Console.WriteLine("   -open \"filepath\"       path and filename to automatically the new file with");
+                Console.WriteLine("   -open \"filepath\"       path and filename to an executable to open the new file with");
                 Console.WriteLine();
                 Console.WriteLine("if output file path is ommitted, IBI file name and path are reused, but with extension .icarus or the extension specified in a -extension argument");
                 Console.WriteLine();
@@ -116,11 +113,6 @@ namespace ConsoleApp
                     return;
                 }
 
-                // "D:\temp\real_scripts\_brig\poormunro.IBI"
-                // "D:\Repos\DEvaheb JEDI_Academy_SDK\Tools\test.IBI"
-                // "D:\Repos\DEvaheb JEDI_Academy_SDK\Tools\JAscripts\scripts\academy1\intro.IBI"
-                // "D:\temp\barrel_costa_loopbck.IBI"
-                // "D:\Repos\DEvaheb JEDI_Academy_SDK\Tools\EFScripts\PAK3\_holodeck_garden\boothby_workloop.IBI"
                 var output = Read(sourceFile);
 
                 var vars = DEvahebLib.Variables.FromCsv("variable_types.csv");
