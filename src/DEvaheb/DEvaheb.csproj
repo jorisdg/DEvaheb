@@ -26,6 +26,9 @@
     <None Update="DEvahebOpen.cmd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="README.TXT">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="variable_types.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

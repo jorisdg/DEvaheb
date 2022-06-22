@@ -12,18 +12,18 @@ namespace DEvahebLib.Parser
 
         // Comment = 1
         // EOL = 2
-        Char = 3, // Icarus
+        Char = 3,
         String = 4,
-        Int = 5, // Icarus
+        Int = 5,
         Float = 6,
         Identifier = 7,
 
-        TBlockStart = 8, // Icarus
-        TBlockEnd = 9, // Icarus
-        VectorStart = 10, // Icarus
-        VectorEnd = 11, // Icarus
-        OpenParenthesis = 12, // Icarus
-        CloseParenthesis = 13, // Icarus
+        TBlockStart = 8,
+        TBlockEnd = 9,
+        VectorStart = 10,
+        VectorEnd = 11,
+        OpenParenthesis = 12,
+        CloseParenthesis = 13,
 
         Vector = 14,
 
@@ -37,11 +37,11 @@ namespace DEvahebLib.Parser
         move = 21,
         rotate = 22,
         wait = 23,
-        blockStart = 24, // Icarus
+        blockStart = 24,
         blockEnd = 25,
         set = 26,
         loop = 27,
-        loopEnd = 28, // Icarus
+        loopEnd = 28,
         print = 29,
         use = 30,
         flush = 31,
@@ -53,12 +53,12 @@ namespace DEvahebLib.Parser
         random = 37,
         @if = 38,
         @else = 39,
-        rem = 40, // Icarus
+        rem = 40,
         task = 41,
         @do = 42,
         declare = 43,
         free = 44,
-        dowait = 45, // Icarus
+        dowait = 45,
         signal = 46,
         waitsignal = 47,
         play = 48,
@@ -170,20 +170,6 @@ namespace DEvahebLib.Parser
                     break;
 
                 case IBIToken.set:
-                    //parms = new List<Node>();
-
-                    //Node setNode = EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(SET_TYPES));
-                    //parms.Add(setNode);
-
-                    //for (int i = 1; i < size; i++)
-                    //{
-                    //    setNode = ReadIBIBlock(reader, t);
-                    //    parms.Add(setNode);
-
-                    //    i += setNode.Size - 1;
-                    //}
-                    //newNode = new GenericFunction(t.ToString(), parms);
-
                     newNode = new Set(ReadIBIBlock(reader, t), ReadIBIBlock(reader, t));
                     break;
 
