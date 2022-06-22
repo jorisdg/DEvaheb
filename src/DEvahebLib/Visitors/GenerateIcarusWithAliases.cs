@@ -58,6 +58,13 @@ namespace DEvahebLib.Visitors
             }
         }
 
+        public override void VisitBlockNodeSubNodes(BlockNode node)
+        {
+            base.VisitBlockNodeSubNodes(node);
+
+            lastDo = String.Empty;
+        }
+
         public override void VisitFunctionNode(FunctionNode node)
         {
             base.VisitFunctionNode(node);
