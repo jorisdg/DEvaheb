@@ -113,7 +113,14 @@ namespace DEvahebLib.Visitors
                     if (floatValue.Float == null)
                         throw new MissingArgumentException("Float is missing a value");
 
-                    SourceCode.Append(((float)floatValue.Float).ToString("0.000"));
+                    if (argumentStack.Peek().Item1 is Nodes.Random)
+                    {
+                        SourceCode.Append(((float)floatValue.Float).ToString());
+                    }
+                    else
+                    {
+                        SourceCode.Append(((float)floatValue.Float).ToString("0.000"));
+                    }
                 }
                 else if (node is IntegerValue integerValue)
                 {

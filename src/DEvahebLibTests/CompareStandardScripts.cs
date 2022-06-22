@@ -19,10 +19,23 @@ namespace DEvahebLibTests
             Variables variables = Variables.FromCsv(variablesFile);
 
             var files = Directory.EnumerateFiles(folder, "*.IBI", SearchOption.AllDirectories);
+
+            Console.WriteLine($"{files.Count()} files found");
+
+            int differentFiles = 0;
             foreach (var file in files)
             {
-                Helper.GenerateSourceFromIBIAndCompareOriginal(Path.ChangeExtension(file, null), variables, originalExtension: ".icarus");
+                Console.WriteLine($"{file}");
+
+                string differences = Helper.GenerateSourceFromIBIAndCompareOriginal(Path.ChangeExtension(file, null), variables, originalExtension: ".icarus", ignoreSetTypes: false);
+                if (!string.IsNullOrWhiteSpace(differences))
+                {
+                    differentFiles++;
+                    Console.WriteLine(differences);
+                }
             }
+
+            Assert.AreEqual(expected: 0, actual: differentFiles);
         }
     }
 }

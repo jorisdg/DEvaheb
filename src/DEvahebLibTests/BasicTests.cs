@@ -19,10 +19,10 @@ namespace DEvahebLibTests
         }
 
         [TestMethod]
-        [DataRow(@"BasicTests\camera")] // Need function signature definitions... IBI float is INT text
+        [DataRow(@"BasicTests\camera")]
         [DataRow(@"BasicTests\declare")]
         [DataRow(@"BasicTests\do")]
-        //[DataRow(@"BasicTests\dowait")] // TODO aliases Visitor
+        [DataRow(@"BasicTests\dowait")]
         [DataRow(@"BasicTests\flush")]
         [DataRow(@"BasicTests\free")]
         [DataRow(@"BasicTests\get")]
@@ -30,10 +30,11 @@ namespace DEvahebLibTests
         [DataRow(@"BasicTests\move")]
         [DataRow(@"BasicTests\play")]
         [DataRow(@"BasicTests\print")]
+        [DataRow(@"BasicTests\random")]
         [DataRow(@"BasicTests\remove")]
         [DataRow(@"BasicTests\rotate")]
         [DataRow(@"BasicTests\run")]
-        [DataRow(@"BasicTests\set")] // Need function signature definitions as well as enum definition files, especially for SET_TYPES
+        [DataRow(@"BasicTests\set")]
         [DataRow(@"BasicTests\signal")]
         [DataRow(@"BasicTests\sound")]
         [DataRow(@"BasicTests\tag")]
@@ -42,7 +43,7 @@ namespace DEvahebLibTests
         [DataRow(@"BasicTests\waitsignal")]
         public void TestFunctions(string filenameBase)
         {
-            Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables: variables);
+            Assert.AreEqual(string.Empty, Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables: variables));
         }
 
 
@@ -50,11 +51,11 @@ namespace DEvahebLibTests
         [DataRow(@"BasicTests\affect")]
         [DataRow(@"BasicTests\else")]
         [DataRow(@"BasicTests\if")]
-        [DataRow(@"BasicTests\loop")] // Need function signature definitions... IBI float is INT text
+        [DataRow(@"BasicTests\loop")]
         [DataRow(@"BasicTests\task")]
         public void TestBlocks(string filenameBase)
         {
-            Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables: variables);
+            Assert.AreEqual(string.Empty, Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables: variables));
         }
     }
 }

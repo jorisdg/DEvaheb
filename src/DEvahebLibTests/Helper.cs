@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DEvahebLib;
 using DEvahebLib.Nodes;
@@ -15,7 +16,7 @@ namespace DEvahebLibTests
     {
         public static string GenerateSource(Variables variables, List<Node> nodes, SourceCodeParity parity = SourceCodeParity.BehavED)
         {
-            var icarusText = new GenerateIcarus(variables) { Parity = parity };
+            var icarusText = new GenerateIcarusWithAliases(variables) { Parity = parity };
             icarusText.Visit(nodes);
 
             StringBuilder sb = new StringBuilder();
@@ -76,7 +77,7 @@ namespace DEvahebLibTests
             File.WriteAllText(newSourceFile, Helper.GenerateSource(variables, nodes, SourceCodeParity.BehavED));
         }
 
-        public static void GetSourceFilesDifferences(string originalFile, string newFile)
+        public static string GetSourceFilesDifferences(string originalFile, string newFile, bool ignoreSetTypes = false)
         {
             StringBuilder differences = new StringBuilder();
 
@@ -97,7 +98,8 @@ namespace DEvahebLibTests
                     if (!newSource.MoveNext())
                     {
                         differences.AppendLine("New source file is shorter");
-                        throw new Exception(differences.ToString());
+                        //throw new Exception(differences.ToString());
+                        return differences.ToString();
                     }
                 }
                 while (string.IsNullOrWhiteSpace(newSource.Current)
@@ -105,15 +107,56 @@ namespace DEvahebLibTests
                     || newSource.Current.TrimStart().StartsWith("rem(")
                     || newSource.Current.TrimStart().StartsWith("//"));
 
-                Assert.AreEqual<string>(expected: originalSource.Current, actual: newSource.Current);
+                bool difference = originalSource.Current != newSource.Current;
+
+                // Sometimes we replace do() and wait() from IBI with dowait() in source,
+                // but the original source has two separate statements anyway
+                if (difference && newSource.Current.TrimStart().StartsWith("dowait"))
+                {
+                    string wait = newSource.Current.Replace("dowait (", "wait (");
+                    originalSource.MoveNext();
+                    //Assert.AreEqual<string>(expected: originalSource.Current, actual: wait);
+                    if (originalSource.Current != wait)
+                    {
+                        differences.AppendLine($"Original line : {originalSource.Current}");
+                        differences.AppendLine($"Generated line: {wait}");
+                        return differences.ToString();
+                    }
+                }
+                else if (difference && newSource.Current.TrimStart().StartsWith("set") && ignoreSetTypes)
+                {
+                    string pattern = "/\\*[^\\*]*\\*/";
+                    var originalText = Regex.Replace(originalSource.Current, pattern, "");
+                    var newText = Regex.Replace(originalSource.Current, pattern, "");
+
+                    //Assert.AreEqual<string>(expected: originalText, actual: newText);
+                    if (originalText != newText)
+                    {
+                        differences.AppendLine($"Original line : {originalSource.Current}");
+                        differences.AppendLine($"Generated line: {newSource.Current}");
+                        return differences.ToString();
+                    }
+                }
+                else if (difference)
+                {
+                    //Assert.AreEqual<string>(expected: originalSource.Current, actual: newSource.Current);
+                    differences.AppendLine($"Original line : {originalSource.Current}");
+                    differences.AppendLine($"Generated line: {newSource.Current}");
+                    return differences.ToString();
+                }
             }
 
             while (newSource.MoveNext())
             {
-                differences.AppendLine("New source file is longer");
                 if (!string.IsNullOrWhiteSpace(newSource.Current))
-                    throw new Exception(differences.ToString());
+                {
+                    differences.AppendLine("New source file is longer");
+                    //throw new Exception(differences.ToString());
+                    return differences.ToString();
+                }
             }
+
+            return differences.ToString();
         }
 
         public static void GenerateSourceFromIBIAndCompareOriginal(string filenameBase, string variablesCsvFile)
@@ -127,12 +170,12 @@ namespace DEvahebLibTests
             Helper.GetSourceFilesDifferences(originalSourceFile, outputFile);
         }
 
-        public static void GenerateSourceFromIBIAndCompareOriginal(string filenameBase, Variables variables)
+        public static string GenerateSourceFromIBIAndCompareOriginal(string filenameBase, Variables variables)
         {
-            GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables, ".txt");
+            return GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables, originalExtension: ".txt", ignoreSetTypes: false);
         }
 
-        public static void GenerateSourceFromIBIAndCompareOriginal(string filenameBase, Variables variables, string originalExtension)
+        public static string GenerateSourceFromIBIAndCompareOriginal(string filenameBase, Variables variables, string originalExtension, bool ignoreSetTypes)
         {
             var ibiFile = filenameBase + ".IBI";
             var originalSourceFile = filenameBase + originalExtension;
@@ -140,7 +183,7 @@ namespace DEvahebLibTests
 
             Helper.GenerateSourceFromIBI(ibiFile, outputFile, variables);
 
-            Helper.GetSourceFilesDifferences(originalSourceFile, outputFile);
+            return Helper.GetSourceFilesDifferences(originalSourceFile, outputFile, ignoreSetTypes);
         }
     }
 }
