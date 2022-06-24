@@ -108,7 +108,7 @@ namespace DEvahebLib.Nodes
         {
             if (arguments.Count != 4)
             {
-                throw new Exception("Wrong number arguments for camera pan function");
+                throw new Exception("Wrong number of arguments for camera pan function");
             }
 
             if (!Helper.ValidateArgumentEnumValue(arguments[0], enumName: nameof(CAMERA_COMMANDS), value: (float)CAMERA_COMMANDS.PAN))
@@ -146,7 +146,7 @@ namespace DEvahebLib.Nodes
         {
             if (arguments.Count != 3)
             {
-                throw new Exception("Wrong number arguments for camera zoom function");
+                throw new Exception("Wrong number of arguments for camera zoom function");
             }
 
             if (!Helper.ValidateArgumentEnumValue(arguments[0], enumName: nameof(CAMERA_COMMANDS), value: (float)CAMERA_COMMANDS.ZOOM))
@@ -179,7 +179,7 @@ namespace DEvahebLib.Nodes
         {
             if (arguments.Count != 3)
             {
-                throw new Exception("Wrong number arguments for camera move function");
+                throw new Exception("Wrong number of arguments for camera move function");
             }
 
             if (!Helper.ValidateArgumentEnumValue(arguments[0], enumName: nameof(CAMERA_COMMANDS), value: (float)CAMERA_COMMANDS.MOVE))
@@ -212,7 +212,7 @@ namespace DEvahebLib.Nodes
         {
             if (arguments.Count != 3)
             {
-                throw new Exception("Wrong number arguments for camera roll function");
+                throw new Exception("Wrong number of arguments for camera roll function");
             }
 
             if (!Helper.ValidateArgumentEnumValue(arguments[0], enumName: nameof(CAMERA_COMMANDS), value: (float)CAMERA_COMMANDS.ROLL))
@@ -245,7 +245,7 @@ namespace DEvahebLib.Nodes
         {
             if (arguments.Count != 4)
             {
-                throw new Exception("Wrong number arguments for camera track function");
+                throw new Exception("Wrong number of arguments for camera track function");
             }
 
             if (!Helper.ValidateArgumentEnumValue(arguments[0], enumName: nameof(CAMERA_COMMANDS), value: (float)CAMERA_COMMANDS.TRACK))
@@ -283,7 +283,7 @@ namespace DEvahebLib.Nodes
         {
             if (arguments.Count != 4)
             {
-                throw new Exception("Wrong number arguments for camera follow function");
+                throw new Exception("Wrong number of arguments for camera follow function");
             }
 
             if (!Helper.ValidateArgumentEnumValue(arguments[0], enumName: nameof(CAMERA_COMMANDS), value: (float)CAMERA_COMMANDS.FOLLOW))
@@ -321,7 +321,7 @@ namespace DEvahebLib.Nodes
         {
             if (arguments.Count != 3)
             {
-                throw new Exception("Wrong number arguments for camera distance function");
+                throw new Exception("Wrong number of arguments for camera distance function");
             }
 
             if (!Helper.ValidateArgumentEnumValue(arguments[0], enumName: nameof(CAMERA_COMMANDS), value: (float)CAMERA_COMMANDS.DISTANCE))
@@ -354,7 +354,7 @@ namespace DEvahebLib.Nodes
         {
             if (arguments.Count != 6)
             {
-                throw new Exception("Wrong number arguments for camera fade function");
+                throw new Exception("Wrong number of arguments for camera fade function");
             }
 
             if (!Helper.ValidateArgumentEnumValue(arguments[0], enumName: nameof(CAMERA_COMMANDS), value: (float)CAMERA_COMMANDS.FADE))
@@ -402,7 +402,7 @@ namespace DEvahebLib.Nodes
         {
             if (arguments.Count != 3)
             {
-                throw new Exception("Wrong number arguments for camera shake function");
+                throw new Exception("Wrong number of arguments for camera shake function");
             }
 
             if (!Helper.ValidateArgumentEnumValue(arguments[0], enumName: nameof(CAMERA_COMMANDS), value: (float)CAMERA_COMMANDS.SHAKE))
@@ -435,7 +435,7 @@ namespace DEvahebLib.Nodes
         {
             if (arguments.Count != 2)
             {
-                throw new Exception("Wrong number arguments for camera path function");
+                throw new Exception("Wrong number of arguments for camera path function");
             }
 
             if (!Helper.ValidateArgumentEnumValue(arguments[0], enumName: nameof(CAMERA_COMMANDS), value: (float)CAMERA_COMMANDS.PATH))

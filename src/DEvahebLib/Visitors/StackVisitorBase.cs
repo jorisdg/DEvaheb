@@ -13,23 +13,6 @@ namespace DEvahebLib.Visitors
 
         protected Stack<Tuple<FunctionNode, Stack<Node>>> argumentStack = new Stack<Tuple<FunctionNode, Stack<Node>>>();
 
-        //protected Node currentNode = null;
-
-        public override void Visit(Node node)
-        {
-            //if (currentNode != null)
-            //    blockStack.Push(currentNode);
-
-            //currentNode = node;
-
-            base.Visit(node);
-
-            //if (blockStack.Count > 0)
-            //    currentNode = blockStack.Pop();
-            //else
-            //    currentNode = null;
-        }
-
         public override void VisitBlockNode(BlockNode node)
         {
             blockStack.Push(node);

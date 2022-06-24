@@ -83,7 +83,7 @@ namespace DEvahebLib.Nodes
         public string IdentifierName { get { return (string)Value; } set { Value = value; } }
 
         public IdentifierValue()
-            : this("")
+            : this(string.Empty)
         {
         }
 
@@ -112,6 +112,11 @@ namespace DEvahebLib.Nodes
 
         public Node[] Values { get; protected set; }
 
+        public VectorValue(float x, float y, float z)
+            : this(x: new FloatValue(x), y: new FloatValue(y), z: new FloatValue(z))
+        {
+        }
+
         public VectorValue()
             : this(x: new FloatValue(0.0f), y: new FloatValue(0.0f), z: new FloatValue(0.0f))
         {
@@ -120,6 +125,9 @@ namespace DEvahebLib.Nodes
         public VectorValue(Node x, Node y, Node z)
             : base()
         {
+            if (x == null || y == null || z == null)
+                throw new Exception("Arguments for 'vector' cannot be null");
+
             Values = new Node[3] { x, y, z};
         }
 
@@ -184,7 +192,7 @@ namespace DEvahebLib.Nodes
         public static Node CreateOrPassThrough(Node enumNode, Type enumType)
         {
             if (!enumType.IsEnum)
-                throw new Exception("EnumValue node has to be instantiated with an type that is an enumeration"); // TODO specific exception
+                throw new Exception("EnumValue node has to be instantiated with a type that is an enumeration");
 
             Node finalNode = null;
 
@@ -251,7 +259,6 @@ namespace DEvahebLib.Nodes
                 {
                     Float = enumTable.GetValue(value);
                 }
-                // TODO else?!?
                 else
                 {
                     throw new Exception($"Unknown enum text {value}");
@@ -312,7 +319,6 @@ namespace DEvahebLib.Nodes
                 {
                     Integer = enumTable.GetValue(value);
                 }
-                // TODO else?!?
                 else
                 {
                     throw new Exception($"Unknown enum text {value}");
@@ -374,10 +380,8 @@ namespace DEvahebLib.Nodes
                     // TODO strip quotes?
                     String = enumTable.GetValue(value);
                 }
-                // TODO else?!?
                 else
                 {
-                    // TODO could assign String = value ?
                     throw new Exception($"Unknown enum text {value}");
                 }
             }
@@ -420,10 +424,8 @@ namespace DEvahebLib.Nodes
                 {
                     String = enumTable.GetValue(value);
                 }
-                // TODO else?!?
                 else
                 {
-                    // TODO could assign String = value ?
                     throw new Exception($"Unknown enum text {value}");
                 }
             }

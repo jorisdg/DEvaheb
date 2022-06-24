@@ -113,8 +113,9 @@ namespace DEvahebLib.Visitors
                     if (floatValue.Float == null)
                         throw new MissingArgumentException("Float is missing a value");
 
-                    if (argumentStack.Peek().Item1 is Nodes.Random)
+                    if (argumentStack.Peek().Item1 is Nodes.Random && Parity == SourceCodeParity.BehavED)
                     {
+                        // weirdly BehavED doesn't format random float with 3 decimal points by default
                         SourceCode.Append(((float)floatValue.Float).ToString());
                     }
                     else
@@ -160,12 +161,14 @@ namespace DEvahebLib.Visitors
                         {
                             string enumName = enumValue.Name;
 
+                            // if we don't know the enum name but we're trying to handle the variable name for get()
                             if (string.IsNullOrEmpty(enumName) && argumentStack.Peek().Item1 is Get get
                                 && node == get.VariableName && get.VariableName is StringValue getVariable)
                             {
+                                // Check if this variable name is in the set types list
                                 var typeName = Variables.GetVariableType(getVariable.String);
 
-                                // only care if its an enum type (which is in quotes)
+                                // only care if the set type is an enum type (which is in quotes)
                                 if (typeName.StartsWith("\"") && typeName.EndsWith("\""))
                                 {
                                     enumName = typeName.Substring(1, typeName.Length - 2);
@@ -270,8 +273,6 @@ namespace DEvahebLib.Visitors
                 case Operator.Ne:
                     op = '!';
                     break;
-                default: // defensive coding?
-                    throw new ArgumentOutOfRangeException("Operator value is invalid");
             }
 
             SourceCode.Append(op.ToString());

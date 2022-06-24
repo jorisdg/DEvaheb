@@ -51,7 +51,7 @@ namespace DEvahebLib.Enums
         public static EnumTableFloat FromEnum(Type enumType)
         {
             if (!enumType.IsEnum)
-                throw new Exception("EnumValue node has to be instantiated with an type that is an enumeration");
+                throw new Exception("EnumValue node has to be instantiated with a type that is an enumeration");
 
             var enumValues = new Dictionary<string, float>();
             var values = enumType.GetEnumValues();
@@ -76,7 +76,7 @@ namespace DEvahebLib.Enums
         public static EnumTableInt FromEnum(Type enumType)
         {
             if (!enumType.IsEnum)
-                throw new Exception("EnumValue node has to be instantiated with an type that is an enumeration");
+                throw new Exception("EnumValue node has to be instantiated with a type that is an enumeration");
 
             var enumValues = new Dictionary<string, Int32>();
             var values = enumType.GetEnumValues();
@@ -101,7 +101,7 @@ namespace DEvahebLib.Enums
         public static EnumTableString FromEnum(Type enumType)
         {
             if (!enumType.IsEnum)
-                throw new Exception("EnumValue node has to be instantiated with an type that is an enumeration");
+                throw new Exception("EnumValue node has to be instantiated with a type that is an enumeration");
 
             var enumValues = new Dictionary<string, string>();
             var values = enumType.GetEnumNames();

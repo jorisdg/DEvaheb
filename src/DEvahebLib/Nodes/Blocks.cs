@@ -15,11 +15,6 @@ namespace DEvahebLib.Nodes
 
         public Node Expr2 { get; set; }
 
-        public If()
-            : this(expression1: null, operatorNode: new OperatorNode(Enums.Operator.Eq), expression2: null, childNodes: null)
-        {
-        }
-
         public If(Node expression1, OperatorNode operatorNode, Node expression2)
             : this(expression1, operatorNode, expression2, childNodes: null)
         {
@@ -29,6 +24,9 @@ namespace DEvahebLib.Nodes
         public If(Node expression1, OperatorNode operatorNode, Node expression2, List<Node> childNodes)
             : base(name: "if", childNodes)
         {
+            if (expression1 == null || operatorNode == null || expression2 == null)
+                throw new Exception("Arguments for 'if' block cannot be null");
+
             Expr1 = expression1;
             Operator = operatorNode;
             Expr2 = expression2;
@@ -67,6 +65,9 @@ namespace DEvahebLib.Nodes
         public Task(Node name, List<Node> childNodes)
             : base(name: "task", childNodes)
         {
+            if (name == null)
+                throw new Exception("Arguments for 'task' block cannot be null");
+
             TaskName = name;
         }
     }
@@ -87,6 +88,9 @@ namespace DEvahebLib.Nodes
         public Affect(Node name, Node type)
             : base(name: "affect")
         {
+            if (name == null || type == null)
+                throw new Exception("Arguments for 'affect' block cannot be null");
+
             EntityName = name;
             Type = type;
         }

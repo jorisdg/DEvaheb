@@ -80,14 +80,14 @@ namespace DEvahebLib.Parser
 
             var size = reader.ReadInt32();
 
-            //if (b > 7)
-            if (parent == IBIToken.UNKNOWN)
+            if (parent == IBIToken.UNKNOWN) // top level block (no parent), i.e. a function
             {
-                b = reader.ReadByte(); // TODO functions have 1 extra byte here? values do not?
+                b = reader.ReadByte(); // read flags byte
+                // TODO is there a reason we should store this?
             }
-            else if (b > 7)
+            else if (b > 7) // block has a parent, but it's not just a basic type value
             {
-                var bts = reader.ReadBytes(size);
+                var bts = reader.ReadBytes(size); // read data
             }
 
             Node newNode = null;
@@ -149,6 +149,7 @@ namespace DEvahebLib.Parser
 
                     parms.Add(EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(CAMERA_COMMANDS)));
 
+                    // camera has several overloads, just read all arguments like a generic function
                     for (int i = 1; i < size; i++)
                     {
                         var node = ReadIBIBlock(reader, t);
@@ -160,6 +161,7 @@ namespace DEvahebLib.Parser
                         }
                     }
 
+                    // Determine overload and check the arguments
                     newNode = Camera.CreateCameraOverload(parms);
                     break;
                 case IBIToken.declare:
@@ -177,16 +179,8 @@ namespace DEvahebLib.Parser
                     parms = new List<Node>();
 
                     Node playNode = EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(PLAY_TYPES));
-                    parms.Add(playNode);
-
-                    for (int i = 1; i < size; i++)
-                    {
-                        playNode = ReadIBIBlock(reader, t);
-                        parms.Add(playNode);
-
-                        i += playNode.Size - 1;
-                    }
-                    newNode = new GenericFunction(t.ToString(), parms);
+                    
+                    newNode = new Play(playNode, ReadIBIBlock(reader, t));
                     break;
 
                 default:
@@ -206,6 +200,7 @@ namespace DEvahebLib.Parser
                     break;
             }
 
+            // if new node is a block, read subnodes but stop at blockend
             if (newNode is BlockNode blockNode)
             {
                 bool blockEnd = false;
