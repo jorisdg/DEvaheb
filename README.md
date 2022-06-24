@@ -2,7 +2,7 @@
 Decompiler for compiled Icarus scripts / IBI files.
 
 Quick Links:
-* **[Download]()** the latest version
+* **[Download](https://github.com/jorisdg/DEvaheb/releases)** the latest version
 * **[Using](./Usage.md)** DEvaheb
 * **[History](./History.md)** of the old tool and its revival
 
