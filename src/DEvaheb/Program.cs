@@ -36,8 +36,8 @@ namespace ConsoleApp
             else
             {
                 string extension = "icarus";
-                string sourceFile = string.Empty;
-                string targetFile = string.Empty;
+                List<string> sourceFiles = new List<string>();
+                string targetPath = string.Empty;
                 string editor = string.Empty;
 
                 for (int i = 0; i < args.Length; i++)
@@ -47,7 +47,13 @@ namespace ConsoleApp
                         if (i + 1 < args.Length)
                         {
                             i++;
-                            targetFile = args[i];
+                            targetPath = args[i];
+
+                            if (targetPath.StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                Console.WriteLine("ERROR! Expected file path after \"-output\" parameter");
+                                return;
+                            }
                         }
                         else
                         {
@@ -61,6 +67,12 @@ namespace ConsoleApp
                         {
                             i++;
                             editor = args[i];
+
+                            if (editor.StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                Console.WriteLine("ERROR! Expected file path after \"-open\" parameter");
+                                return;
+                            }
                         }
                         else
                         {
@@ -73,32 +85,36 @@ namespace ConsoleApp
                         if (i + 1 < args.Length)
                         {
                             i++;
-                            extension = args[i].StartsWith(".") ? args[i].Substring(1) : args[i];
+                            extension = args[i];
 
-                            if (!string.IsNullOrEmpty(targetFile))
+                            if (extension.Contains("\\", StringComparison.InvariantCultureIgnoreCase))
                             {
-                                targetFile = Path.ChangeExtension(targetFile, $".{extension}");
+                                Console.WriteLine("ERROR! Expected file extension after \"-extension\" parameter, for example \"icarus\" or \"txt\"");
+                                return;
+                            }
+
+                            if (extension.StartsWith(".", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                extension = extension.Substring(1);
                             }
                         }
                         else
                         {
-                            Console.WriteLine("ERROR! Expected extension after \"-extension\" parameter");
+                            Console.WriteLine("ERROR! Expected file extension after \"-extension\" parameter, for example \"icarus\" or \"txt\"");
                             return;
                         }
                     }
                     else if (!args[i].StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        sourceFile = args[i];
-                        if (string.IsNullOrEmpty(targetFile))
-                        {
-                            targetFile = Path.ChangeExtension(sourceFile, extension);
-                        }
+                        var sourceFile = args[i];
 
                         if (!File.Exists(sourceFile))
                         {
                             Console.WriteLine($"ERROR! File \"{sourceFile}\" doesn't exist");
                             return;
                         }
+
+                        sourceFiles.Add(sourceFile);
                     }
                     else
                     {
@@ -107,19 +123,41 @@ namespace ConsoleApp
                     }
                 }
 
-                if (string.IsNullOrEmpty(sourceFile))
+                if (!sourceFiles.Any())
                 {
                     Console.WriteLine("No source file specified");
                     return;
                 }
 
-                var output = Read(sourceFile);
+                string targetFile = targetPath;
+                foreach (var sourceFile in sourceFiles)
+                {
+                    var output = Read(sourceFile);
 
-                var vars = DEvahebLib.Variables.FromCsv("variable_types.csv");
+                    var vars = DEvahebLib.Variables.FromCsv("variable_types.csv");
 
-                File.WriteAllText(targetFile, GenerateSource(vars, output));
+                    // if no target specified
+                    if (string.IsNullOrEmpty(targetPath)) 
+                    {
+                        targetFile = Path.ChangeExtension(sourceFile, extension);
+                    }
+                    // If a directory was specified
+                    else if (Directory.Exists(targetPath))
+                    {
+                        targetFile = Path.Join(targetPath, Path.ChangeExtension(Path.GetFileName(sourceFile), extension));
+                    }
+                    // assume anything else was a file, so we just keep the directory and swap filenames
+                    else
+                    {
+                        targetFile = Path.Join(Path.GetDirectoryName(targetPath), Path.ChangeExtension(Path.GetFileName(sourceFile), extension));
+                    }
 
-                if (!string.IsNullOrWhiteSpace(editor))
+                    File.WriteAllText(targetFile, GenerateSource(vars, output));
+
+                }
+
+                // Only open editor if doing exactly 1 file
+                if (sourceFiles.Count == 1 && !string.IsNullOrWhiteSpace(editor))
                 {
                     Process.Start(editor, $"\"{targetFile}\"");
                 }

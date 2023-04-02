@@ -1,1 +1,1 @@
-C:\GitHub\DEvaheb\src\DEvaheb\bin\Debug\net6.0\DEvaheb.exe -open "notepad" -extension "txt" %1
+"%~dp0\DEvaheb.exe" -open "notepad" -extension "txt" %1
