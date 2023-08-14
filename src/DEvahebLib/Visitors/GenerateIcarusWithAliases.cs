@@ -44,7 +44,7 @@ namespace DEvahebLib.Visitors
                 if (wait == lastDo)
                 {
                     SourceCode.Length = lastLength;
-                    SourceCode.Append(wait.Replace(localIndent + "do", localIndent + "dowait"));
+                    SourceCode.Append(ReplaceFirst(wait, localIndent + "do", localIndent + "dowait"));
                 }
 
                 lastDo = string.Empty;
@@ -68,6 +68,16 @@ namespace DEvahebLib.Visitors
         public override void VisitFunctionNode(FunctionNode node)
         {
             base.VisitFunctionNode(node);
+        }
+
+        private static string ReplaceFirst(string subject, string oldString, string newString)
+        {
+            int index = subject.IndexOf(oldString);
+            if (index == -1)
+            {
+                return oldString;
+            }
+            return subject.Substring(0, index) + newString + subject.Substring(index + oldString.Length);
         }
     }
 }
