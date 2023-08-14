@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -116,11 +117,11 @@ namespace DEvahebLib.Visitors
                     if (argumentStack.Peek().Item1 is Nodes.Random && Parity == SourceCodeParity.BehavED)
                     {
                         // weirdly BehavED doesn't format random float with 3 decimal points by default
-                        SourceCode.Append(((float)floatValue.Float).ToString());
+                        SourceCode.Append(((float)floatValue.Float).ToString(CultureInfo.InvariantCulture));
                     }
                     else
                     {
-                        SourceCode.Append(((float)floatValue.Float).ToString("0.000"));
+                        SourceCode.Append(((float)floatValue.Float).ToString("0.000", CultureInfo.InvariantCulture));
                     }
                 }
                 else if (node is IntegerValue integerValue)
@@ -128,7 +129,7 @@ namespace DEvahebLib.Visitors
                     if (integerValue.Integer == null)
                         throw new MissingArgumentException("Integer is missing a value");
 
-                    SourceCode.Append(integerValue.Integer.ToString());
+                    SourceCode.Append(((int)integerValue.Integer).ToString(CultureInfo.InvariantCulture));
                 }
                 else if (node is IdentifierValue identifierValue)
                 {
