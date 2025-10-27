@@ -25,6 +25,7 @@ namespace ConsoleApp
                 Console.WriteLine("   -output \"filepath\"     path and filename to save decompiled source to");
                 Console.WriteLine("   -extension \"icarus\"    file extension for new file");
                 Console.WriteLine("   -open \"filepath\"       path and filename to an executable to open the new file with");
+                Console.WriteLine("   -nocompat                don't make files compatible with BehavED");
                 Console.WriteLine();
                 Console.WriteLine("if output file path is ommitted, IBI file name and path are reused, but with extension .icarus or the extension specified in a -extension argument");
                 Console.WriteLine();
@@ -39,6 +40,7 @@ namespace ConsoleApp
                 List<string> sourceFiles = new List<string>();
                 string targetPath = string.Empty;
                 string editor = string.Empty;
+                bool behavedCompatibility = true;
 
                 for (int i = 0; i < args.Length; i++)
                 {
@@ -104,6 +106,10 @@ namespace ConsoleApp
                             return;
                         }
                     }
+                    else if (args[i].Equals("-nocompat", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        behavedCompatibility = false;
+                    }
                     else if (!args[i].StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
                     {
                         var sourceFile = args[i];
@@ -152,7 +158,7 @@ namespace ConsoleApp
                         targetFile = Path.Join(Path.GetDirectoryName(targetPath), Path.ChangeExtension(Path.GetFileName(sourceFile), extension));
                     }
 
-                    File.WriteAllText(targetFile, GenerateSource(vars, output));
+                    File.WriteAllText(targetFile, GenerateSource(vars, output, parity: behavedCompatibility ? SourceCodeParity.BehavED : SourceCodeParity.BareExpressions));
 
                 }
 

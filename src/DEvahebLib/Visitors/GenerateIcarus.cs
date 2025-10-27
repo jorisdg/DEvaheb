@@ -12,7 +12,8 @@ namespace DEvahebLib.Visitors
 {
     public enum SourceCodeParity
     {
-        BehavED = 0
+        BehavED = 0,
+        BareExpressions = 1
     }
 
     public class GenerateIcarus : StackVisitorBase
@@ -283,7 +284,10 @@ namespace DEvahebLib.Visitors
         {
             if (argumentStack.Peek().Item2.Count > 0) // if we're not the first argument
             {
-                SourceCode.Append(",");
+                if (Parity == SourceCodeParity.BehavED || !(function is If)) // output all IF arguments as one expression if not for behaved
+                {
+                    SourceCode.Append(",");
+                }
             }
 
             SourceCode.Append(" ");
@@ -291,20 +295,20 @@ namespace DEvahebLib.Visitors
             if (function is If)
             {
                 // NOTE:
-                // $-signs around values don't seem to be required:
-                //      - Behaved saves to source files like that, but can read fine without
-                //      - IBIZE compiles with or without
-                // For the If operators (=, !, >, <) behaved can NOT read without $, but IBIZE compiles fine
+                // $-signs around values and function calls are to aid BehavED to replace text expressions with dropdown selections
+                // The IBIZE compiler can handle with or without
+                // An expression can be split up into comma-separated parts, each inside $-signs
+                // For the If operators the expression can split up into 3 parts: expr1, operator, expr2
 
-                SourceCode.Append("$");
+                if (Parity == SourceCodeParity.BehavED) SourceCode.Append("$");
                 base.VisitFunctionArgument(function, argument);
-                SourceCode.Append("$");
+                if (Parity == SourceCodeParity.BehavED) SourceCode.Append("$");
             }
             else if (argument is Get || argument is Tag || argument is Nodes.Random)
             {
-                SourceCode.Append("$");
+                if (Parity == SourceCodeParity.BehavED) SourceCode.Append("$");
                 base.VisitFunctionArgument(function, argument);
-                SourceCode.Append("$");
+                if (Parity == SourceCodeParity.BehavED) SourceCode.Append("$");
             }
             else
             {
