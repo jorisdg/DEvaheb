@@ -8,14 +8,40 @@ namespace DEvahebLibTests
     [TestClass]
     public class BasicTests
     {
-        public static Variables variables = null;
+        /// <summary>
+        /// <RunSettings>
+        ///   <TestRunParameters>
+        ///     <Parameter name = "VariableTypesFile" value="..\..\..\..\DEvaheb\variable_types.csv" />
+        ///   </TestRunParameters>
+        /// </RunSettings>
+        /// </summary>
+        public static string variablesFile = @"..\..\..\..\DEvaheb\variable_types.csv";
+        private static Variables variables = null;
 
-        [AssemblyInitialize]
-        public static void Initialize(TestContext testContext)
+        public static Variables VariableList
+        {
+            get
+            {
+                if (variables == null)
+                {
+                    variables = Variables.FromCsv(variablesFile);
+                }
+
+                return variables;
+            }
+        }
+
+        [ClassInitialize]
+        public static void TestClassInitialize(TestContext testContext)
         {
             if (variables == null)
             {
-                variables = Variables.FromCsv("variable_types.csv");
+                string variableTypesFile = testContext?.Properties["VariableTypesFile"]?.ToString();
+
+                if (!string.IsNullOrWhiteSpace(variableTypesFile))
+                {
+                    variablesFile = variableTypesFile;
+                }
             }
         }
 
@@ -69,7 +95,7 @@ namespace DEvahebLibTests
         {
             CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(cultureName);
             CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(cultureName);
-            Assert.AreEqual(string.Empty, Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables: variables));
+            Assert.AreEqual(string.Empty, Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables: VariableList, parity: DEvahebLib.Visitors.SourceCodeParity.BehavED));
         }
 
 
@@ -89,7 +115,7 @@ namespace DEvahebLibTests
         {
             CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(cultureName);
             CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(cultureName);
-            Assert.AreEqual(string.Empty, Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables: variables));
+            Assert.AreEqual(string.Empty, Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables: VariableList, parity: DEvahebLib.Visitors.SourceCodeParity.BehavED));
         }
     }
 }

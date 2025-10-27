@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <TestRunParameters>
+    <Parameter name="TestFilesDirectory" value="C:\temp\JEDI_Academy_SDK\Tools\JAscripts" />
+    <Parameter name="VariableTypesFile" value="..\..\..\..\DEvaheb\variable_types.csv" />
+  </TestRunParameters>
+</RunSettings>

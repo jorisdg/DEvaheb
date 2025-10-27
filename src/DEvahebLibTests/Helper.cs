@@ -66,15 +66,15 @@ namespace DEvahebLibTests
             return nodes;
         }
 
-        public static void GenerateSourceFromIBI(string ibiFile, string newSourceFile, string variablesCsvFile)
+        public static void GenerateSourceFromIBI(string ibiFile, string newSourceFile, string variablesCsvFile, SourceCodeParity parity)
         {
-            GenerateSourceFromIBI(ibiFile, newSourceFile, Variables.FromCsv(variablesCsvFile));
+            GenerateSourceFromIBI(ibiFile, newSourceFile, Variables.FromCsv(variablesCsvFile), parity);
         }
 
-        public static void GenerateSourceFromIBI(string ibiFile, string newSourceFile, Variables variables)
+        public static void GenerateSourceFromIBI(string ibiFile, string newSourceFile, Variables variables, SourceCodeParity parity)
         {
             var nodes = Helper.ReadIBI(ibiFile);
-            File.WriteAllText(newSourceFile, Helper.GenerateSource(variables, nodes, SourceCodeParity.BehavED));
+            File.WriteAllText(newSourceFile, Helper.GenerateSource(variables, nodes, parity));
         }
 
         public static string GetSourceFilesDifferences(string originalFile, string newFile, bool ignoreSetTypes = false)
@@ -159,29 +159,29 @@ namespace DEvahebLibTests
             return differences.ToString();
         }
 
-        public static void GenerateSourceFromIBIAndCompareOriginal(string filenameBase, string variablesCsvFile)
+        public static void GenerateSourceFromIBIAndCompareOriginal(string filenameBase, string variablesCsvFile, SourceCodeParity parity)
         {
             var ibiFile = filenameBase + ".IBI";
             var originalSourceFile = filenameBase + ".txt";
             var outputFile = filenameBase + ".test";
 
-            Helper.GenerateSourceFromIBI(ibiFile, outputFile, variablesCsvFile);
+            Helper.GenerateSourceFromIBI(ibiFile, outputFile, variablesCsvFile, parity);
 
             Helper.GetSourceFilesDifferences(originalSourceFile, outputFile);
         }
 
-        public static string GenerateSourceFromIBIAndCompareOriginal(string filenameBase, Variables variables)
+        public static string GenerateSourceFromIBIAndCompareOriginal(string filenameBase, Variables variables, SourceCodeParity parity)
         {
-            return GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables, originalExtension: ".txt", ignoreSetTypes: false);
+            return GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables, originalExtension: ".txt", ignoreSetTypes: false, parity: parity);
         }
 
-        public static string GenerateSourceFromIBIAndCompareOriginal(string filenameBase, Variables variables, string originalExtension, bool ignoreSetTypes)
+        public static string GenerateSourceFromIBIAndCompareOriginal(string filenameBase, Variables variables, string originalExtension, bool ignoreSetTypes, SourceCodeParity parity)
         {
             var ibiFile = filenameBase + ".IBI";
             var originalSourceFile = filenameBase + originalExtension;
             var outputFile = filenameBase + ".test";
 
-            Helper.GenerateSourceFromIBI(ibiFile, outputFile, variables);
+            Helper.GenerateSourceFromIBI(ibiFile, outputFile, variables, parity);
 
             return Helper.GetSourceFilesDifferences(originalSourceFile, outputFile, ignoreSetTypes);
         }
