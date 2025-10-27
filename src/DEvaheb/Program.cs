@@ -22,10 +22,11 @@ namespace ConsoleApp
                 Console.WriteLine("DEvaheb.exe \"path_to_compiled_icarus\"");
                 Console.WriteLine();
                 Console.WriteLine("Optional arguments:");
-                Console.WriteLine("   -output \"filepath\"     path and filename to save decompiled source to");
-                Console.WriteLine("   -extension \"icarus\"    file extension for new file");
-                Console.WriteLine("   -open \"filepath\"       path and filename to an executable to open the new file with");
-                Console.WriteLine("   -nocompat                don't make files compatible with BehavED");
+                Console.WriteLine("   -output \"filepath\"      path and filename to save decompiled source to");
+                Console.WriteLine("   -extension \"icarus\"     file extension for new file");
+                Console.WriteLine("   -open \"filepath\"        path and filename to an executable to open the new file with");
+                Console.WriteLine("   -nocompat               don't make files compatible with BehavED");
+                Console.WriteLine("   -variables \"csv path\"   path to alternate variables CSV file");
                 Console.WriteLine();
                 Console.WriteLine("if output file path is ommitted, IBI file name and path are reused, but with extension .icarus or the extension specified in a -extension argument");
                 Console.WriteLine();
@@ -41,6 +42,7 @@ namespace ConsoleApp
                 string targetPath = string.Empty;
                 string editor = string.Empty;
                 bool behavedCompatibility = true;
+                string variablesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "variable_types.csv");
 
                 for (int i = 0; i < args.Length; i++)
                 {
@@ -110,6 +112,25 @@ namespace ConsoleApp
                     {
                         behavedCompatibility = false;
                     }
+                    else if (args[i].Equals("-variables", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        if (i + 1 < args.Length)
+                        {
+                            i++;
+                            variablesPath = args[i];
+
+                            if (variablesPath.StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                Console.WriteLine("ERROR! Expected file path after \"-variables\" parameter");
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("ERROR! Expected file path after \"-variables\" parameter");
+                            return;
+                        }
+                    }
                     else if (!args[i].StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
                     {
                         var sourceFile = args[i];
@@ -140,7 +161,7 @@ namespace ConsoleApp
                 {
                     var output = Read(sourceFile);
 
-                    var vars = DEvahebLib.Variables.FromCsv("variable_types.csv");
+                    var vars = DEvahebLib.Variables.FromCsv(variablesPath);
 
                     // if no target specified
                     if (string.IsNullOrEmpty(targetPath)) 
