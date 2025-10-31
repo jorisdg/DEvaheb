@@ -10,7 +10,7 @@ Quick Links:
 For a little history on how this tool came to be, and the re-discovery of the old DEvaheb.exe floating on this internet, [go here](./History.md).
 
 ## DEvaheb 2.0
-I wrote this new code in C# with .NET 6.0 and you can find the source under [src](src/). Since it's .NET6 it can be compiled for other platforms, although *for MacOS it would have to deal with endianness* which it currently doesn't do.
+I wrote this new code in C# with .NET 9.0 and you can find the source under [src](src/). Since it's .NET9 it can be compiled for other platforms, although *for MacOS it would have to deal with endianness* which it currently doesn't do.
 
 DEvaheb 2 does not have an UI for editing files, but the command line tool can automatically open an editor of your choosing. See [using DEvaheb](./Usage.md) for more information and some tips if you're not comfortable using command line.
 
