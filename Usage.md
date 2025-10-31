@@ -14,6 +14,8 @@ All of the command line options can be specified in any order, including the IBI
 - *-output "path_for_new_source_file"* : Optional argument to explicitly specify a path and filename for the source file DEvaheb will generate.
 -  *-extension "txt"* : Optional argument to use a different extension for the generated source file. This is only useful when not specifying the -output argument explicitly.
 - *-open "path_for_tooling* : Optional argument with a path to a tool of your choosing. DEvaheb will start this tool when decompilation is finished, and pass the source file path as the first and only argument to this tool.
+- *-nocompat* : Optional argument that generates source files without BehavED comments and UI signals. There will be no commented type information, and IF statements become clean expressions. These files will still compile with Ibize just fine, they will just not trigger most of the GUI dropdowns in BehavED.
+- *-variables "path_to_variables_csv"* : Optional argument specifying a path to a variables CSV. By default it will load the CSV file that sits next to the DEvaheb executable.
 
 ## Variables and Types
 Depending on the game and potential modifications, you may want to adjust types and variables being put in source files, for usage with the BehavED editor to drive choices in the UI. The *variable_types.csv* file can be edited to add or remove variable information. The current file was generated from the Q3_Interface.h file in the JEDI Academy SDK.
