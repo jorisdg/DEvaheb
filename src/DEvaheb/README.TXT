@@ -1,5 +1,5 @@
-DEhaveb v2.0
-------------
+DEhaveb v2.0.2.0
+----------------
 
 The DEvahebOpen.cmd file wraps the executable and opens notepad. You can use
 this cmd file instead of the .exe to open your IBI files. You can edit the
