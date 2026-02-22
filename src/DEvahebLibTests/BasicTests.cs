@@ -1,7 +1,7 @@
+using System;
 using System.Globalization;
 using System.IO;
 using DEvahebLib;
-using DEvahebLib.Visitors;
 
 namespace DEvahebLibTests
 {
@@ -116,6 +116,51 @@ namespace DEvahebLibTests
             CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(cultureName);
             CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(cultureName);
             Assert.AreEqual(string.Empty, Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables: VariableList, parity: DEvahebLib.Visitors.SourceCodeParity.BehavED));
+        }
+
+        [TestMethod]
+        [DataRow(@"BasicTests\camera")]
+        [DataRow(@"BasicTests\declare")]
+        [DataRow(@"BasicTests\do")]
+        [DataRow(@"BasicTests\dowait")]
+        [DataRow(@"BasicTests\flush")]
+        [DataRow(@"BasicTests\free")]
+        [DataRow(@"BasicTests\get")]
+        [DataRow(@"BasicTests\kill")]
+        [DataRow(@"BasicTests\move")]
+        [DataRow(@"BasicTests\play")]
+        [DataRow(@"BasicTests\print")]
+        [DataRow(@"BasicTests\random")]
+        [DataRow(@"BasicTests\remove")]
+        [DataRow(@"BasicTests\rotate")]
+        [DataRow(@"BasicTests\run")]
+        [DataRow(@"BasicTests\set")]
+        [DataRow(@"BasicTests\signal")]
+        [DataRow(@"BasicTests\sound")]
+        [DataRow(@"BasicTests\tag")]
+        [DataRow(@"BasicTests\use")]
+        [DataRow(@"BasicTests\wait")]
+        [DataRow(@"BasicTests\waitsignal")]
+        [DataRow(@"BasicTests\affect")]
+        [DataRow(@"BasicTests\else")]
+        [DataRow(@"BasicTests\if")]
+        [DataRow(@"BasicTests\loop")]
+        [DataRow(@"BasicTests\task")]
+        public void TestRoundTripIBI(string filenameBase)
+        {
+            var ibiFile = filenameBase + ".IBI";
+            var originalBytes = File.ReadAllBytes(ibiFile);
+            var version = Helper.ReadIBIVersion(ibiFile);
+            var nodes = Helper.ReadIBI(ibiFile);
+            var generatedBytes = Helper.WriteIBI(nodes, version);
+            string differences = Helper.CompareIBIBytes(originalBytes, generatedBytes);
+
+            if (!string.IsNullOrWhiteSpace(differences))
+            {
+                Console.WriteLine(differences);
+            }
+
+            Assert.AreEqual(string.Empty, differences);
         }
     }
 }

@@ -206,6 +206,10 @@ namespace DEvahebLib.Parser
                 bool blockEnd = false;
                 do
                 {
+                    // Handle some existing game IBIs that don't have an blockEnd token for some reason and just end the file
+                    if (reader.BaseStream.Position >= reader.BaseStream.Length)
+                        break;
+
                     var blockChild = ReadIBIBlock(reader);
 
                     if (blockChild is GenericFunction func && func.Name.Equals("blockEnd"))

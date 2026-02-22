@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using DEvahebLib;
 using DEvahebLib.Nodes;
 using DEvahebLib.Parser;
@@ -184,6 +182,184 @@ namespace DEvahebLibTests
             Helper.GenerateSourceFromIBI(ibiFile, outputFile, variables, parity);
 
             return Helper.GetSourceFilesDifferences(originalSourceFile, outputFile, ignoreSetTypes);
+        }
+
+        public static byte[] WriteIBI(List<Node> nodes, float version)
+        {
+            using (var ms = new MemoryStream())
+            {
+                using (var writer = new BinaryWriter(ms, Encoding.UTF8, leaveOpen: true))
+                {
+                    var generator = new GenerateIBI(writer, version);
+                    generator.Visit(nodes);
+                }
+
+                return ms.ToArray();
+            }
+        }
+
+        public static float ReadIBIVersion(string filename)
+        {
+            using (var file = new FileStream(filename, FileMode.Open))
+            {
+                using (var reader = new BinaryReader(file))
+                {
+                    reader.ReadChars(4); // skip "IBI\0"
+
+                    return reader.ReadSingle();
+                }
+            }
+        }
+
+        public static string CompareIBIBytes(byte[] original, byte[] generated)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (original.Length != generated.Length)
+            {
+                sb.AppendLine($"Length mismatch: original={original.Length}, generated={generated.Length}");
+            }
+
+            // Walk the IBI structure of the original to produce contextual mismatch info
+            int minLen = Math.Min(original.Length, generated.Length);
+
+            // Compare header (8 bytes: "IBI\0" + version float)
+            for (int i = 0; i < Math.Min(8, minLen); i++)
+            {
+                if (original[i] != generated[i])
+                {
+                    sb.AppendLine($"Header mismatch at offset {i} (0x{i:X}): original=0x{original[i]:X2}, generated=0x{generated[i]:X2}");
+
+                    return sb.ToString();
+                }
+            }
+
+            int pos = 8;
+            while (pos + 9 <= minLen)
+            {
+                int blockId = BitConverter.ToInt32(original, pos);
+                int numMembers = BitConverter.ToInt32(original, pos + 4);
+                string blockName = Enum.IsDefined(typeof(IBIToken), blockId)
+                    ? ((IBIToken)blockId).ToString()
+                    : $"unknown({blockId})";
+
+                // Compare block header (9 bytes: blockID + numMembers + flags)
+                for (int i = pos; i < pos + 9 && i < minLen; i++)
+                {
+                    if (original[i] != generated[i])
+                    {
+                        sb.AppendLine($"Block header mismatch in '{blockName}' at offset {i} (0x{i:X}): original=0x{original[i]:X2}, generated=0x{generated[i]:X2}");
+                        AppendContext(sb, original, generated, i, minLen);
+
+                        return sb.ToString();
+                    }
+                }
+
+                pos += 9;
+
+                if (blockId == 25) // blockEnd
+                    continue;
+
+                for (int m = 0; m < numMembers && pos + 8 <= minLen; m++)
+                {
+                    int memberId = BitConverter.ToInt32(original, pos);
+                    int memberSize = BitConverter.ToInt32(original, pos + 4);
+                    string memberName = Enum.IsDefined(typeof(IBIToken), memberId)
+                        ? ((IBIToken)memberId).ToString()
+                        : $"unknown({memberId})";
+
+                    // Compare member header (8 bytes: memberID + memberSize)
+                    for (int i = pos; i < pos + 8 && i < minLen; i++)
+                    {
+                        if (original[i] != generated[i])
+                        {
+                            sb.AppendLine($"Member header mismatch: member '{memberName}' in block '{blockName}' at offset {i} (0x{i:X}): original=0x{original[i]:X2}, generated=0x{generated[i]:X2}");
+                            AppendContext(sb, original, generated, i, minLen);
+
+                            return sb.ToString();
+                        }
+                    }
+                    pos += 8;
+
+                    // Skip nested metadata bytes (token > 7, size == 4)
+                    bool isNestedMetadata = memberId > 7 && memberSize == 4;
+                    if (!isNestedMetadata)
+                    {
+                        // Compare member data
+                        for (int i = pos; i < pos + memberSize && i < minLen; i++)
+                        {
+                            if (original[i] != generated[i])
+                            {
+                                string dataHint = GetMemberDataHint(original, pos, memberSize, memberId);
+                                sb.AppendLine($"Member data mismatch: member '{memberName}' (size={memberSize}) in block '{blockName}' at offset {i} (0x{i:X}): original=0x{original[i]:X2}, generated=0x{generated[i]:X2}");
+
+                                if (!string.IsNullOrEmpty(dataHint))
+                                    sb.AppendLine($"  Data: {dataHint}");
+
+                                AppendContext(sb, original, generated, i, minLen);
+
+                                return sb.ToString();
+                            }
+                        }
+                    }
+
+                    pos += memberSize;
+                }
+            }
+
+            // Compare any trailing bytes beyond the structured walk
+            for (int i = pos; i < minLen; i++)
+            {
+                if (original[i] != generated[i])
+                {
+                    sb.AppendLine($"Trailing mismatch at offset {i} (0x{i:X}): original=0x{original[i]:X2}, generated=0x{generated[i]:X2}");
+                    AppendContext(sb, original, generated, i, minLen);
+
+                    return sb.ToString();
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        private static string GetMemberDataHint(byte[] data, int dataStart, int size, int memberId)
+        {
+            // String (4) or Identifier (7): show as text
+            if ((memberId == 4 || memberId == 7) && size > 0)
+            {
+                int strLen = size - 1; // exclude null terminator
+                if (strLen > 0 && dataStart + strLen <= data.Length)
+                    return $"\"{Encoding.ASCII.GetString(data, dataStart, strLen)}\"";
+            }
+
+            // Float (6): show as float
+            if (memberId == 6 && size == 4 && dataStart + 4 <= data.Length)
+                return BitConverter.ToSingle(data, dataStart).ToString();
+
+            return null;
+        }
+
+        private static void AppendContext(StringBuilder sb, byte[] original, byte[] generated, int mismatchPos, int minLen)
+        {
+            int start = Math.Max(0, mismatchPos - 4);
+            int end = Math.Min(minLen, mismatchPos + 12);
+
+            sb.Append("  Original: ");
+
+            for (int j = start; j < end; j++)
+            {
+                sb.Append($"{original[j]:X2} ");
+            }
+
+            sb.AppendLine();
+            sb.Append("  Generated:");
+
+            for (int j = start; j < end; j++)
+            {
+                sb.Append($" {generated[j]:X2}");
+            }
+
+            sb.AppendLine();
         }
     }
 }

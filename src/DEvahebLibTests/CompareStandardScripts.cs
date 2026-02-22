@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DEvahebLib;
 
 namespace DEvahebLibTests
 {
@@ -84,6 +80,24 @@ namespace DEvahebLibTests
             }
 
             Assert.IsTrue(condition: string.IsNullOrEmpty(differences), message: differences);
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(IBIFiles))]
+        public void TestRoundTripIBI(string file)
+        {
+            var originalBytes = File.ReadAllBytes(file);
+            var version = Helper.ReadIBIVersion(file);
+            var nodes = Helper.ReadIBI(file);
+            var generatedBytes = Helper.WriteIBI(nodes, version);
+            string differences = Helper.CompareIBIBytes(originalBytes, generatedBytes);
+
+            if (!string.IsNullOrWhiteSpace(differences))
+            {
+                Console.WriteLine(differences);
+            }
+
+            Assert.AreEqual(string.Empty, differences);
         }
     }
 }
