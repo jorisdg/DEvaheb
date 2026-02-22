@@ -2,7 +2,7 @@
   "profiles": {
     "ConsoleApp": {
       "commandName": "Project",
-      "commandLineArgs": "\"C:\\GitHub\\JEDI_Academy_SDK\\Tools\\JAscripts\\scripts\\academy1\\intro.IBI\" -output \"C:\\GitHub\\JEDI_Academy_SDK\\Tools\\test.icarus\" -open \"C:\\Users\\joris\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe\""
+      "commandLineArgs": " -open \"notepad\" -extension \"txt\" \"D:\\Repos\\DEvaheb JEDI_Academy_SDK\\Tools\\EFScripts\\PAK3\\_holodeck_warlord\\attack.IBI\""
     }
   }
 }
