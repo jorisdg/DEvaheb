@@ -99,5 +99,29 @@ namespace DEvahebLibTests
 
             Assert.AreEqual(string.Empty, differences);
         }
+
+        [TestMethod]
+        [DynamicData(nameof(IBIFiles))]
+        public void TestSourceParseMatchesIBI(string file)
+        {
+            var sourceFile = Path.ChangeExtension(file, ".icarus");
+            if (!File.Exists(sourceFile))
+            {
+                Assert.Inconclusive($"Source file not found: {sourceFile}");
+                return;
+            }
+
+            var ibiNodes = Helper.ReadIBI(file);
+            var sourceNodes = Helper.ReadSource(sourceFile);
+
+            string differences = Helper.CompareASTs(ibiNodes, sourceNodes);
+
+            if (!string.IsNullOrWhiteSpace(differences))
+            {
+                Console.WriteLine(differences);
+            }
+
+            Assert.AreEqual(string.Empty, differences);
+        }
     }
 }

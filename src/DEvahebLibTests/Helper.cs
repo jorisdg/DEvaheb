@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using DEvahebLib;
@@ -52,6 +53,8 @@ namespace DEvahebLibTests
                         {
                             nodes.Add(parser.ReadIBIBlock(reader));
                         }
+
+                        TransformNodes.Transform(nodes);
                     }
                 }
             }
@@ -360,6 +363,21 @@ namespace DEvahebLibTests
             }
 
             sb.AppendLine();
+        }
+
+        public static List<Node> ReadSource(string filename, bool convertComments = false)
+        {
+            string sourceText = File.ReadAllText(filename);
+            var parser = new IcarusParser();
+            var nodes = parser.Parse(sourceText, convertComments);
+            TransformNodes.Transform(nodes);
+            return nodes;
+        }
+
+        public static string CompareASTs(List<Node> expected, List<Node> actual, string path = "root", float floatTolerance = 0.001f)
+        {
+            var differences = CompareNodes.Compare(expected, actual, floatTolerance, stopOnFirst: true);
+            return differences.Count > 0 ? differences[0] : string.Empty;
         }
     }
 }

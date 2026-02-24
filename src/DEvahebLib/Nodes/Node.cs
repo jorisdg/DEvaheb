@@ -10,6 +10,8 @@ namespace DEvahebLib.Nodes
     {
         abstract public int Size { get; }
 
+        public virtual Type ValueType => typeof(VoidValue);
+
         public Node()
         {
         }
@@ -18,6 +20,8 @@ namespace DEvahebLib.Nodes
     public abstract class ValueNode : Node
     {
         public virtual object Value { get; set; } = null;
+
+        public override Type ValueType => GetType();
 
         public ValueNode()
             : base()
@@ -34,7 +38,13 @@ namespace DEvahebLib.Nodes
     {
         public string Name { get; protected set; }
 
-        public abstract IEnumerable<Node> Arguments { get; }
+        protected List<Node> arguments;
+
+        public virtual IEnumerable<Node> Arguments => arguments;
+
+        protected Node GetArg(int index) => index < arguments.Count ? arguments[index] : null;
+        protected T GetArg<T>(int index) where T : Node => index < arguments.Count ? arguments[index] as T : null;
+        public void SetArg(int index, Node value) { if (index < arguments.Count) arguments[index] = value; }
 
         public override int Size
         {
@@ -51,11 +61,17 @@ namespace DEvahebLib.Nodes
             }
         }
 
-        public FunctionNode(string name)
+        public FunctionNode(string name, params Node[] args)
             : base()
         {
             Name = name;
+            arguments = new List<Node>(args);
         }
+
+        /// <summary>
+        /// Expected number of arguments for this node. Returns -1 if unknown/variable.
+        /// </summary>
+        public virtual int ExpectedArgCount => -1;
 
         public override string ToString()
         {
@@ -65,14 +81,9 @@ namespace DEvahebLib.Nodes
 
     public class GenericFunction : FunctionNode
     {
-        List<Node> arguments;
-
-        public override IEnumerable<Node> Arguments => arguments;
-
-        public GenericFunction(string name, List<Node> arguments)
-            : base(name)
+        public GenericFunction(string name, params Node[] args)
+            : base(name, args)
         {
-            this.arguments = arguments ?? new List<Node>();
         }
     }
 
@@ -80,15 +91,10 @@ namespace DEvahebLib.Nodes
     {
         public List<Node> SubNodes { get; protected set; }
 
-        public BlockNode(string name)
-            : this(name, childNodes: new List<Node>())
+        public BlockNode(string name, params Node[] args)
+            : base(name, args)
         {
-        }
-
-        public BlockNode(string name, List<Node> childNodes)
-            : base(name)
-        {
-            SubNodes = childNodes ?? new List<Node>();
+            SubNodes = new List<Node>();
         }
 
         public override string ToString()

@@ -120,29 +120,29 @@ namespace DEvahebLib.Parser
                     break;
 
                 case IBIToken.@if:
-                    newNode = new If(expression1: ReadIBIBlock(reader, t), operatorNode: (OperatorNode)ReadIBIBlock(reader, t), expression2: ReadIBIBlock(reader, t));
+                    newNode = new If(ReadIBIBlock(reader, t), (OperatorNode)ReadIBIBlock(reader, t), ReadIBIBlock(reader, t));
                     break;
                 case IBIToken.@else:
                     newNode = new Else();
                     break;
                 case IBIToken.random:
-                    newNode = new Nodes.Random(min: ReadIBIBlock(reader, t), max: ReadIBIBlock(reader, t));
+                    newNode = new Nodes.Random(ReadIBIBlock(reader, t), ReadIBIBlock(reader, t));
                     break;
                 case IBIToken.task:
-                    newNode = new Task(name: ReadIBIBlock(reader, t));
+                    newNode = new Task(ReadIBIBlock(reader, t));
                     break;
                 case IBIToken.affect:
-                    newNode = new Affect(name: ReadIBIBlock(reader, t), type: EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(AFFECT_TYPE)));
+                    newNode = new Affect(ReadIBIBlock(reader, t), EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(AFFECT_TYPE)));
                     break;
                 case IBIToken.loop:
-                    newNode = new Loop(count: ReadIBIBlock(reader, t));
+                    newNode = new Loop(ReadIBIBlock(reader, t));
                     break;
 
                 case IBIToken.tag:
-                    newNode = new Tag(tagName: ReadIBIBlock(reader, t), tagType: EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), enumType: typeof(TagType)));
+                    newNode = new Tag(ReadIBIBlock(reader, t), EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(TagType)));
                     break;
                 case IBIToken.get:
-                    newNode = new Get(type: EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(DECLARE_TYPE)), variableName: ReadIBIBlock(reader, t));
+                    newNode = new Get(EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(DECLARE_TYPE)), ReadIBIBlock(reader, t));
                     break;
                 case IBIToken.camera:
                     parms = new List<Node>();
@@ -161,14 +161,13 @@ namespace DEvahebLib.Parser
                         }
                     }
 
-                    // Determine overload and check the arguments
-                    newNode = Camera.CreateCameraOverload(parms);
+                    newNode = new Camera(parms.ToArray());
                     break;
                 case IBIToken.declare:
-                    newNode = new Declare(type: EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(DECLARE_TYPE)), variableName: ReadIBIBlock(reader, t));
+                    newNode = new Declare(EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(DECLARE_TYPE)), ReadIBIBlock(reader, t));
                     break;
                 case IBIToken.sound:
-                    newNode = new Sound(channel: EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(CHANNELS)), filename: ReadIBIBlock(reader, t));
+                    newNode = new Sound(EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(CHANNELS)), ReadIBIBlock(reader, t));
                     break;
 
                 case IBIToken.set:
@@ -176,11 +175,67 @@ namespace DEvahebLib.Parser
                     break;
 
                 case IBIToken.play:
+                    newNode = new Play(EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(PLAY_TYPES)), ReadIBIBlock(reader, t));
+                    break;
+
+                case IBIToken.use:
+                    newNode = new Use(ReadIBIBlock(reader, t));
+                    break;
+                case IBIToken.print:
+                    newNode = new Print(ReadIBIBlock(reader, t));
+                    break;
+                case IBIToken.flush:
+                    newNode = new Flush();
+                    break;
+                case IBIToken.rotate:
+                    newNode = new Rotate(ReadIBIBlock(reader, t), ReadIBIBlock(reader, t));
+                    break;
+                case IBIToken.waitsignal:
+                    newNode = new WaitSignal(ReadIBIBlock(reader, t));
+                    break;
+                case IBIToken.move:
                     parms = new List<Node>();
 
-                    Node playNode = EnumValue.CreateOrPassThrough(ReadIBIBlock(reader, t), typeof(PLAY_TYPES));
-                    
-                    newNode = new Play(playNode, ReadIBIBlock(reader, t));
+                    // move has 2 or 3 arguments, read all based on size
+                    for (int i = 0; i < size; i++)
+                    {
+                        var node = ReadIBIBlock(reader, t);
+                        if (node != null)
+                        {
+                            parms.Add(node);
+
+                            i += node.Size - 1;
+                        }
+                    }
+
+                    newNode = new Move(parms.ToArray());
+                    break;
+                case IBIToken.remove:
+                    newNode = new Remove(ReadIBIBlock(reader, t));
+                    break;
+                case IBIToken.free:
+                    newNode = new Free(ReadIBIBlock(reader, t));
+                    break;
+                case IBIToken.signal:
+                    newNode = new Signal(ReadIBIBlock(reader, t));
+                    break;
+                case IBIToken.@do:
+                    newNode = new Do(ReadIBIBlock(reader, t));
+                    break;
+                case IBIToken.run:
+                    newNode = new Run(ReadIBIBlock(reader, t));
+                    break;
+                case IBIToken.kill:
+                    newNode = new Kill(ReadIBIBlock(reader, t));
+                    break;
+                case IBIToken.wait:
+                    newNode = new Wait(ReadIBIBlock(reader, t));
+                    break;
+                case IBIToken.rem:
+                    newNode = new Rem(ReadIBIBlock(reader, t));
+                    break;
+                case IBIToken.blockEnd:
+                    newNode = new BlockEnd();
                     break;
 
                 default:
@@ -196,7 +251,7 @@ namespace DEvahebLib.Parser
                             i += node.Size - 1;
                         }
                     }
-                    newNode = new GenericFunction(t.ToString(), parms);
+                    newNode = new GenericFunction(t.ToString(), parms.ToArray());
                     break;
             }
 
@@ -212,7 +267,7 @@ namespace DEvahebLib.Parser
 
                     var blockChild = ReadIBIBlock(reader);
 
-                    if (blockChild is GenericFunction func && func.Name.Equals("blockEnd"))
+                    if (blockChild is BlockEnd)
                     {
                         blockEnd = true;
                     }

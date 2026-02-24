@@ -1,0 +1,8 @@
+use ( "before" );
+loop ( -1 ) { move ( $< 0.000 0.000 0.000 >$, $< 100.000 200.000 300.000 >$, 500.000 ); wait ( 1000.000 ); }
+use ( "two" ); use ( "three" );
+affect ( "target", /*@AFFECT_TYPE*/ FLUSH ) { use ( "inside" ); }
+/* this is a
+   multi-line
+   block comment */
+use ( "after" );

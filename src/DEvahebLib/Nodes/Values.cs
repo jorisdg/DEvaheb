@@ -7,6 +7,11 @@ using DEvahebLib.Enums;
 
 namespace DEvahebLib.Nodes
 {
+    public class VoidValue : ValueNode
+    {
+        public override int Size => 0;
+    }
+
     public class CharValue : ValueNode
     {
         public char? Char { get { return (char?)Value; } set { Value = value; } }

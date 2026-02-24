@@ -7,29 +7,22 @@ namespace DEvahebLib.Nodes
 {
     public class If : BlockNode
     {
-        public override IEnumerable<Node> Arguments => new List<Node> { Expr1, Operator, Expr2 };
+        public Node Expr1 { get => GetArg(0); set => SetArg(0, value); }
 
-        public Node Expr1 { get; set; }
+        public OperatorNode Operator { get => GetArg<OperatorNode>(1); set => SetArg(1, value); }
 
-        public OperatorNode Operator { get; set; }
+        public Node Expr2 { get => GetArg(2); set => SetArg(2, value); }
 
-        public Node Expr2 { get; set; }
+        public override int ExpectedArgCount => 3;
 
         public If(Node expression1, OperatorNode operatorNode, Node expression2)
-            : this(expression1, operatorNode, expression2, childNodes: null)
+            : this(new Node[] { expression1, operatorNode, expression2 })
         {
-
         }
 
-        public If(Node expression1, OperatorNode operatorNode, Node expression2, List<Node> childNodes)
-            : base(name: "if", childNodes)
+        public If(params Node[] args)
+            : base("if", args)
         {
-            if (expression1 == null || operatorNode == null || expression2 == null)
-                throw new Exception("Arguments for 'if' block cannot be null");
-
-            Expr1 = expression1;
-            Operator = operatorNode;
-            Expr2 = expression2;
         }
 
         public override int Size
@@ -38,8 +31,8 @@ namespace DEvahebLib.Nodes
             {
                 int count = 2; // count ourselves and operator
 
-                count += Expr1.Size;
-                count += Expr2.Size;
+                if (Expr1 != null) count += Expr1.Size;
+                if (Expr2 != null) count += Expr2.Size;
 
                 return count;
             }
@@ -48,71 +41,55 @@ namespace DEvahebLib.Nodes
 
     public class Task : BlockNode
     {
-        public override IEnumerable<Node> Arguments => new List<Node>() { TaskName };
+        public Node TaskName { get => GetArg(0); set => SetArg(0, value); }
 
-        public Node TaskName { get; set; }
+        public override int ExpectedArgCount => 1;
 
         public Task()
             : this(new StringValue("DEFAULT"))
         {
         }
 
-        public Task(Node name)
-            : this(name, childNodes: new List<Node>())
+        public Task(params Node[] args)
+            : base("task", args)
         {
-        }
-
-        public Task(Node name, List<Node> childNodes)
-            : base(name: "task", childNodes)
-        {
-            if (name == null)
-                throw new Exception("Arguments for 'task' block cannot be null");
-
-            TaskName = name;
         }
     }
 
     public class Affect : BlockNode
     {
-        public override IEnumerable<Node> Arguments => new List<Node>() { EntityName, Type };
+        public Node EntityName { get => GetArg(0); set => SetArg(0, value); }
 
-        public Node EntityName { get; set; }
+        public Node Type { get => GetArg(1); set => SetArg(1, value); }
 
-        public Node Type { get; set; }
+        public override int ExpectedArgCount => 2;
 
         public Affect()
             : this(new StringValue("DEFAULT"), new FloatValue((float)AFFECT_TYPE.INSERT))
         {
         }
 
-        public Affect(Node name, Node type)
-            : base(name: "affect")
+        public Affect(params Node[] args)
+            : base("affect", args)
         {
-            if (name == null || type == null)
-                throw new Exception("Arguments for 'affect' block cannot be null");
-
-            EntityName = name;
-            Type = type;
         }
     }
 
     public class Else : BlockNode
     {
-        public override IEnumerable<Node> Arguments => new List<Node>();
+        public override int ExpectedArgCount => 0;
 
-        public Else()
-            : base(name: "else")
+        public Else(params Node[] args)
+            : base("else", args)
         {
         }
     }
 
     public class Loop : BlockNode
     {
-        public override IEnumerable<Node> Arguments => new List<Node>() { Count };
+        public Node Count { get => GetArg(0); set => SetArg(0, value); }
 
-        public Node Count { get; set; }
-
-        public AFFECT_TYPE Type { get; set; }
+        public override int ExpectedArgCount => 1;
 
         public Loop()
             : this(10)
@@ -124,19 +101,9 @@ namespace DEvahebLib.Nodes
         {
         }
 
-        public Loop(Node count)
-            : base(name: "loop")
+        public Loop(params Node[] args)
+            : base("loop", args)
         {
-            Count = count;
-
-            if (Count is FloatValue floatValue)
-            {
-                Count = new IntegerValue((Int32)floatValue.Float);
-            }
-            if (!(Count is IntegerValue) && !(Count is FunctionNode))
-            {
-                throw new Exception("Loop argument is not Int or Function");
-            }
         }
     }
 }

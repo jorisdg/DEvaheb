@@ -231,6 +231,8 @@ namespace ConsoleApp
                         {
                             nodes.Add(parser.ReadIBIBlock(reader));
                         }
+
+                        TransformNodes.Transform(nodes);
                     }
                 }
             }

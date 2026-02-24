@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using DEvahebLib.Nodes;
 using DEvahebLib.Parser;
 
@@ -89,6 +90,21 @@ namespace DEvahebLib.Visitors
             if (node is Sound) return IBIToken.sound;
             if (node is Play) return IBIToken.play;
             if (node is Camera) return IBIToken.camera;
+            if (node is Use) return IBIToken.use;
+            if (node is Print) return IBIToken.print;
+            if (node is Flush) return IBIToken.flush;
+            if (node is Rotate) return IBIToken.rotate;
+            if (node is WaitSignal) return IBIToken.waitsignal;
+            if (node is Move) return IBIToken.move;
+            if (node is Remove) return IBIToken.remove;
+            if (node is Free) return IBIToken.free;
+            if (node is Signal) return IBIToken.signal;
+            if (node is Do) return IBIToken.@do;
+            if (node is Run) return IBIToken.run;
+            if (node is Kill) return IBIToken.kill;
+            if (node is Wait) return IBIToken.wait;
+            if (node is Rem) return IBIToken.rem;
+            if (node is BlockEnd) return IBIToken.blockEnd;
             if (node is GenericFunction gf)
             {
                 if (Enum.TryParse<IBIToken>(gf.Name, out var token))
@@ -194,6 +210,13 @@ namespace DEvahebLib.Visitors
 
         public override void VisitFunctionNode(FunctionNode node)
         {
+            if (node is DoWait)
+            {
+                VisitFunctionNode(new Do(node.Arguments.ToArray()));
+                VisitFunctionNode(new Wait(node.Arguments.ToArray()));
+                return;
+            }
+
             IBIToken token = GetFunctionToken(node);
             int size = GetArgumentSizeSum(node);
 
