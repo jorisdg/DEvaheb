@@ -45,6 +45,11 @@ namespace DEvahebLib.Visitors
                 {
                     writer.Write(0.0f);
                 }
+                else if (token == IBIToken.random)
+                {
+                    // Q3_INFINITE
+                    writer.Write((float)16777216);
+                }
                 else
                 {
                     writer.Write((float)(int)token);

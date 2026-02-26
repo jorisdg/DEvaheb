@@ -44,7 +44,7 @@ namespace DEvahebLibTests
         [DynamicData(nameof(IBIFiles))]
         public void TestFilesWithInlineComments(string file)
         {
-            string differences = Helper.GenerateSourceFromIBIAndCompareOriginal(Path.ChangeExtension(file, null), BasicTests.VariableList, originalExtension: ".icarus", parity: DEvahebLib.Visitors.SourceCodeParity.BehavED, ignoreSetTypes: false);
+            string differences = Helper.GenerateSourceFromIBIAndCompareOriginal(Path.ChangeExtension(file, null), Helper.VariableList, originalExtension: ".icarus", parity: DEvahebLib.Visitors.SourceCodeParity.BehavED, ignoreSetTypes: false);
 
             if (!string.IsNullOrWhiteSpace(differences))
             {
@@ -58,7 +58,7 @@ namespace DEvahebLibTests
         [DynamicData(nameof(IBIFiles))]
         public void TestFilesWithoutInlineComments(string file)
         {
-            string differences = Helper.GenerateSourceFromIBIAndCompareOriginal(Path.ChangeExtension(file, null), BasicTests.VariableList, originalExtension: ".icarus", parity: DEvahebLib.Visitors.SourceCodeParity.BehavED, ignoreSetTypes: true);
+            string differences = Helper.GenerateSourceFromIBIAndCompareOriginal(Path.ChangeExtension(file, null), Helper.VariableList, originalExtension: ".icarus", parity: DEvahebLib.Visitors.SourceCodeParity.BehavED, ignoreSetTypes: true);
 
             if (!string.IsNullOrWhiteSpace(differences))
             {
@@ -72,7 +72,7 @@ namespace DEvahebLibTests
         [DynamicData(nameof(IBIFiles))]
         public void TestFilesWithoutBehavedCompatibility(string file)
         {
-            string differences = Helper.GenerateSourceFromIBIAndCompareOriginal(Path.ChangeExtension(file, null), BasicTests.VariableList, originalExtension: ".icarus", parity: DEvahebLib.Visitors.SourceCodeParity.BareExpressions, ignoreSetTypes: true);
+            string differences = Helper.GenerateSourceFromIBIAndCompareOriginal(Path.ChangeExtension(file, null), Helper.VariableList, originalExtension: ".icarus", parity: DEvahebLib.Visitors.SourceCodeParity.BareExpressions, ignoreSetTypes: true);
 
             if (!string.IsNullOrWhiteSpace(differences))
             {
@@ -90,14 +90,9 @@ namespace DEvahebLibTests
             var version = Helper.ReadIBIVersion(file);
             var nodes = Helper.ReadIBI(file);
             var generatedBytes = Helper.WriteIBI(nodes, version);
-            string differences = Helper.CompareIBIBytes(originalBytes, generatedBytes);
+            int difference = Helper.FindIBIByteDifference(originalBytes, generatedBytes);
 
-            if (!string.IsNullOrWhiteSpace(differences))
-            {
-                Console.WriteLine(differences);
-            }
-
-            Assert.IsTrue(condition: string.IsNullOrEmpty(differences), message: differences);
+            Assert.AreEqual(-1, difference, $"Found a difference at byte index {difference}");
         }
 
         [TestMethod]

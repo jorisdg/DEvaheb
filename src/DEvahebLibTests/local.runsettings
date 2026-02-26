@@ -2,6 +2,5 @@
 <RunSettings>
   <TestRunParameters>
     <Parameter name="TestFilesDirectory" value="C:\temp\JEDI_Academy_SDK\Tools\JAscripts" />
-    <Parameter name="VariableTypesFile" value="..\..\..\..\DEvaheb\variable_types.csv" />
   </TestRunParameters>
 </RunSettings>
