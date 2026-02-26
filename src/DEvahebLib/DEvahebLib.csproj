@@ -6,4 +6,8 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="*" />
+  </ItemGroup>
+
 </Project>

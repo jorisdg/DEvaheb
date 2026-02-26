@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using DEvahebLib;
 using DEvahebLib.Nodes;
 using DEvahebLib.Parser;
 using DEvahebLib.Visitors;
@@ -217,11 +218,11 @@ namespace ConsoleApp
             {
                 using (var file = new FileStream(filename, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(file))
+                    using (var reader = new BinaryReader(file, IbiEncoding.Windows1252))
                     {
-                        var header = reader.ReadChars(4);
+                        var header = IbiEncoding.Windows1252.GetString(reader.ReadBytes(4));
 
-                        if (new string(header) != "IBI\0") // IBI string terminating
+                        if (header != "IBI\0")
                             throw new Exception($"File {filename} is not a valid IBI file");
 
                         Console.WriteLine($"IBI File Version: {reader.ReadSingle()}");

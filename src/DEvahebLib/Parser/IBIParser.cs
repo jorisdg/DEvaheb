@@ -96,14 +96,12 @@ namespace DEvahebLib.Parser
             switch (t)
             {
                 case IBIToken.String:
-                    var str = new string(reader.ReadChars(size));
-                    str = str.Substring(0, str.Length - 1);
-                    newNode = new StringValue(str);
+                    var strBytes = reader.ReadBytes(size);
+                    newNode = new StringValue(IbiEncoding.Windows1252.GetString(strBytes, 0, size - 1));
                     break;
                 case IBIToken.Identifier:
-                    var identifier = new string(reader.ReadChars(size));
-                    identifier = identifier.Substring(0, identifier.Length - 1);
-                    newNode = new IdentifierValue(identifier);
+                    var idBytes = reader.ReadBytes(size);
+                    newNode = new IdentifierValue(IbiEncoding.Windows1252.GetString(idBytes, 0, size - 1));
                     break;
                 case IBIToken.Float:
                     newNode = new FloatValue(reader.ReadSingle());

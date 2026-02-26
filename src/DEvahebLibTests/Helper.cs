@@ -39,7 +39,7 @@ namespace DEvahebLibTests
             {
                 using (var file = new FileStream(filename, FileMode.Open))
                 {
-                    using (var reader = new BinaryReader(file))
+                    using (var reader = new BinaryReader(file, IbiEncoding.Windows1252))
                     {
                         ReadIBIBinaryStream(nodes, reader);
                     }
@@ -62,7 +62,7 @@ namespace DEvahebLibTests
             {
                 using (Stream stream = new MemoryStream(ibiStream))
                 {
-                    using (var reader = new BinaryReader(stream))
+                    using (var reader = new BinaryReader(stream, IbiEncoding.Windows1252))
                     {
                         ReadIBIBinaryStream(nodes, reader);
                     }
@@ -79,9 +79,9 @@ namespace DEvahebLibTests
 
         private static void ReadIBIBinaryStream(List<Node> nodes, BinaryReader reader)
         {
-            var header = reader.ReadChars(4);
+            var header = IbiEncoding.Windows1252.GetString(reader.ReadBytes(4));
 
-            if (new string(header) != "IBI\0") // IBI string terminating
+            if (header != "IBI\0")
                 throw new Exception($"File is not a valid IBI file");
 
             Console.WriteLine($"IBI File Version: {reader.ReadSingle()}");
@@ -95,23 +95,23 @@ namespace DEvahebLibTests
             TransformNodes.Transform(nodes);
         }
 
-        public static void GenerateSourceFromIBI(string ibiFile, string newSourceFile, string variablesCsvFile, SourceCodeParity parity)
-        {
-            GenerateSourceFromIBI(ibiFile, newSourceFile, Variables.FromCsv(variablesCsvFile), parity);
-        }
-
-        public static void GenerateSourceFromIBI(string ibiFile, string newSourceFile, Variables variables, SourceCodeParity parity)
+        public static string GenerateSourceFromIBI(string ibiFile, Variables variables, SourceCodeParity parity)
         {
             var nodes = Helper.ReadIBI(ibiFile);
-            File.WriteAllText(newSourceFile, Helper.GenerateSource(variables, nodes, parity));
+            return Helper.GenerateSource(variables, nodes, parity);
         }
 
-        public static string GetSourceFilesDifferences(string originalFile, string newFile, bool ignoreSetTypes = false)
+        public static string GetSourceFilesDifferences(string originalFile, string generatedSource, bool ignoreSetTypes = false)
+        {
+            var originalLines = File.ReadLines(originalFile).GetEnumerator();
+            var generatedLines = ((IEnumerable<string>)generatedSource.Replace("\r\n", "\n").Split('\n')).GetEnumerator();
+
+            return CompareSourceLines(originalLines, generatedLines, ignoreSetTypes);
+        }
+
+        private static string CompareSourceLines(IEnumerator<string> originalSource, IEnumerator<string> newSource, bool ignoreSetTypes = false)
         {
             StringBuilder differences = new StringBuilder();
-
-            var originalSource = File.ReadLines(originalFile).GetEnumerator();
-            var newSource = File.ReadLines(newFile).GetEnumerator();
 
             while(originalSource.MoveNext())
             {
@@ -188,17 +188,6 @@ namespace DEvahebLibTests
             return differences.ToString();
         }
 
-        public static void GenerateSourceFromIBIAndCompareOriginal(string filenameBase, string variablesCsvFile, SourceCodeParity parity)
-        {
-            var ibiFile = filenameBase + ".IBI";
-            var originalSourceFile = filenameBase + ".txt";
-            var outputFile = filenameBase + ".test";
-
-            Helper.GenerateSourceFromIBI(ibiFile, outputFile, variablesCsvFile, parity);
-
-            Helper.GetSourceFilesDifferences(originalSourceFile, outputFile);
-        }
-
         public static string GenerateSourceFromIBIAndCompareOriginal(string filenameBase, Variables variables, SourceCodeParity parity)
         {
             return GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables, originalExtension: ".txt", ignoreSetTypes: false, parity: parity);
@@ -208,18 +197,17 @@ namespace DEvahebLibTests
         {
             var ibiFile = filenameBase + ".IBI";
             var originalSourceFile = filenameBase + originalExtension;
-            var outputFile = filenameBase + ".test";
 
-            Helper.GenerateSourceFromIBI(ibiFile, outputFile, variables, parity);
+            string generatedSource = Helper.GenerateSourceFromIBI(ibiFile, variables, parity);
 
-            return Helper.GetSourceFilesDifferences(originalSourceFile, outputFile, ignoreSetTypes);
+            return Helper.GetSourceFilesDifferences(originalSourceFile, generatedSource, ignoreSetTypes);
         }
 
         public static byte[] WriteIBI(List<Node> nodes, float version)
         {
             using (var ms = new MemoryStream())
             {
-                using (var writer = new BinaryWriter(ms, Encoding.UTF8, leaveOpen: true))
+                using (var writer = new BinaryWriter(ms, IbiEncoding.Windows1252, leaveOpen: true))
                 {
                     var generator = new GenerateIBI(writer, version);
                     generator.Visit(nodes);
@@ -233,9 +221,9 @@ namespace DEvahebLibTests
         {
             using (var file = new FileStream(filename, FileMode.Open))
             {
-                using (var reader = new BinaryReader(file))
+                using (var reader = new BinaryReader(file, IbiEncoding.Windows1252))
                 {
-                    reader.ReadChars(4); // skip "IBI\0"
+                    reader.ReadBytes(4); // skip "IBI\0"
 
                     return reader.ReadSingle();
                 }

@@ -21,7 +21,7 @@ namespace DEvahebLib.Visitors
 
         public override void Visit(List<Node> rootNodes)
         {
-            writer.Write("IBI\0".ToCharArray());
+            writer.Write(IbiEncoding.Windows1252.GetBytes("IBI\0"));
             writer.Write(version);
 
             base.Visit(rootNodes);
@@ -142,20 +142,20 @@ namespace DEvahebLib.Visitors
             {
                 int len = idVal.String.Length + 1;
                 WriteTokenHeader(IBIToken.Identifier, len);
-                writer.Write(idVal.String.ToCharArray());
-                writer.Write('\0');
+                writer.Write(IbiEncoding.Windows1252.GetBytes(idVal.String));
+                writer.Write((byte)0);
             }
             else if (node is StringValue strVal)
             {
                 int len = strVal.String.Length + 1;
                 WriteTokenHeader(IBIToken.String, len);
-                writer.Write(strVal.String.ToCharArray());
-                writer.Write('\0');
+                writer.Write(IbiEncoding.Windows1252.GetBytes(strVal.String));
+                writer.Write((byte)0);
             }
             else if (node is CharValue charVal)
             {
                 WriteTokenHeader(IBIToken.Char, 1);
-                writer.Write((char)charVal.Char);
+                writer.Write((byte)charVal.Char);
             }
         }
 
@@ -185,15 +185,15 @@ namespace DEvahebLib.Visitors
             {
                 int len = eiv.IdentifierName.Length + 1;
                 WriteTokenHeader(IBIToken.Identifier, len);
-                writer.Write(eiv.IdentifierName.ToCharArray());
-                writer.Write('\0');
+                writer.Write(IbiEncoding.Windows1252.GetBytes(eiv.IdentifierName));
+                writer.Write((byte)0);
             }
             else if (enumValue is EnumStringValue esv)
             {
                 int len = esv.String.Length + 1;
                 WriteTokenHeader(IBIToken.String, len);
-                writer.Write(esv.String.ToCharArray());
-                writer.Write('\0');
+                writer.Write(IbiEncoding.Windows1252.GetBytes(esv.String));
+                writer.Write((byte)0);
             }
             else if (enumValue is EnumIntValue eintv)
             {
