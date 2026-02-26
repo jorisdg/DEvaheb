@@ -41,20 +41,7 @@ namespace DEvahebLibTests
                 {
                     using (var reader = new BinaryReader(file))
                     {
-                        var header = reader.ReadChars(4);
-
-                        if (new string(header) != "IBI\0") // IBI string terminating
-                            throw new Exception($"File {filename} is not a valid IBI file");
-
-                        Console.WriteLine($"IBI File Version: {reader.ReadSingle()}");
-
-                        var parser = new IBIParser();
-                        while (reader != null && reader.BaseStream.Position < reader.BaseStream.Length)
-                        {
-                            nodes.Add(parser.ReadIBIBlock(reader));
-                        }
-
-                        TransformNodes.Transform(nodes);
+                        ReadIBIBinaryStream(nodes, reader);
                     }
                 }
             }
@@ -65,6 +52,47 @@ namespace DEvahebLibTests
             }
 
             return nodes;
+        }
+
+        public static List<Node> ReadIBI(byte[] ibiStream)
+        {
+            List<Node> nodes = new List<Node>();
+
+            try
+            {
+                using (Stream stream = new MemoryStream(ibiStream))
+                {
+                    using (var reader = new BinaryReader(stream))
+                    {
+                        ReadIBIBinaryStream(nodes, reader);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine(ex.ToString());
+            }
+
+            return nodes;
+        }
+
+        private static void ReadIBIBinaryStream(List<Node> nodes, BinaryReader reader)
+        {
+            var header = reader.ReadChars(4);
+
+            if (new string(header) != "IBI\0") // IBI string terminating
+                throw new Exception($"File is not a valid IBI file");
+
+            Console.WriteLine($"IBI File Version: {reader.ReadSingle()}");
+
+            var parser = new IBIParser();
+            while (reader != null && reader.BaseStream.Position < reader.BaseStream.Length)
+            {
+                nodes.Add(parser.ReadIBIBlock(reader));
+            }
+
+            TransformNodes.Transform(nodes);
         }
 
         public static void GenerateSourceFromIBI(string ibiFile, string newSourceFile, string variablesCsvFile, SourceCodeParity parity)
@@ -365,19 +393,19 @@ namespace DEvahebLibTests
             sb.AppendLine();
         }
 
-        public static List<Node> ReadSource(string filename, bool convertComments = false)
+        public static List<Node> ReadSource(string filename, bool convertComments = false, bool includeRem = true)
         {
             string sourceText = File.ReadAllText(filename);
             var parser = new IcarusParser();
-            var nodes = parser.Parse(sourceText, convertComments);
+            var nodes = parser.Parse(sourceText, convertComments, includeRem);
             TransformNodes.Transform(nodes);
             return nodes;
         }
 
-        public static string CompareASTs(List<Node> expected, List<Node> actual, string path = "root", float floatTolerance = 0.001f)
+        public static string CompareASTs(List<Node> expected, List<Node> actual, float floatTolerance = 0.001f, bool stopOnFirst = false)
         {
-            var differences = CompareNodes.Compare(expected, actual, floatTolerance, stopOnFirst: true);
-            return differences.Count > 0 ? differences[0] : string.Empty;
+            var differences = CompareNodes.Compare(expected, actual, floatTolerance, stopOnFirst);
+            return differences.Count > 0 ? string.Join('\n', differences) : string.Empty;
         }
     }
 }

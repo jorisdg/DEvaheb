@@ -25,7 +25,7 @@ namespace DEvahebLib.Visitors
         public static List<string> Compare(List<Node> expected, List<Node> actual, float floatTolerance = 0.001f, bool stopOnFirst = true)
         {
             var comparer = new CompareNodes(floatTolerance, stopOnFirst);
-            comparer.CompareLists(expected, NormalizeNodes(actual), "root");
+            comparer.CompareLists(expected, actual);
             return comparer.Differences;
         }
 
@@ -37,39 +37,42 @@ namespace DEvahebLib.Visitors
             if (stopOnFirst) stopped = true;
         }
 
-        private void CompareLists(List<Node> expected, List<Node> actual, string pathPrefix)
+        private void CompareLists(List<Node> expected, List<Node> actual)
         {
+            List<Node> normalizedExpected = NormalizeNodes(expected);
+            List<Node> normalizedActual = NormalizeNodes(actual);
+
             if (stopped) return;
 
-            if (expected.Count != actual.Count)
+            if (normalizedExpected.Count != normalizedActual.Count)
             {
-                AddDifference($"node count mismatch (expected {expected.Count}, got {actual.Count})");
+                AddDifference($"node count mismatch (expected {normalizedExpected.Count}, got {normalizedActual.Count})");
                 if (stopped) return;
             }
 
-            int count = Math.Min(expected.Count, actual.Count);
+            int count = Math.Min(normalizedExpected.Count, normalizedActual.Count);
             for (int i = 0; i < count; i++)
             {
                 if (stopped) return;
 
                 pathStack.Push($"[{i}]");
-                currentActual = actual[i];
+                currentActual = normalizedActual[i];
 
-                if (expected[i] == null && actual[i] == null)
+                if (normalizedExpected[i] == null && normalizedActual[i] == null)
                 {
                     // both null, ok
                 }
-                else if (expected[i] == null)
+                else if (normalizedExpected[i] == null)
                 {
-                    AddDifference($"expected null, got {actual[i].GetType().Name}");
+                    AddDifference($"expected null, got {normalizedActual[i].GetType().Name}");
                 }
-                else if (actual[i] == null)
+                else if (normalizedActual[i] == null)
                 {
-                    AddDifference($"expected {expected[i].GetType().Name}, got null");
+                    AddDifference($"expected {normalizedExpected[i].GetType().Name}, got null");
                 }
                 else
                 {
-                    Visit(expected[i]);
+                    Visit(normalizedExpected[i]);
                 }
 
                 pathStack.Pop();
@@ -156,7 +159,7 @@ namespace DEvahebLib.Visitors
             var aArgs = new List<Node>(actualFn.Arguments);
 
             pathStack.Push(".args");
-            CompareLists(eArgs, aArgs, "args");
+            CompareLists(eArgs, aArgs);
             pathStack.Pop();
 
             currentActual = actual;
@@ -185,11 +188,11 @@ namespace DEvahebLib.Visitors
             var aArgs = new List<Node>(actualBlock.Arguments);
 
             pathStack.Push(".args");
-            CompareLists(eArgs, aArgs, "args");
+            CompareLists(eArgs, aArgs);
             pathStack.Pop();
 
             pathStack.Push(".body");
-            CompareLists(expected.SubNodes, actualBlock.SubNodes, "body");
+            CompareLists(expected.SubNodes, actualBlock.SubNodes);
             pathStack.Pop();
 
             currentActual = actual;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using DEvahebLib.Visitors;
 
 namespace DEvahebLibTests
 {
@@ -84,13 +85,31 @@ namespace DEvahebLibTests
 
         [TestMethod]
         [DynamicData(nameof(IBIFiles))]
-        public void TestRoundTripIBI(string file)
+        public void TestRoundTripIBIBinary(string file)
         {
             var originalBytes = File.ReadAllBytes(file);
             var version = Helper.ReadIBIVersion(file);
             var nodes = Helper.ReadIBI(file);
             var generatedBytes = Helper.WriteIBI(nodes, version);
             string differences = Helper.CompareIBIBytes(originalBytes, generatedBytes);
+
+            if (!string.IsNullOrWhiteSpace(differences))
+            {
+                Console.WriteLine(differences);
+            }
+
+            Assert.AreEqual(string.Empty, differences);
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(IBIFiles))]
+        public void TestRoundTripIBIAST(string file)
+        {
+            var originalBytes = File.ReadAllBytes(file);
+            var version = Helper.ReadIBIVersion(file);
+            var nodes = Helper.ReadIBI(file);
+            var generatedBytes = Helper.WriteIBI(nodes, version);
+            string differences = Helper.CompareASTs(Helper.ReadIBI(file), Helper.ReadIBI(generatedBytes));
 
             if (!string.IsNullOrWhiteSpace(differences))
             {
@@ -112,9 +131,9 @@ namespace DEvahebLibTests
             }
 
             var ibiNodes = Helper.ReadIBI(file);
-            var sourceNodes = Helper.ReadSource(sourceFile);
+            var sourceNodes = Helper.ReadSource(sourceFile, includeRem: false);
 
-            string differences = Helper.CompareASTs(ibiNodes, sourceNodes);
+            string differences = Helper.CompareASTs(ibiNodes, sourceNodes, stopOnFirst: false);
 
             if (!string.IsNullOrWhiteSpace(differences))
             {

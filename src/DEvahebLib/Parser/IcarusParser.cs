@@ -55,8 +55,9 @@ namespace DEvahebLib.Parser
         private string currentLine;
         private int pos;
         private bool convertComments;
+        private bool includeRem;
 
-        public List<Node> Parse(string sourceText, bool convertComments = false)
+        public List<Node> Parse(string sourceText, bool convertComments = false, bool includeRem = true)
         {
             lines = sourceText.Replace("\r\n", "\n").Split('\n');
             lineIndex = -1;
@@ -64,6 +65,7 @@ namespace DEvahebLib.Parser
             pos = 0;
 
             this.convertComments = convertComments;
+            this.includeRem = includeRem;
             var nodes = new List<Node>();
 
             while (ReadNextLine())
@@ -106,7 +108,14 @@ namespace DEvahebLib.Parser
                 return null;
 
             if (FunctionMap.TryGetValue(keyword, out var factory))
-                return new List<Node> { ParseMappedFunction(factory) };
+            {
+                var node = ParseMappedFunction(factory);
+
+                if (!includeRem && node is Rem)
+                    return new List<Node>();
+
+                return new List<Node> { node };
+            }
 
             return new List<Node> { ParseMappedFunction(args => new GenericFunction(keyword, args)) };
         }
@@ -189,29 +198,28 @@ namespace DEvahebLib.Parser
 
             var args = new List<Node>();
 
-            SkipWhitespaceAndComments();
-
-            if (pos < currentLine.Length && currentLine[pos] != ')')
+            while (true)
             {
-                args.Add(ParseArgumentValue());
+                SkipWhitespaceAndComments();
 
-                while (true)
+                // skip $ signs — they're BehavED editor markers, not semantic
+                while (pos < currentLine.Length && currentLine[pos] == '$')
                 {
+                    pos++;
                     SkipWhitespaceAndComments();
-
-                    if (pos >= currentLine.Length || currentLine[pos] == ')')
-                        break;
-
-                    if (currentLine[pos] == ',')
-                    {
-                        pos++;
-                        args.Add(ParseArgumentValue());
-                    }
-                    else
-                    {
-                        break;
-                    }
                 }
+
+                if (pos >= currentLine.Length || currentLine[pos] == ')')
+                    break;
+
+                // skip commas between arguments
+                if (currentLine[pos] == ',')
+                {
+                    pos++;
+                    continue;
+                }
+
+                args.Add(ParseValueWithOptionalEnum());
             }
 
             Expect(')');
@@ -230,45 +238,6 @@ namespace DEvahebLib.Parser
         #endregion
 
         #region Value Parsing
-
-        private Node ParseArgumentValue()
-        {
-            SkipWhitespaceAndComments();
-
-            // Handle $-expression wrapper (BehavED format)
-            if (pos < currentLine.Length && currentLine[pos] == '$')
-            {
-                pos++; // consume $
-
-                SkipWhitespaceAndComments();
-
-                Node result;
-                string word = PeekIdentifier();
-
-                if (word != null)
-                {
-                    ReadIdentifier();
-                    SkipWhitespaceAndComments();
-
-                    if (pos < currentLine.Length && currentLine[pos] == '(')
-                        result = ParseInnerFunction(word);
-                    else
-                        result = new IdentifierValue(word);
-                }
-                else
-                {
-                    result = ParseValue();
-                }
-
-                SkipWhitespaceAndComments();
-
-                Expect('$');
-
-                return result;
-            }
-
-            return ParseValueWithOptionalEnum();
-        }
 
         // When source has an identifier like FLOAT, ORIGIN, FLUSH — resolve to FloatValue
         // so CreateOrPassThrough produces EnumFloatValue matching the IBI parser output.
@@ -324,10 +293,7 @@ namespace DEvahebLib.Parser
             // Vector: < x y z > OR operator: < (less-than)
             if (c == '<')
             {
-                // Peek ahead to determine if this is a vector or operator
-                int next = pos + 1;
-                while (next < currentLine.Length && currentLine[next] == ' ') next++;
-                if (next < currentLine.Length && (char.IsDigit(currentLine[next]) || currentLine[next] == '-' || currentLine[next] == '.'))
+                if (IsVectorAhead())
                     return ParseVector();
                 pos++;
                 return new OperatorNode(Operator.Lt);
@@ -475,7 +441,7 @@ namespace DEvahebLib.Parser
                 }
                 else if (pos + 1 < currentLine.Length && c == '/' && currentLine[pos + 1] == '/')
                 {
-                    if (convertComments && nodes != null)
+                    if (convertComments && includeRem && nodes != null)
                     {
                         string commentText = currentLine.Substring(pos + 2).Trim();
                         nodes.Add(new Rem(new StringValue(commentText)));
@@ -578,6 +544,45 @@ namespace DEvahebLib.Parser
             pos = savedPos;
 
             return result;
+        }
+
+        /// <summary>
+        /// Peeks ahead from current pos (which should be at '&lt;') to check if this is a vector: &lt; number number number &gt;
+        /// Does not modify pos.
+        /// </summary>
+        private bool IsVectorAhead()
+        {
+            int p = pos + 1; // skip '<'
+
+            for (int component = 0; component < 3; component++)
+            {
+                // skip spaces
+                while (p < currentLine.Length && currentLine[p] == ' ') p++;
+
+                if (p >= currentLine.Length)
+                    return false;
+
+                // expect a number: optional minus, digits, optional dot+digits
+                if (!char.IsDigit(currentLine[p]) && currentLine[p] != '-' && currentLine[p] != '.')
+                    return false;
+
+                if (currentLine[p] == '-') p++;
+
+                bool hasDigits = false;
+                while (p < currentLine.Length && (char.IsDigit(currentLine[p]) || currentLine[p] == '.'))
+                {
+                    if (char.IsDigit(currentLine[p])) hasDigits = true;
+                    p++;
+                }
+
+                if (!hasDigits)
+                    return false;
+            }
+
+            // skip spaces before '>'
+            while (p < currentLine.Length && currentLine[p] == ' ') p++;
+
+            return p < currentLine.Length && currentLine[p] == '>';
         }
 
         private void Expect(char expected)
