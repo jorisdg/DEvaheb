@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using DEvahebLib.Visitors;
 
 namespace DEvahebLibTests
 {
@@ -52,7 +51,7 @@ namespace DEvahebLibTests
                 Console.WriteLine(differences);
             }
 
-            Assert.AreEqual(expected: string.Empty, actual: differences);
+            Assert.IsTrue(condition: string.IsNullOrEmpty(differences), message: differences);
         }
 
         [TestMethod]
@@ -98,7 +97,7 @@ namespace DEvahebLibTests
                 Console.WriteLine(differences);
             }
 
-            Assert.AreEqual(string.Empty, differences);
+            Assert.IsTrue(condition: string.IsNullOrEmpty(differences), message: differences);
         }
 
         [TestMethod]
@@ -116,7 +115,7 @@ namespace DEvahebLibTests
                 Console.WriteLine(differences);
             }
 
-            Assert.AreEqual(string.Empty, differences);
+            Assert.IsTrue(condition: string.IsNullOrEmpty(differences), message: differences);
         }
 
         [TestMethod]
@@ -140,7 +139,7 @@ namespace DEvahebLibTests
                 Console.WriteLine(differences);
             }
 
-            Assert.AreEqual(string.Empty, differences);
+            Assert.IsTrue(condition: string.IsNullOrEmpty(differences), message: differences);
         }
     }
 }

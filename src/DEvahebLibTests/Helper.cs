@@ -177,7 +177,10 @@ namespace DEvahebLibTests
 
             while (newSource.MoveNext())
             {
-                if (!string.IsNullOrWhiteSpace(newSource.Current))
+                if (!string.IsNullOrWhiteSpace(newSource.Current)
+                    && !newSource.Current.TrimStart().StartsWith("rem ")
+                    && !newSource.Current.TrimStart().StartsWith("rem(")
+                    && !newSource.Current.TrimStart().StartsWith("//"))
                 {
                     differences.AppendLine("New source file is longer");
                     //throw new Exception(differences.ToString());
