@@ -221,7 +221,7 @@ namespace DEvahebLibTests
             return Helper.GetSourceFilesDifferences(originalSourceFile, generatedSource, ignoreSetTypes);
         }
 
-        public static byte[] WriteIBI(List<Node> nodes, float version = 1.57f)
+        public static byte[] GenerateIBI(List<Node> nodes, float version = 1.57f)
         {
             using (var ms = new MemoryStream())
             {
@@ -264,9 +264,17 @@ namespace DEvahebLibTests
             return -1;
         }
 
-        public static List<Node> ReadSource(string filename, bool convertComments = false, bool includeRem = true)
+        public static List<Node> ReadSourceFromFile(string filename, bool convertComments = false, bool includeRem = true)
         {
             string sourceText = File.ReadAllText(filename);
+            var parser = new IcarusParser();
+            var nodes = parser.Parse(sourceText, convertComments, includeRem);
+            TransformNodes.Transform(nodes);
+            return nodes;
+        }
+
+        public static List<Node> ReadSource(string sourceText, bool convertComments = false, bool includeRem = true)
+        {
             var parser = new IcarusParser();
             var nodes = parser.Parse(sourceText, convertComments, includeRem);
             TransformNodes.Transform(nodes);

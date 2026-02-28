@@ -81,7 +81,7 @@ namespace DEvahebLibTests
         public void ValidateIcarus(string filenameBase)
         {
             var sourceFile = filenameBase + ".txt";
-            var nodes = Helper.ReadSource(sourceFile);
+            var nodes = Helper.ReadSourceFromFile(sourceFile);
 
             var errors = ValidateNodes.Validate(nodes);
 

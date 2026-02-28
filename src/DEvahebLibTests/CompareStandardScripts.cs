@@ -42,12 +42,13 @@ namespace DEvahebLibTests
 
         [TestMethod]
         [DynamicData(nameof(IBIFiles))]
-        public void TestRoundTripIBIBinary(string file)
+        public void TestRoundTripIBI2Nodes2IBI_Binary(string file)
         {
             var originalBytes = File.ReadAllBytes(file);
             var version = Helper.ReadIBIVersion(file);
             var nodes = Helper.ReadIBI(file);
-            var generatedBytes = Helper.WriteIBI(nodes, version);
+            var generatedBytes = Helper.GenerateIBI(nodes, version);
+
             int difference = Helper.FindIBIByteDifference(originalBytes, generatedBytes);
 
             Assert.AreEqual(-1, difference, $"Found a difference at byte index {difference}");
@@ -55,12 +56,11 @@ namespace DEvahebLibTests
 
         [TestMethod]
         [DynamicData(nameof(IBIFiles))]
-        public void TestRoundTripIBIAST(string file)
+        public void TestRoundTripIBI2Nodes2IBI_AST(string file)
         {
-            var originalBytes = File.ReadAllBytes(file);
-            var version = Helper.ReadIBIVersion(file);
             var nodes = Helper.ReadIBI(file);
-            var generatedBytes = Helper.WriteIBI(nodes, version);
+            var generatedBytes = Helper.GenerateIBI(nodes);
+
             string differences = Helper.CompareASTs(Helper.ReadIBI(file), Helper.ReadIBI(generatedBytes));
 
             if (!string.IsNullOrWhiteSpace(differences))
@@ -73,19 +73,85 @@ namespace DEvahebLibTests
 
         [TestMethod]
         [DynamicData(nameof(IBIFiles))]
-        public void TestSourceParseMatchesIBI(string file)
+        public void TestRoundTripIBI2Source2IBI_Binary(string file)
         {
-            var sourceFile = Path.ChangeExtension(file, ".icarus");
-            if (!File.Exists(sourceFile))
-            {
-                Assert.Inconclusive($"Source file not found: {sourceFile}");
-                return;
-            }
+            var originalBytes = File.ReadAllBytes(file);
+            var version = Helper.ReadIBIVersion(file);
+            var nodes = Helper.ReadIBI(file);
+            
+            var generatedSource = Helper.GenerateSource(Helper.VariableList, nodes);
+            var newNodes = Helper.ReadSource(generatedSource);
+            var generatedBytes = Helper.GenerateIBI(nodes, version);
 
-            var ibiNodes = Helper.ReadIBI(file);
-            var sourceNodes = Helper.ReadSource(sourceFile, includeRem: false);
+            int difference = Helper.FindIBIByteDifference(originalBytes, generatedBytes);
 
-            string differences = Helper.CompareASTs(ibiNodes, sourceNodes, stopOnFirst: false);
+            Assert.AreEqual(-1, difference, $"Found a difference at byte index {difference}");
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(IBIFiles))]
+        public void TestRoundTripIBI2Source2IBI_BareExpressions_Binary(string file)
+        {
+            var originalBytes = File.ReadAllBytes(file);
+            var version = Helper.ReadIBIVersion(file);
+            var nodes = Helper.ReadIBI(file);
+
+            var generatedSource = Helper.GenerateSource(Helper.VariableList, nodes, DEvahebLib.Visitors.SourceCodeParity.BareExpressions);
+            var newNodes = Helper.ReadSource(generatedSource);
+            var generatedBytes = Helper.GenerateIBI(nodes, version);
+
+            int difference = Helper.FindIBIByteDifference(originalBytes, generatedBytes);
+
+            Assert.AreEqual(-1, difference, $"Found a difference at byte index {difference}");
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(IBIFiles))]
+        public void TestRoundTripIBI2Source2IBI_NoVariables_Binary(string file)
+        {
+            var originalBytes = File.ReadAllBytes(file);
+            var version = Helper.ReadIBIVersion(file);
+            var nodes = Helper.ReadIBI(file);
+
+            var generatedSource = Helper.GenerateSource(variables: null, nodes);
+            var newNodes = Helper.ReadSource(generatedSource);
+            var generatedBytes = Helper.GenerateIBI(nodes, version);
+
+            int difference = Helper.FindIBIByteDifference(originalBytes, generatedBytes);
+
+            Assert.AreEqual(-1, difference, $"Found a difference at byte index {difference}");
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(IBIFiles))]
+        public void TestRoundTripIBI2Source2IBI_BareExpressionsNoVariables_Binary(string file)
+        {
+            var originalBytes = File.ReadAllBytes(file);
+            var version = Helper.ReadIBIVersion(file);
+            var nodes = Helper.ReadIBI(file);
+
+            var generatedSource = Helper.GenerateSource(variables: null, nodes, DEvahebLib.Visitors.SourceCodeParity.BareExpressions);
+            var newNodes = Helper.ReadSource(generatedSource);
+            var generatedBytes = Helper.GenerateIBI(nodes, version);
+
+            int difference = Helper.FindIBIByteDifference(originalBytes, generatedBytes);
+
+            Assert.AreEqual(-1, difference, $"Found a difference at byte index {difference}");
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(IBIFiles))]
+        public void TestRoundTripIBI2Source2IBI_AST(string file)
+        {
+            var originalBytes = File.ReadAllBytes(file);
+            var version = Helper.ReadIBIVersion(file);
+            var nodes = Helper.ReadIBI(file);
+
+            var generatedSource = Helper.GenerateSource(Helper.VariableList, nodes);
+            var newNodes = Helper.ReadSource(generatedSource);
+            var generatedBytes = Helper.GenerateIBI(nodes, version);
+
+            string differences = Helper.CompareASTs(Helper.ReadIBI(file), Helper.ReadIBI(generatedBytes));
 
             if (!string.IsNullOrWhiteSpace(differences))
             {

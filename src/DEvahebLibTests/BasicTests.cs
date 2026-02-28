@@ -114,7 +114,7 @@ namespace DEvahebLibTests
         {
             var originalBytes = File.ReadAllBytes(filename);
             var nodes = Helper.ReadIBI(filename);
-            var generatedBytes = Helper.WriteIBI(nodes);
+            var generatedBytes = Helper.GenerateIBI(nodes);
 
             int difference = Helper.FindIBIByteDifference(originalBytes, generatedBytes);
 
@@ -129,7 +129,7 @@ namespace DEvahebLibTests
             CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(cultureName);
 
             var ibiNodes = Helper.ReadIBI(filename);
-            var sourceNodes = Helper.ReadSource(Path.ChangeExtension(filename, ".txt"));
+            var sourceNodes = Helper.ReadSourceFromFile(Path.ChangeExtension(filename, ".txt"));
 
             string differences = Helper.CompareASTs(ibiNodes, sourceNodes);
 
@@ -168,8 +168,8 @@ namespace DEvahebLibTests
         [DataRow(@"BasicTests\singleline")]
         public void TestSingleLineStatements(string filenameBase)
         {
-            var singleLineNodes = Helper.ReadSource(filenameBase + ".txt");
-            var expectedNodes = Helper.ReadSource(filenameBase + "_expected.txt");
+            var singleLineNodes = Helper.ReadSourceFromFile(filenameBase + ".txt");
+            var expectedNodes = Helper.ReadSourceFromFile(filenameBase + "_expected.txt");
 
             string differences = Helper.CompareASTs(expectedNodes, singleLineNodes);
 

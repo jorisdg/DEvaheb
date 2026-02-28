@@ -71,7 +71,7 @@ namespace DEvahebLibTests
             List<DEvahebLib.Nodes.Node> nodes;
             try
             {
-                nodes = Helper.ReadSource(sourceFile);
+                nodes = Helper.ReadSourceFromFile(sourceFile);
             }
             catch (Exception ex)
             {

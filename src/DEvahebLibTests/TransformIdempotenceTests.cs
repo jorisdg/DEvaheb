@@ -41,11 +41,11 @@ namespace DEvahebLibTests
             var version = Helper.ReadIBIVersion(filename);
             var nodes = Helper.ReadIBI(filename);
 
-            var bytesAfterFirstTransform = Helper.WriteIBI(nodes, version);
+            var bytesAfterFirstTransform = Helper.GenerateIBI(nodes, version);
 
             TransformNodes.Transform(nodes);
 
-            var bytesAfterSecondTransform = Helper.WriteIBI(nodes, version);
+            var bytesAfterSecondTransform = Helper.GenerateIBI(nodes, version);
 
             int difference = Helper.FindIBIByteDifference(bytesAfterFirstTransform, bytesAfterSecondTransform);
 
@@ -57,13 +57,13 @@ namespace DEvahebLibTests
         public void TransformIsIdempotent_Icarus(string filename)
         {
             var version = Helper.ReadIBIVersion(filename);
-            var nodes = Helper.ReadSource(Path.ChangeExtension(filename, "txt"));
+            var nodes = Helper.ReadSourceFromFile(Path.ChangeExtension(filename, "txt"));
 
-            var bytesAfterFirstTransform = Helper.WriteIBI(nodes, version);
+            var bytesAfterFirstTransform = Helper.GenerateIBI(nodes, version);
 
             TransformNodes.Transform(nodes);
 
-            var bytesAfterSecondTransform = Helper.WriteIBI(nodes, version);
+            var bytesAfterSecondTransform = Helper.GenerateIBI(nodes, version);
 
             int difference = Helper.FindIBIByteDifference(bytesAfterFirstTransform, bytesAfterSecondTransform);
 
