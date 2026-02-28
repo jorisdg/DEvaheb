@@ -70,8 +70,9 @@ namespace DEvahebLib.Visitors
             if (node is Move && argCount != 2 && argCount != 3)
                 Errors.Add($"move() requires 2 or 3 arguments, got {argCount}");
 
-            if (node is Move && argCount == 2 && !IsInsideBlock<Affect>())
-                Errors.Add("move() with 2 arguments is only valid inside an affect block");
+            // Maybe make warning instead of error? In what contexts is this valid?
+            //if (node is Move && argCount == 2 && !IsInsideBlock<Affect>())
+            //    Errors.Add("move() with 2 arguments is only valid inside an affect block");
 
             if (node is Camera && expected < 0)
                 Errors.Add("camera() first argument must be a CAMERA_COMMANDS enum value");
