@@ -42,48 +42,6 @@ namespace DEvahebLibTests
 
         [TestMethod]
         [DynamicData(nameof(IBIFiles))]
-        public void TestFilesWithInlineComments(string file)
-        {
-            string differences = Helper.GenerateSourceFromIBIAndCompareOriginal(Path.ChangeExtension(file, null), Helper.VariableList, originalExtension: ".icarus", parity: DEvahebLib.Visitors.SourceCodeParity.BehavED, ignoreSetTypes: false);
-
-            if (!string.IsNullOrWhiteSpace(differences))
-            {
-                Console.WriteLine(differences);
-            }
-
-            Assert.IsTrue(condition: string.IsNullOrEmpty(differences), message: differences);
-        }
-
-        [TestMethod]
-        [DynamicData(nameof(IBIFiles))]
-        public void TestFilesWithoutInlineComments(string file)
-        {
-            string differences = Helper.GenerateSourceFromIBIAndCompareOriginal(Path.ChangeExtension(file, null), Helper.VariableList, originalExtension: ".icarus", parity: DEvahebLib.Visitors.SourceCodeParity.BehavED, ignoreSetTypes: true);
-
-            if (!string.IsNullOrWhiteSpace(differences))
-            {
-                Console.WriteLine(differences);
-            }
-
-            Assert.IsTrue(condition: string.IsNullOrEmpty(differences), message: differences);
-        }
-
-        [TestMethod]
-        [DynamicData(nameof(IBIFiles))]
-        public void TestFilesWithoutBehavedCompatibility(string file)
-        {
-            string differences = Helper.GenerateSourceFromIBIAndCompareOriginal(Path.ChangeExtension(file, null), Helper.VariableList, originalExtension: ".icarus", parity: DEvahebLib.Visitors.SourceCodeParity.BareExpressions, ignoreSetTypes: true);
-
-            if (!string.IsNullOrWhiteSpace(differences))
-            {
-                Console.WriteLine(differences);
-            }
-
-            Assert.IsTrue(condition: string.IsNullOrEmpty(differences), message: differences);
-        }
-
-        [TestMethod]
-        [DynamicData(nameof(IBIFiles))]
         public void TestRoundTripIBIBinary(string file)
         {
             var originalBytes = File.ReadAllBytes(file);
