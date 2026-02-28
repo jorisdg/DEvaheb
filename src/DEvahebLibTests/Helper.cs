@@ -13,6 +13,36 @@ namespace DEvahebLibTests
 {
     internal class Helper
     {
+        public const string testFilesDirectory = @"C:\temp\STVEF\scripts";
+        public const bool JediAcademyFlag = false;
+        public const float IBIVersion = 1.57f;
+
+        public static IEnumerable<object[]> IBITestFiles
+        {
+            get
+            {
+                var files = Directory.EnumerateFiles(testFilesDirectory, "*.IBI", SearchOption.AllDirectories);
+
+                foreach (var file in files)
+                {
+                    yield return new object[] { file };
+                }
+            }
+        }
+
+        public static IEnumerable<object[]> IcarusTestFiles
+        {
+            get
+            {
+                var files = Directory.EnumerateFiles(testFilesDirectory, "*.icarus", SearchOption.AllDirectories);
+
+                foreach (var file in files)
+                {
+                    yield return new object[] { file };
+                }
+            }
+        }
+
         private static Variables variables = null;
 
         public static Variables VariableList
@@ -221,13 +251,13 @@ namespace DEvahebLibTests
             return Helper.GetSourceFilesDifferences(originalSourceFile, generatedSource, ignoreSetTypes);
         }
 
-        public static byte[] GenerateIBI(List<Node> nodes, float version = 1.57f)
+        public static byte[] GenerateIBI(List<Node> nodes, float version = Helper.IBIVersion, bool jediAcademyFlag = Helper.JediAcademyFlag)
         {
             using (var ms = new MemoryStream())
             {
                 using (var writer = new BinaryWriter(ms, IbiEncoding.Windows1252, leaveOpen: true))
                 {
-                    var generator = new GenerateIBI(writer, version);
+                    var generator = new GenerateIBI(writer, version) { JediAcademyFlag = jediAcademyFlag };
                     generator.Visit(nodes);
                 }
 

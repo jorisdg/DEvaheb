@@ -9,46 +9,8 @@ namespace DEvahebLibTests
     [TestCategory("LocalTest")]
     public class ValidateStandardScripts
     {
-        public static string testFilesDirectory = @"C:\temp\JEDI_Academy_SDK\Tools\JAscripts";
-
-        [ClassInitialize]
-        public static void TestClassInitialize(TestContext context)
-        {
-            string testFilesDirFromContext = context.Properties["TestFilesDirectory"]?.ToString();
-            if (!string.IsNullOrEmpty(testFilesDirFromContext))
-            {
-                testFilesDirectory = testFilesDirFromContext;
-            }
-        }
-
-        public static IEnumerable<object[]> IBIFiles
-        {
-            get
-            {
-                var files = Directory.EnumerateFiles(testFilesDirectory, "*.IBI", SearchOption.AllDirectories);
-
-                foreach (var file in files)
-                {
-                    yield return new object[] { file };
-                }
-            }
-        }
-
-        public static IEnumerable<object[]> IcarusFiles
-        {
-            get
-            {
-                var files = Directory.EnumerateFiles(testFilesDirectory, "*.icarus", SearchOption.AllDirectories);
-
-                foreach (var file in files)
-                {
-                    yield return new object[] { file };
-                }
-            }
-        }
-
         [TestMethod]
-        [DynamicData(nameof(IBIFiles))]
+        [DynamicData(nameof(Helper.IBITestFiles), typeof(Helper))]
         public void ValidateIBI(string file)
         {
             var nodes = Helper.ReadIBI(file);
@@ -64,7 +26,7 @@ namespace DEvahebLibTests
         }
 
         [TestMethod]
-        [DynamicData(nameof(IcarusFiles))]
+        [DynamicData(nameof(Helper.IcarusTestFiles), typeof(Helper))]
         public void ValidateIcarus(string file)
         {
             var sourceFile = file;

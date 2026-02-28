@@ -7,35 +7,8 @@ namespace DEvahebLibTests
     [TestClass]
     public class TransformIdempotenceTests
     {
-        public static IEnumerable<object[]> IBIBasicTestsFiles
-        {
-            get
-            {
-                var files = Directory.EnumerateFiles(@".\BasicTests", "*.IBI", SearchOption.AllDirectories);
-
-                foreach (var file in files)
-                {
-                    yield return new object[] { file };
-                }
-            }
-        }
-
-        public static IEnumerable<object[]> IBIBasicTestsFilesLanguages
-        {
-            get
-            {
-                var files = Directory.EnumerateFiles(@".\BasicTests", "*.IBI", SearchOption.AllDirectories);
-
-                foreach (var file in files)
-                {
-                    yield return new object[] { file, "en-US" };
-                    yield return new object[] { file, "nl-BE" };
-                }
-            }
-        }
-
         [TestMethod]
-        [DynamicData(nameof(IBIBasicTestsFiles))]
+        [DynamicData(nameof(Helper.IBITestFiles), typeof(Helper))]
         public void TransformIsIdempotent_IBI(string filename)
         {
             var version = Helper.ReadIBIVersion(filename);
@@ -53,17 +26,16 @@ namespace DEvahebLibTests
         }
 
         [TestMethod]
-        [DynamicData(nameof(IBIBasicTestsFiles))]
+        [DynamicData(nameof(Helper.IcarusTestFiles), typeof(Helper))]
         public void TransformIsIdempotent_Icarus(string filename)
         {
-            var version = Helper.ReadIBIVersion(filename);
-            var nodes = Helper.ReadSourceFromFile(Path.ChangeExtension(filename, "txt"));
+            var nodes = Helper.ReadSourceFromFile(filename);
 
-            var bytesAfterFirstTransform = Helper.GenerateIBI(nodes, version);
+            var bytesAfterFirstTransform = Helper.GenerateIBI(nodes);
 
             TransformNodes.Transform(nodes);
 
-            var bytesAfterSecondTransform = Helper.GenerateIBI(nodes, version);
+            var bytesAfterSecondTransform = Helper.GenerateIBI(nodes);
 
             int difference = Helper.FindIBIByteDifference(bytesAfterFirstTransform, bytesAfterSecondTransform);
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace DEvahebLibTests
 {
@@ -8,40 +9,8 @@ namespace DEvahebLibTests
     [TestCategory("LocalTest")]
     public class CompareStandardScripts
     {
-        /// <summary>
-        /// <RunSettings>
-        ///   <TestRunParameters>
-        ///     <Parameter name = "TestFilesDirectory" value="C:\temp\JEDI_Academy_SDK\Tools\JAscripts" />
-        ///   </TestRunParameters>
-        /// </RunSettings>
-        /// </summary>
-        public static string testFilesDirectory = @"C:\temp\JEDI_Academy_SDK\Tools\JAscripts";
-
-        [ClassInitialize]
-        public static void TestClassInitialize(TestContext context)
-        {
-            string testFilesDirFromContext = context.Properties["TestFilesDirectory"]?.ToString();
-            if (!string.IsNullOrEmpty(testFilesDirFromContext))
-            {
-                testFilesDirectory = testFilesDirFromContext;
-            }
-        }
-
-        public static IEnumerable<object[]> IBIFiles
-        {
-            get
-            {
-                var files = Directory.EnumerateFiles(testFilesDirectory, "*.IBI", SearchOption.AllDirectories);
-
-                foreach (var file in files)
-                {
-                    yield return new object[] { file };
-                }
-            }
-        }
-
         [TestMethod]
-        [DynamicData(nameof(IBIFiles))]
+        [DynamicData(nameof(Helper.IBITestFiles), typeof(Helper))]
         public void TestRoundTripIBI2Nodes2IBI_Binary(string file)
         {
             var originalBytes = File.ReadAllBytes(file);
@@ -55,11 +24,12 @@ namespace DEvahebLibTests
         }
 
         [TestMethod]
-        [DynamicData(nameof(IBIFiles))]
+        [DynamicData(nameof(Helper.IBITestFiles), typeof(Helper))]
         public void TestRoundTripIBI2Nodes2IBI_AST(string file)
         {
             var nodes = Helper.ReadIBI(file);
-            var generatedBytes = Helper.GenerateIBI(nodes);
+            var version = Helper.ReadIBIVersion(file);
+            var generatedBytes = Helper.GenerateIBI(nodes, version);
 
             string differences = Helper.CompareASTs(Helper.ReadIBI(file), Helper.ReadIBI(generatedBytes));
 
@@ -72,7 +42,7 @@ namespace DEvahebLibTests
         }
 
         [TestMethod]
-        [DynamicData(nameof(IBIFiles))]
+        [DynamicData(nameof(Helper.IBITestFiles), typeof(Helper))]
         public void TestRoundTripIBI2Source2IBI_Binary(string file)
         {
             var originalBytes = File.ReadAllBytes(file);
@@ -89,7 +59,7 @@ namespace DEvahebLibTests
         }
 
         [TestMethod]
-        [DynamicData(nameof(IBIFiles))]
+        [DynamicData(nameof(Helper.IBITestFiles), typeof(Helper))]
         public void TestRoundTripIBI2Source2IBI_BareExpressions_Binary(string file)
         {
             var originalBytes = File.ReadAllBytes(file);
@@ -106,7 +76,7 @@ namespace DEvahebLibTests
         }
 
         [TestMethod]
-        [DynamicData(nameof(IBIFiles))]
+        [DynamicData(nameof(Helper.IBITestFiles), typeof(Helper))]
         public void TestRoundTripIBI2Source2IBI_NoVariables_Binary(string file)
         {
             var originalBytes = File.ReadAllBytes(file);
@@ -123,7 +93,7 @@ namespace DEvahebLibTests
         }
 
         [TestMethod]
-        [DynamicData(nameof(IBIFiles))]
+        [DynamicData(nameof(Helper.IBITestFiles), typeof(Helper))]
         public void TestRoundTripIBI2Source2IBI_BareExpressionsNoVariables_Binary(string file)
         {
             var originalBytes = File.ReadAllBytes(file);
@@ -140,7 +110,7 @@ namespace DEvahebLibTests
         }
 
         [TestMethod]
-        [DynamicData(nameof(IBIFiles))]
+        [DynamicData(nameof(Helper.IBITestFiles), typeof(Helper))]
         public void TestRoundTripIBI2Source2IBI_AST(string file)
         {
             var originalBytes = File.ReadAllBytes(file);
