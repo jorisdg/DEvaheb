@@ -50,6 +50,14 @@ namespace DEvahebLib.Visitors
                 Errors.Add($"{label} requires {expected} argument{(expected == 1 ? "" : "s")}, got {args.Count}");
             }
 
+            foreach (var arg in args)
+            {
+                if (arg is FunctionNode function && function.ValueType == typeof(VoidValue))
+                {
+                    Errors.Add("Function argument is a void function");
+                }
+            }
+
             if (node is If && args.Count > 1 && !(args[1] is OperatorNode))
             {
                 Errors.Add("if() second argument must be an operator");
