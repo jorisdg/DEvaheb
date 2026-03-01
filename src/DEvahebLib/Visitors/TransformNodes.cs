@@ -35,13 +35,21 @@ namespace DEvahebLib.Visitors
         private void TransformNode(FunctionNode node)
         {
             if (node is Tag tag)
+            {
                 TransformTag(tag);
+            }
             else if (node is Get get)
+            {
                 TransformGet(get);
+            }
             else if (node is Loop loop)
+            {
                 TransformLoop(loop);
+            }
             else if (node is Camera camera)
+            {
                 TransformCamera(camera);
+            }
         }
 
         private void TransformTag(Tag tag)
@@ -84,7 +92,8 @@ namespace DEvahebLib.Visitors
         private void TransformCamera(Camera camera)
         {
             var cmd = camera.GetCommand();
-            if (cmd == null) return;
+            if (cmd == null)
+                return;
 
             int durationIndex = -1;
             switch (cmd.Value)
