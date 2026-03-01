@@ -47,7 +47,7 @@ namespace DEvahebLibTests
                 Console.WriteLine(string.Join(Environment.NewLine, errors));
             }
 
-            Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+            Assert.AreEqual(0, errors.Count);
         }
 
         [TestMethod]
@@ -90,7 +90,7 @@ namespace DEvahebLibTests
                 Console.WriteLine(string.Join(Environment.NewLine, errors));
             }
 
-            Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+            Assert.AreEqual(0, errors.Count);
         }
     }
 }

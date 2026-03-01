@@ -235,7 +235,19 @@ namespace DEvahebLib.Nodes
 
         public Node Duration { get => GetArg(arguments.Count >= 3 ? 2 : 1); set => SetArg(arguments.Count >= 3 ? 2 : 1, value); }
 
-        public override int ExpectedArgCount => -1;
+        public override int ExpectedArgCount
+        {
+            get
+            {
+                if (arguments.Count == 2)
+                    return 2;
+
+                if (arguments.Count == 3)
+                    return 3;
+
+                return 3;
+            }
+        }
 
         public Move(params Node[] args) : base("move", args)
         {

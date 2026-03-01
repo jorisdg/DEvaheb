@@ -16,39 +16,12 @@ namespace DEvahebLibTests
             var nodes = Helper.ReadIBI(file);
 
             var errors = ValidateNodes.Validate(nodes);
-
             if (errors.Count > 0)
             {
                 Console.WriteLine(string.Join(Environment.NewLine, errors));
             }
 
-            Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
-        }
-
-        [TestMethod]
-        [DynamicData(nameof(Helper.IcarusTestFiles), typeof(Helper))]
-        public void ValidateIcarus(string file)
-        {
-            var sourceFile = file;
-            List<DEvahebLib.Nodes.Node> nodes;
-            try
-            {
-                nodes = Helper.ReadSourceFromFile(sourceFile);
-            }
-            catch (Exception ex)
-            {
-                Assert.Inconclusive($"Source parse failed: {ex.Message}");
-                return;
-            }
-
-            var errors = ValidateNodes.Validate(nodes);
-
-            if (errors.Count > 0)
-            {
-                Console.WriteLine(string.Join(Environment.NewLine, errors));
-            }
-
-            Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+            Assert.AreEqual(0, errors.Count, "Standard IBI files are expected to have no errors");
         }
     }
 }

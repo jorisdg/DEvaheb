@@ -71,7 +71,7 @@ namespace DEvahebLib.Nodes
         /// <summary>
         /// Expected number of arguments for this node. Returns -1 if unknown/variable.
         /// </summary>
-        public virtual int ExpectedArgCount => -1;
+        public virtual int ExpectedArgCount => 0;
 
         public override string ToString()
         {

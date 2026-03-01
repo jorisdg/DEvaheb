@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DEvahebLib.Nodes;
 
 namespace DEvahebLib.Visitors
@@ -45,6 +43,11 @@ namespace DEvahebLib.Visitors
             argumentStack.Peek().Item2.Push(argument);
 
             base.VisitFunctionArgument(function, argument);
+        }
+
+        public bool HasParentBlockOfType<T>() where T : Node
+        {
+            return blockStack.Any(block => block is T);
         }
     }
 }
