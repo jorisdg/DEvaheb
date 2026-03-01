@@ -3,3 +3,5 @@
 set ( "MyVariableName", $get( STRING, "SET_PARM1")$ );
 set ( "MyVariableName", $get( FLOAT, "SET_XVELOCITY")$ );
 set ( "MyVariableName", $get( VECTOR, "SET_ORIGIN")$ );
+
+set ( "MyVariableName", $tag( $get( STRING, "SET_PARM1")$, ORIGIN)$ );

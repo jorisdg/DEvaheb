@@ -158,45 +158,5 @@ namespace DEvahebLibTests
 
             Assert.AreEqual(string.Empty, differences);
         }
-
-        [TestMethod]
-        public void TestConvertCommentsToRem()
-        {
-            string source = "// This is a comment\nuse ( \"hello\" );\n// Another comment\n";
-            var parser = new DEvahebLib.Parser.IcarusParser();
-
-            var nodesWithout = parser.Parse(source, convertComments: false);
-            Assert.AreEqual(1, nodesWithout.Count, "Without conversion, only the use statement should be parsed");
-
-            var nodesWith = parser.Parse(source, convertComments: true);
-            Assert.AreEqual(3, nodesWith.Count, "With conversion, 2 rem nodes + 1 use statement");
-
-            Assert.IsInstanceOfType(nodesWith[0], typeof(DEvahebLib.Nodes.Rem));
-            var rem1 = (DEvahebLib.Nodes.Rem)nodesWith[0];
-            Assert.AreEqual("rem", rem1.Name);
-            Assert.AreEqual("This is a comment", ((DEvahebLib.Nodes.StringValue)rem1.Comment).String);
-
-            Assert.IsInstanceOfType(nodesWith[2], typeof(DEvahebLib.Nodes.Rem));
-            var rem2 = (DEvahebLib.Nodes.Rem)nodesWith[2];
-            Assert.AreEqual("rem", rem2.Name);
-            Assert.AreEqual("Another comment", ((DEvahebLib.Nodes.StringValue)rem2.Comment).String);
-        }
-
-        [TestMethod]
-        [DataRow(@"BasicTests\singleline")]
-        public void TestSingleLineStatements(string filenameBase)
-        {
-            var singleLineNodes = Helper.ReadSourceFromFile(filenameBase + ".txt");
-            var expectedNodes = Helper.ReadSourceFromFile(filenameBase + "_expected.txt");
-
-            string differences = Helper.CompareASTs(expectedNodes, singleLineNodes);
-
-            if (!string.IsNullOrWhiteSpace(differences))
-            {
-                Console.WriteLine(differences);
-            }
-
-            Assert.AreEqual(string.Empty, differences);
-        }
     }
 }

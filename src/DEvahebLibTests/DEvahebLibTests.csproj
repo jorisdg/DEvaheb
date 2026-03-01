@@ -30,6 +30,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="IcarusParserTests\comments.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="IcarusParserTests\singleline.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="IcarusParserTests\singleline_expected.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="variable_types.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
