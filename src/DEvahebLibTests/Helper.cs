@@ -143,92 +143,64 @@ namespace DEvahebLibTests
         public static string GenerateSourceFromIBI(string ibiFile, Variables variables, SourceCodeParity parity)
         {
             var nodes = Helper.ReadIBI(ibiFile);
+
             return Helper.GenerateSource(variables, nodes, parity);
         }
 
         public static string GetSourceFilesDifferences(string originalFile, string generatedSource, bool ignoreSetTypes = false)
         {
             var originalLines = File.ReadLines(originalFile).GetEnumerator();
-            var generatedLines = ((IEnumerable<string>)generatedSource.Replace("\r\n", "\n").Split('\n')).GetEnumerator();
+            var newLines = ((IEnumerable<string>)generatedSource.Split(System.Environment.NewLine)).GetEnumerator();
 
-            return CompareSourceLines(originalLines, generatedLines, ignoreSetTypes);
-        }
-
-        private static string CompareSourceLines(IEnumerator<string> originalSource, IEnumerator<string> newSource, bool ignoreSetTypes = false)
-        {
             StringBuilder differences = new StringBuilder();
 
-            while(originalSource.MoveNext())
+            while (originalLines.MoveNext())
             {
-                // account for empty lines or comment lines
-                if (string.IsNullOrWhiteSpace(originalSource.Current)
-                    || originalSource.Current.TrimStart().StartsWith("rem ")
-                    || originalSource.Current.TrimStart().StartsWith("rem(")
-                    || originalSource.Current.TrimStart().StartsWith("//"))
+                if (IsNullOrWhiteSpaceOrRemOrComment(originalLines.Current))
                     continue;
 
                 do
                 {
-                    if (!newSource.MoveNext())
+                    if (!newLines.MoveNext())
                     {
                         differences.AppendLine("New source file is shorter");
-                        //throw new Exception(differences.ToString());
+                        
                         return differences.ToString();
                     }
                 }
-                while (string.IsNullOrWhiteSpace(newSource.Current)
-                    || newSource.Current.TrimStart().StartsWith("rem ")
-                    || newSource.Current.TrimStart().StartsWith("rem(")
-                    || newSource.Current.TrimStart().StartsWith("//"));
+                while (IsNullOrWhiteSpaceOrRemOrComment(newLines.Current));
 
-                bool difference = originalSource.Current != newSource.Current;
+                bool difference = originalLines.Current != newLines.Current;
 
-                // Sometimes we replace do() and wait() from IBI with dowait() in source,
-                // but the original source has two separate statements anyway
-                if (difference && newSource.Current.TrimStart().StartsWith("dowait"))
-                {
-                    string wait = newSource.Current.Replace("dowait (", "wait (");
-                    originalSource.MoveNext();
-                    //Assert.AreEqual<string>(expected: originalSource.Current, actual: wait);
-                    if (originalSource.Current != wait)
-                    {
-                        differences.AppendLine($"Original line : {originalSource.Current}");
-                        differences.AppendLine($"Generated line: {wait}");
-                        return differences.ToString();
-                    }
-                }
-                else if (difference && newSource.Current.TrimStart().StartsWith("set") && ignoreSetTypes)
+                if (difference && newLines.Current.TrimStart().StartsWith("set") && ignoreSetTypes)
                 {
                     string pattern = "/\\*[^\\*]*\\*/";
-                    var originalText = Regex.Replace(originalSource.Current, pattern, "");
-                    var newText = Regex.Replace(originalSource.Current, pattern, "");
+                    var originalText = Regex.Replace(originalLines.Current, pattern, "");
+                    var newText = Regex.Replace(originalLines.Current, pattern, "");
 
-                    //Assert.AreEqual<string>(expected: originalText, actual: newText);
                     if (originalText != newText)
                     {
-                        differences.AppendLine($"Original line : {originalSource.Current}");
-                        differences.AppendLine($"Generated line: {newSource.Current}");
+                        differences.AppendLine($"Original line : {originalLines.Current}");
+                        differences.AppendLine($"Generated line: {newLines.Current}");
+
                         return differences.ToString();
                     }
                 }
                 else if (difference)
                 {
-                    //Assert.AreEqual<string>(expected: originalSource.Current, actual: newSource.Current);
-                    differences.AppendLine($"Original line : {originalSource.Current}");
-                    differences.AppendLine($"Generated line: {newSource.Current}");
+                    differences.AppendLine($"Original line : {originalLines.Current}");
+                    differences.AppendLine($"Generated line: {newLines.Current}");
+
                     return differences.ToString();
                 }
             }
 
-            while (newSource.MoveNext())
+            while (newLines.MoveNext())
             {
-                if (!string.IsNullOrWhiteSpace(newSource.Current)
-                    && !newSource.Current.TrimStart().StartsWith("rem ")
-                    && !newSource.Current.TrimStart().StartsWith("rem(")
-                    && !newSource.Current.TrimStart().StartsWith("//"))
+                if (!IsNullOrWhiteSpaceOrRemOrComment(newLines.Current))
                 {
                     differences.AppendLine("New source file is longer");
-                    //throw new Exception(differences.ToString());
+                    
                     return differences.ToString();
                 }
             }
@@ -236,19 +208,12 @@ namespace DEvahebLibTests
             return differences.ToString();
         }
 
-        public static string GenerateSourceFromIBIAndCompareOriginal(string filenameBase, Variables variables, SourceCodeParity parity)
+        private static bool IsNullOrWhiteSpaceOrRemOrComment(string text)
         {
-            return GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables, originalExtension: ".txt", ignoreSetTypes: false, parity: parity);
-        }
-
-        public static string GenerateSourceFromIBIAndCompareOriginal(string filenameBase, Variables variables, string originalExtension, bool ignoreSetTypes, SourceCodeParity parity)
-        {
-            var ibiFile = filenameBase + ".IBI";
-            var originalSourceFile = filenameBase + originalExtension;
-
-            string generatedSource = Helper.GenerateSourceFromIBI(ibiFile, variables, parity);
-
-            return Helper.GetSourceFilesDifferences(originalSourceFile, generatedSource, ignoreSetTypes);
+            return string.IsNullOrWhiteSpace(text)
+                || text.TrimStart().StartsWith("rem ")
+                || text.TrimStart().StartsWith("rem(")
+                || text.TrimStart().StartsWith("//");
         }
 
         public static byte[] GenerateIBI(List<Node> nodes, float version = Helper.IBIVersion, bool jediAcademyFlag = Helper.JediAcademyFlag)
@@ -298,22 +263,27 @@ namespace DEvahebLibTests
         {
             string sourceText = File.ReadAllText(filename);
             var parser = new IcarusParser();
+
             var nodes = parser.Parse(sourceText, convertComments, includeRem);
             TransformNodes.Transform(nodes);
+
             return nodes;
         }
 
         public static List<Node> ReadSource(string sourceText, bool convertComments = false, bool includeRem = true)
         {
             var parser = new IcarusParser();
+
             var nodes = parser.Parse(sourceText, convertComments, includeRem);
             TransformNodes.Transform(nodes);
+
             return nodes;
         }
 
         public static string CompareASTs(List<Node> expected, List<Node> actual, float floatTolerance = 0.001f, bool stopOnFirst = false)
         {
             var differences = CompareNodes.Compare(expected, actual, floatTolerance, stopOnFirst);
+
             return differences.Count > 0 ? string.Join('\n', differences) : string.Empty;
         }
     }

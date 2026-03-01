@@ -85,7 +85,16 @@ namespace DEvahebLibTests
         {
             CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(cultureName);
             CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(cultureName);
-            Assert.AreEqual(string.Empty, Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables: Helper.VariableList, parity: DEvahebLib.Visitors.SourceCodeParity.BehavED));
+
+            string generatedSource = Helper.GenerateSourceFromIBI(filenameBase + ".IBI", Helper.VariableList, DEvahebLib.Visitors.SourceCodeParity.BehavED);
+            string differences = Helper.GetSourceFilesDifferences(filenameBase + ".txt", generatedSource);
+
+            if (!string.IsNullOrWhiteSpace(differences))
+            {
+                Console.WriteLine(differences);
+            }
+
+            Assert.AreEqual(string.Empty, differences);
         }
 
 
@@ -105,7 +114,16 @@ namespace DEvahebLibTests
         {
             CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(cultureName);
             CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(cultureName);
-            Assert.AreEqual(string.Empty, Helper.GenerateSourceFromIBIAndCompareOriginal(filenameBase, variables: Helper.VariableList, parity: DEvahebLib.Visitors.SourceCodeParity.BehavED));
+
+            string generatedSource = Helper.GenerateSourceFromIBI(filenameBase + ".IBI", Helper.VariableList, DEvahebLib.Visitors.SourceCodeParity.BehavED);
+            string differences = Helper.GetSourceFilesDifferences(filenameBase + ".txt", generatedSource);
+
+            if (!string.IsNullOrWhiteSpace(differences))
+            {
+                Console.WriteLine(differences);
+            }
+
+            Assert.AreEqual(string.Empty, differences);
         }
 
         [TestMethod]
