@@ -16,6 +16,7 @@ namespace DEvahebLibTests
             var originalBytes = File.ReadAllBytes(file);
             var version = Helper.ReadIBIVersion(file);
             var nodes = Helper.ReadIBI(file);
+
             var generatedBytes = Helper.GenerateIBI(nodes, version);
 
             int difference = Helper.FindIBIByteDifference(originalBytes, generatedBytes);
@@ -29,6 +30,7 @@ namespace DEvahebLibTests
         {
             var nodes = Helper.ReadIBI(file);
             var version = Helper.ReadIBIVersion(file);
+
             var generatedBytes = Helper.GenerateIBI(nodes, version);
 
             string differences = Helper.CompareASTs(Helper.ReadIBI(file), Helper.ReadIBI(generatedBytes));
