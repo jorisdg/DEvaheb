@@ -33,6 +33,9 @@
     <None Update="IcarusParserTests\comments.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="IcarusParserTests\if_syntax.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="IcarusParserTests\singleline.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
