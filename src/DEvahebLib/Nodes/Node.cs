@@ -65,7 +65,7 @@ namespace DEvahebLib.Nodes
             : base()
         {
             Name = name;
-            arguments = new List<Node>(args);
+            arguments = (args != null) ? new List<Node>(args) : new List<Node>();
         }
 
         /// <summary>

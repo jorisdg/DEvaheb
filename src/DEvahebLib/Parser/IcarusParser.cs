@@ -1,11 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using DEvahebLib.Enums;
 using DEvahebLib.Nodes;
 
 namespace DEvahebLib.Parser
 {
+    public class ParseException : Exception
+    {
+        public Diagnostic Diagnostic { get; private set; }
+
+        public ParseException(Diagnostic diagnostic)
+            : base()
+        {
+            Diagnostic = diagnostic;
+        }
+    }
+
     public class IcarusParser
     {
         private static readonly Dictionary<string, Type> EnumCommentTypes = new()
@@ -57,9 +69,13 @@ namespace DEvahebLib.Parser
         private bool convertComments;
         private bool includeRem;
 
+        public List<Diagnostic> Diagnostics { get; } = new();
+
         public List<Node> Parse(string sourceText, bool convertComments = false, bool includeRem = true)
         {
-            lines = sourceText.Replace("\r\n", "\n").Split('\n');
+            Diagnostics.Clear();
+
+            lines = sourceText.Replace("\r\n", "\n").Split('\n'); // TODO clean up this mess
             lineIndex = -1;
             currentLine = string.Empty;
             pos = 0;
@@ -74,13 +90,20 @@ namespace DEvahebLib.Parser
 
                 while (pos < currentLine.Length)
                 {
-                    var stmtNodes = ParseStatement();
-                    if (stmtNodes == null)
-                        break;
+                    try
+                    {
+                        var stmtNodes = ParseStatement();
+                        if (stmtNodes == null)
+                            break;
 
-                    nodes.AddRange(stmtNodes);
+                        nodes.AddRange(stmtNodes);
 
-                    SkipWhitespaceAndComments(nodes);
+                        SkipWhitespaceAndComments(nodes);
+                    }
+                    catch (ParseException)
+                    {
+                        continue; // swallow regular parsing error and attempt to continue reading
+                    }
                 }
             }
 
@@ -107,17 +130,36 @@ namespace DEvahebLib.Parser
             if (string.IsNullOrEmpty(keyword))
                 return null;
 
-            if (FunctionMap.TryGetValue(keyword, out var factory))
+            List<Node> nodes = new List<Node>();
+
+            try
             {
-                var node = ParseMappedFunction(factory);
+                if (FunctionMap.TryGetValue(keyword, out var factory))
+                {
+                    var node = ParseMappedFunction(factory);
 
-                if (!includeRem && node is Rem)
-                    return new List<Node>();
+                    if (includeRem || !(node is Rem))
+                    {
+                        nodes.Add(node);
+                    }
+                }
+                else
+                {
+                    var node = ParseMappedFunction(args => new GenericFunction(keyword, args));
+                    nodes.Add(node);
+                }
+            }
+            catch (ParseException ex)
+            {
+                if (ex.Diagnostic.Node != null)
+                {
+                    nodes.Add(ex.Diagnostic.Node);
+                }
 
-                return new List<Node> { node };
+                //throw; // TODO does this make sense?
             }
 
-            return new List<Node> { ParseMappedFunction(args => new GenericFunction(keyword, args)) };
+            return nodes;
         }
 
         #region Block Parsers
@@ -134,7 +176,7 @@ namespace DEvahebLib.Parser
                 SkipWhitespaceAndComments();
             }
 
-            Expect('{');
+            Expect('{', block);
 
             // Parse body: could be on same line or subsequent lines
             SkipWhitespaceAndComments(block.SubNodes);
@@ -176,9 +218,20 @@ namespace DEvahebLib.Parser
 
         private Node ParseMappedFunction(Func<Node[], FunctionNode> factory)
         {
-            var args = ParseArgList();
+            var node = factory(arg: null);
 
-            var node = factory(args);
+            Node[] args;
+            try
+            {
+                args = ParseArgList(node);
+            }
+            catch(ParseException ex)
+            {
+                // TODO SET line/pos : ex.Diagnostic.Node
+                throw;
+            }
+
+            node = factory(args);
 
             if (node is BlockNode block)
             {
@@ -186,17 +239,18 @@ namespace DEvahebLib.Parser
             }
             else
             {
-                ExpectSemicolon();
+                ExpectSemicolon(node);
             }
 
             return node;
         }
 
-        private Node[] ParseArgList()
+        private Node[] ParseArgList(Node parent)
         {
-            Expect('(');
+            Expect('(', parent);
 
             var args = new List<Node>();
+            bool skippedComma = false;
 
             while (true)
             {
@@ -213,26 +267,36 @@ namespace DEvahebLib.Parser
                     break;
 
                 // skip commas between arguments
-                if (currentLine[pos] == ',')
+                if (args.Count > 0 && currentLine[pos] == ',')
                 {
                     pos++;
+                    skippedComma = true;
                     continue;
                 }
 
-                args.Add(ParseValueWithOptionalEnum());
+                skippedComma = false;
+
+                args.Add(ParseValueWithOptionalEnum(parent));
             }
 
-            Expect(')');
+            // this is technically nonsensical because we would have parsed it,
+            // but it will ensure a diagnostic error if there's a trailing comma
+            if (skippedComma)
+            {
+                args.Add(ParseValueWithOptionalEnum(parent));
+            }
+
+            Expect(')', parent);
 
             return args.ToArray();
         }
 
-        private Node ParseInnerFunction(string name)
+        private Node ParseInnerFunction(string name, Node parent)
         {
             if (FunctionMap.TryGetValue(name, out var factory))
-                return factory(ParseArgList());
+                return factory(ParseArgList(parent));
 
-            return new GenericFunction(name, ParseArgList());
+            return new GenericFunction(name, ParseArgList(parent));
         }
 
         #endregion
@@ -264,13 +328,13 @@ namespace DEvahebLib.Parser
             return value;
         }
 
-        private Node ParseValueWithOptionalEnum()
+        private Node ParseValueWithOptionalEnum(Node parent)
         {
             SkipWhitespaceAndComments();
 
             string enumComment = TryReadEnumComment();
 
-            Node value = ParseValue();
+            Node value = ParseValue(parent);
 
             if (enumComment != null && EnumCommentTypes.TryGetValue(enumComment, out var enumType))
             {
@@ -281,12 +345,15 @@ namespace DEvahebLib.Parser
             return value;
         }
 
-        private Node ParseValue()
+        private Node ParseValue(Node parent)
         {
             SkipWhitespaceAndComments();
 
             if (pos >= currentLine.Length)
-                throw new Exception($"Unexpected end of line {lineIndex + 1} while parsing value");
+            {
+                Diagnostics.Add(Diagnostic.ERR004_UnexpectedEndOfLine(parent));
+                throw new ParseException(Diagnostics.Last());
+            }
 
             char c = currentLine[pos];
 
@@ -294,7 +361,8 @@ namespace DEvahebLib.Parser
             if (c == '<')
             {
                 if (IsVectorAhead())
-                    return ParseVector();
+                    return ParseVector(parent);
+
                 pos++;
                 return new OperatorNode(Operator.Lt);
             }
@@ -318,7 +386,7 @@ namespace DEvahebLib.Parser
 
             // String: "..."
             if (c == '"')
-                return ParseString();
+                return ParseString(parent);
 
             // Number: digit, minus, or dot
             if (char.IsDigit(c) || c == '-' || c == '.')
@@ -332,17 +400,18 @@ namespace DEvahebLib.Parser
                 SkipWhitespaceAndComments();
 
                 if (pos < currentLine.Length && currentLine[pos] == '(')
-                    return ParseInnerFunction(ident);
+                    return ParseInnerFunction(ident, parent);
 
                 return new IdentifierValue(ident);
             }
 
-            throw new Exception($"Unexpected character '{c}' on line {lineIndex + 1}, column {pos + 1}");
+            Diagnostics.Add(Diagnostic.ERR005_UnexpectedCharacter(parent));
+            throw new ParseException(Diagnostics.Last());
         }
 
-        private VectorValue ParseVector()
+        private VectorValue ParseVector(Node parent)
         {
-            Expect('<');
+            Expect('<', parent);
 
             SkipWhitespaceAndComments();
 
@@ -358,14 +427,14 @@ namespace DEvahebLib.Parser
 
             SkipWhitespaceAndComments();
 
-            Expect('>');
+            Expect('>', parent);
 
             return new VectorValue(x, y, z);
         }
 
-        private StringValue ParseString()
+        private StringValue ParseString(Node parent)
         {
-            Expect('"');
+            Expect('"', parent);
 
             int start = pos;
             while (pos < currentLine.Length && currentLine[pos] != '"')
@@ -375,7 +444,7 @@ namespace DEvahebLib.Parser
 
             string value = currentLine.Substring(start, pos - start);
 
-            Expect('"');
+            Expect('"', parent);
 
             return new StringValue(value);
         }
@@ -537,15 +606,6 @@ namespace DEvahebLib.Parser
             return currentLine.Substring(start, pos - start);
         }
 
-        private string PeekIdentifier()
-        {
-            int savedPos = pos;
-            string result = ReadIdentifier();
-            pos = savedPos;
-
-            return result;
-        }
-
         /// <summary>
         /// Peeks ahead from current pos (which should be at '&lt;') to check if this is a vector: &lt; number number number &gt;
         /// Does not modify pos.
@@ -585,50 +645,36 @@ namespace DEvahebLib.Parser
             return p < currentLine.Length && currentLine[p] == '>';
         }
 
-        private void Expect(char expected)
+        private void Expect(char expected, Node parent)
         {
             SkipWhitespaceAndComments();
 
             if (pos >= currentLine.Length)
-                throw new Exception($"Expected '{expected}' but reached end of line {lineIndex + 1}");
+            {
+                Diagnostics.Add(Diagnostic.ERR006_UnexpectedEndOfLine(parent, expected));
+                throw new ParseException(Diagnostics.Last());
+            }
 
             if (currentLine[pos] != expected)
-                throw new Exception($"Expected '{expected}' but found '{currentLine[pos]}' on line {lineIndex + 1}, column {pos + 1}");
+            {
+                Diagnostics.Add(Diagnostic.ERR007_UnexpectedEndOfLine(parent, expected, found: currentLine[pos]));
+                throw new ParseException(Diagnostics.Last());
+            }
 
             pos++;
         }
 
-        private bool TryConsume(char c)
-        {
-            SkipWhitespaceAndComments();
-
-            if (pos < currentLine.Length && currentLine[pos] == c)
-            {
-                pos++;
-
-                return true;
-            }
-
-            return false;
-        }
-
-        private void ExpectComma()
-        {
-            SkipWhitespaceAndComments();
-
-            if (pos < currentLine.Length && currentLine[pos] == ',')
-            {
-                pos++;
-            }
-        }
-
-        private void ExpectSemicolon()
+        private void ExpectSemicolon(Node parent)
         {
             SkipWhitespaceAndComments();
 
             if (pos < currentLine.Length && currentLine[pos] == ';')
             {
                 pos++;
+            }
+            else
+            {
+                Diagnostics.Add(Diagnostic.WARN002_NoSemiColonFound(parent));
             }
         }
 

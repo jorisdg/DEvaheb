@@ -45,6 +45,19 @@ namespace DEvahebLibTests
         }
 
         [TestMethod]
+        [DataRow(@"IcarusParserTests\no_semicolon.txt")]
+        public void TestNoSemiColons(string filename)
+        {
+            string source = File.ReadAllText(filename);
+            var parser = new DEvahebLib.Parser.IcarusParser();
+
+            var setNodes = parser.Parse(source);
+
+            Assert.AreEqual(2, setNodes.Count, "Two valid nodes");
+            Assert.AreEqual(2, setNodes.Count(n => n.GetType() == typeof(Set)), "Two Set nodes");
+        }
+
+        [TestMethod]
         [DataRow(@"IcarusParserTests\comments.txt")]
         public void TestIgnoreComments(string filename)
         {

@@ -1,0 +1,3 @@
+set ( "myVarName1", "the String Value1" )
+
+set ( "myVarName2", "the String Value2" )
