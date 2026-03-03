@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Linq;
+using DEvahebLib;
 using DEvahebLib.Visitors;
 
 namespace DEvahebLibTests
@@ -15,13 +15,13 @@ namespace DEvahebLibTests
         {
             var nodes = Helper.ReadIBI(file);
 
-            var errors = ValidateNodes.Validate(nodes);
-            if (errors.Count > 0)
+            var errors = ValidateNodes.Validate(nodes).Where(d => d.Level == DiagnosticLevel.Error);
+            if (errors.Count() > 0)
             {
                 Console.WriteLine(string.Join(Environment.NewLine, errors));
             }
 
-            Assert.AreEqual(0, errors.Count, "Standard IBI files are expected to have no errors");
+            Assert.AreEqual(0, errors.Count(), "Standard IBI files are expected to have no errors");
         }
     }
 }

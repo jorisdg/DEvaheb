@@ -1,4 +1,5 @@
-﻿using DEvahebLib.Visitors;
+﻿using DEvahebLib;
+using DEvahebLib.Visitors;
 
 namespace DEvahebLibTests
 {
@@ -36,7 +37,7 @@ namespace DEvahebLibTests
             var set = new DEvahebLib.Nodes.Set(new DEvahebLib.Nodes.StringValue("only_one"));
             var setErrors = ValidateNodes.Validate(set);
             Assert.IsTrue(setErrors.Count > 0, "set() with 1 arg should have errors");
-            Assert.IsTrue(setErrors[0].Contains("2 argument"), setErrors[0]);
+            Assert.IsTrue(setErrors[0] == Diagnostic.ERR001_InvalidArgumentCount(null, 0, 0));
 
             var wait = new DEvahebLib.Nodes.Wait();
             var waitErrors = ValidateNodes.Validate(wait);

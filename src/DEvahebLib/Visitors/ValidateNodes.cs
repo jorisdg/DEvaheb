@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using DEvahebLib.Nodes;
@@ -7,22 +6,22 @@ namespace DEvahebLib.Visitors
 {
     public class ValidateNodes : StackVisitorBase
     {
-        public List<string> Errors { get; } = new List<string>();
+        public List<Diagnostic> Diagnostics { get; } = new();
 
-        public static List<string> Validate(Node node)
+        public static List<Diagnostic> Validate(Node node)
         {
             var validator = new ValidateNodes();
             validator.Visit(node);
 
-            return validator.Errors;
+            return validator.Diagnostics;
         }
 
-        public static List<string> Validate(List<Node> nodes)
+        public static List<Diagnostic> Validate(List<Node> nodes)
         {
             var validator = new ValidateNodes();
             validator.Visit(nodes);
 
-            return validator.Errors;
+            return validator.Diagnostics;
         }
 
         public override void VisitFunctionNode(FunctionNode node)
@@ -46,21 +45,20 @@ namespace DEvahebLib.Visitors
 
             if (args.Count != expected)
             {
-                string label = node is Camera camera ? $"camera({camera.GetCommand()})" : $"{node.Name}()";
-                Errors.Add($"{label} requires {expected} argument{(expected == 1 ? "" : "s")}, got {args.Count}");
+                Diagnostics.Add(Diagnostic.ERR001_InvalidArgumentCount(node, expected, args.Count));
             }
 
             foreach (var arg in args)
             {
                 if (arg is FunctionNode function && function.ValueType == typeof(VoidValue))
                 {
-                    Errors.Add("Function argument is a void function");
+                    Diagnostics.Add(Diagnostic.ERR002_FunctionArgumentIsVoid(node, args.IndexOf(arg)));
                 }
             }
 
             if (node is If && args.Count > 1 && !(args[1] is OperatorNode))
             {
-                Errors.Add("if() second argument must be an operator");
+                Diagnostics.Add(Diagnostic.ERR003_IfSecondArgumentNotOperator(node));
             }
             else if (node is Task && HasParentBlockOfType<Loop>())
             {
@@ -70,7 +68,7 @@ namespace DEvahebLib.Visitors
                         ||
                         (((Loop)block).Count is IntegerValue intCount && intCount.Integer != 0)
                     ));
-                Errors.Add("Defining a task inside a loop");
+                Diagnostics.Add(Diagnostic.WARN001_TaskInsideLoop(node));
             }
         }
     }

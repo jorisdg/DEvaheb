@@ -12,8 +12,10 @@ namespace DEvahebLibTests
 {
     internal class Helper
     {
-        public const string testFilesDirectory = @"C:\temp\STVEF\scripts";
-        public const bool JediAcademyFlag = false;
+        //public const string testFilesDirectory = @"C:\temp\STVEF\scripts";
+        //public const bool JediAcademyFlag = false;
+        public const string testFilesDirectory = @"C:\temp\jedi_academy_sdk\Tools\JAscripts";
+        public const bool JediAcademyFlag = true;
         public const float IBIVersion = 1.57f;
 
         public static IEnumerable<object[]> IBITestFiles
