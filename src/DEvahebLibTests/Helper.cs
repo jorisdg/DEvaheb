@@ -16,7 +16,8 @@ namespace DEvahebLibTests
         {
             { @"C:\temp\JA_Scripts", true },
             { @"C:\temp\STVEF_Scripts", false },
-            { @"C:\temp\SOF2_Scripts", false }
+            { @"C:\temp\SOF2_Scripts", false },
+            { @"C:\temp\JK2_Scripts", true }
         };
 
         public const float IBIVersion = 1.57f;
@@ -145,7 +146,13 @@ namespace DEvahebLibTests
             if (header != "IBI\0")
                 throw new Exception($"File is not a valid IBI file");
 
-            Console.WriteLine($"IBI File Version: {reader.ReadSingle()}");
+            float version = reader.ReadSingle();
+            Console.WriteLine($"IBI File Version: {version}");
+
+            if (version != Helper.IBIVersion)
+            {
+                throw new Exception($"Unexpected IBI version {version}");
+            }
 
             var parser = new IBIParser();
             while (reader != null && reader.BaseStream.Position < reader.BaseStream.Length)
