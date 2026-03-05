@@ -15,7 +15,8 @@ namespace DEvahebLibTests
         protected static Dictionary<string, bool> OriginalGameScripts = new() 
         {
             { @"C:\temp\JA_Scripts", true },
-            { @"C:\temp\STVEF_Scripts", false }
+            { @"C:\temp\STVEF_Scripts", false },
+            { @"C:\temp\SOF2_Scripts", false }
         };
 
         public const float IBIVersion = 1.57f;
