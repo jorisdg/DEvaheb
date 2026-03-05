@@ -45,16 +45,16 @@ namespace DEvahebLibTests
 
         [TestMethod]
         [DynamicData(nameof(Helper.IBITestFiles), typeof(Helper))]
-        public void TransformIsIdempotent_IBI(string filename)
+        public void TransformIsIdempotent_IBI(string filename, bool jediAcademyFlag)
         {
             var version = Helper.ReadIBIVersion(filename);
             var nodes = Helper.ReadIBI(filename); // ReadIBI does transform already
 
-            var bytesAfterFirstTransform = Helper.GenerateIBI(nodes, version);
+            var bytesAfterFirstTransform = Helper.GenerateIBI(nodes, version, jediAcademyFlag);
 
             TransformNodes.Transform(nodes);
 
-            var bytesAfterSecondTransform = Helper.GenerateIBI(nodes, version);
+            var bytesAfterSecondTransform = Helper.GenerateIBI(nodes, version, jediAcademyFlag);
 
             int difference = Helper.FindIBIByteDifference(bytesAfterFirstTransform, bytesAfterSecondTransform);
 

@@ -51,9 +51,6 @@
     <None Update="IcarusParserTests\errors\err006.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="IcarusParserTests\errors\err007.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="IcarusParserTests\if_syntax.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

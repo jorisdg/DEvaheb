@@ -131,8 +131,9 @@ namespace DEvahebLibTests
         public void TestRoundTripIBI(string filename)
         {
             var originalBytes = File.ReadAllBytes(filename);
+            var ibiVersion = Helper.ReadIBIVersion(filename);
             var nodes = Helper.ReadIBI(filename);
-            var generatedBytes = Helper.GenerateIBI(nodes, jediAcademyFlag: true);
+            var generatedBytes = Helper.GenerateIBI(nodes, version: ibiVersion, jediAcademyFlag: true);
 
             int difference = Helper.FindIBIByteDifference(originalBytes, generatedBytes);
 

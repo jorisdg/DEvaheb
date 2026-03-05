@@ -12,21 +12,29 @@ namespace DEvahebLibTests
 {
     internal class Helper
     {
-        //public const string testFilesDirectory = @"C:\temp\STVEF\scripts";
-        //public const bool JediAcademyFlag = false;
-        public const string testFilesDirectory = @"C:\temp\jedi_academy_sdk\Tools\JAscripts";
-        public const bool JediAcademyFlag = true;
+        protected static Dictionary<string, bool> OriginalGameScripts = new() 
+        {
+            { @"C:\temp\JA_Scripts", true },
+            { @"C:\temp\STVEF_Scripts", false }
+        };
+
         public const float IBIVersion = 1.57f;
 
         public static IEnumerable<object[]> IBITestFiles
         {
             get
             {
-                var files = Directory.EnumerateFiles(testFilesDirectory, "*.IBI", SearchOption.AllDirectories);
-
-                foreach (var file in files)
+                foreach (var originalGameScript in OriginalGameScripts)
                 {
-                    yield return new object[] { file };
+                    if (Path.Exists(originalGameScript.Key))
+                    {
+                        var files = Directory.EnumerateFiles(originalGameScript.Key, "*.IBI", SearchOption.AllDirectories);
+
+                        foreach (var file in files)
+                        {
+                            yield return new object[] { file, originalGameScript.Value };
+                        }
+                    }
                 }
             }
         }
@@ -35,11 +43,17 @@ namespace DEvahebLibTests
         {
             get
             {
-                var files = Directory.EnumerateFiles(testFilesDirectory, "*.icarus", SearchOption.AllDirectories);
-
-                foreach (var file in files)
+                foreach (var originalGameScript in OriginalGameScripts)
                 {
-                    yield return new object[] { file };
+                    if (Path.Exists(originalGameScript.Key))
+                    {
+                        var files = Directory.EnumerateFiles(originalGameScript.Key, "*.icarus", SearchOption.AllDirectories);
+
+                        foreach (var file in files)
+                        {
+                            yield return new object[] { file };
+                        }
+                    }
                 }
             }
         }
@@ -217,7 +231,7 @@ namespace DEvahebLibTests
                 || text.TrimStart().StartsWith("//");
         }
 
-        public static byte[] GenerateIBI(List<Node> nodes, float version = Helper.IBIVersion, bool jediAcademyFlag = Helper.JediAcademyFlag)
+        public static byte[] GenerateIBI(List<Node> nodes, float version, bool jediAcademyFlag)
         {
             using (var ms = new MemoryStream())
             {
@@ -262,10 +276,9 @@ namespace DEvahebLibTests
 
         public static List<Node> ReadSourceFromFile(string filename, bool convertComments = false, bool includeRem = true)
         {
-            string sourceText = File.ReadAllText(filename);
             var parser = new IcarusParser();
 
-            var nodes = parser.Parse(sourceText, convertComments, includeRem);
+            var nodes = parser.ParseSourceFile(filename, convertComments, includeRem);
             TransformNodes.Transform(nodes);
 
             return nodes;
@@ -275,7 +288,7 @@ namespace DEvahebLibTests
         {
             var parser = new IcarusParser();
 
-            var nodes = parser.Parse(sourceText, convertComments, includeRem);
+            var nodes = parser.ParseSourceText(sourceText, convertComments, includeRem);
             TransformNodes.Transform(nodes);
 
             return nodes;
@@ -286,6 +299,26 @@ namespace DEvahebLibTests
             var differences = CompareNodes.Compare(expected, actual, floatTolerance, stopOnFirst);
 
             return differences.Count > 0 ? string.Join('\n', differences) : string.Empty;
+        }
+
+        public static int CountNodesWithoutSourceLinePos(IEnumerable<Node> nodes)
+        {
+            int count = 0;
+
+            foreach (Node node in nodes)
+            {
+                if (!node.Metadata.ContainsKey(Metadata.SourceLine) || !node.Metadata.ContainsKey(Metadata.SourceColumn))
+                {
+                    count++;
+                }
+
+                if (node is FunctionNode function && function.Arguments != null)
+                {
+                    count += CountNodesWithoutSourceLinePos(function.Arguments);
+                }
+            }
+
+            return count;
         }
     }
 }

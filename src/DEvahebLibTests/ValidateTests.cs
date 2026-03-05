@@ -1,5 +1,4 @@
-﻿using System.IO;
-using DEvahebLib;
+﻿using DEvahebLib;
 using DEvahebLib.Visitors;
 
 namespace DEvahebLibTests
@@ -13,10 +12,9 @@ namespace DEvahebLibTests
         [DataRow(@"IcarusParserTests\errors\err003.txt", DiagnosticLevel.Error, 3)]
         public void TestValidationErrors(string filename, DiagnosticLevel diagnosticLevel, int diagnosticCode)
         {
-            string source = File.ReadAllText(filename);
             var parser = new DEvahebLib.Parser.IcarusParser();
 
-            var nodes = parser.Parse(source);
+            var nodes = parser.ParseSourceFile(filename);
 
             parser.Diagnostics.AddRange(ValidateNodes.Validate(nodes));
 

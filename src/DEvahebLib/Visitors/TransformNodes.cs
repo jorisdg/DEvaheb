@@ -61,6 +61,8 @@ namespace DEvahebLib.Visitors
                 if (table.HasEnum(id.IdentifierName))
                 {
                     var resolved = new FloatValue(table.GetValue(id.IdentifierName));
+                    resolved.CopyMetadataFrom(id);
+
                     tag.SetArg(1, EnumValue.CreateOrPassThrough(resolved, typeof(TagType)));
                 }
             }
@@ -75,6 +77,8 @@ namespace DEvahebLib.Visitors
                 if (table.HasEnum(id.IdentifierName))
                 {
                     var resolved = new FloatValue(table.GetValue(id.IdentifierName));
+                    resolved.CopyMetadataFrom(id);
+
                     get.SetArg(0, EnumValue.CreateOrPassThrough(resolved, typeof(DECLARE_TYPE)));
                 }
             }
@@ -85,7 +89,11 @@ namespace DEvahebLib.Visitors
             var args = loop.Arguments.ToList();
             if (args.Count > 0 && args[0] is FloatValue floatValue)
             {
-                loop.SetArg(0, new IntegerValue((Int32)floatValue.Float));
+                IntegerValue intValue = new IntegerValue((Int32)floatValue.Float);
+                intValue.CopyMetadataFrom(floatValue);
+
+                loop.SetArg(0, intValue);
+
             }
         }
 
@@ -118,7 +126,10 @@ namespace DEvahebLib.Visitors
             var args = camera.Arguments.ToList();
             if (durationIndex >= 0 && durationIndex < args.Count && args[durationIndex] is FloatValue floatValue)
             {
-                camera.SetArg(durationIndex, new IntegerValue((Int32)floatValue.Float));
+                IntegerValue intValue = new IntegerValue((Int32)floatValue.Float);
+                intValue.CopyMetadataFrom(floatValue);
+
+                camera.SetArg(durationIndex, intValue);
             }
         }
     }

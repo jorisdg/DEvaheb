@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DEvahebLib.Enums;
 
 namespace DEvahebLib.Nodes
@@ -222,6 +218,11 @@ namespace DEvahebLib.Nodes
                 finalNode = enumNode;
             }
 
+            if (finalNode != enumNode)
+            {
+                finalNode.CopyMetadataFrom(enumNode);
+            }
+
             return finalNode;
         }
     }
@@ -382,7 +383,6 @@ namespace DEvahebLib.Nodes
             {
                 if (enumTable.HasEnum(value))
                 {
-                    // TODO strip quotes?
                     String = enumTable.GetValue(value);
                 }
                 else

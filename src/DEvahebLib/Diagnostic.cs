@@ -58,11 +58,8 @@ namespace DEvahebLib
         public static Diagnostic ERR005_UnexpectedCharacter(Node node)
             => new Diagnostic(DiagnosticLevel.Error, 5, $"Unexpected character in {NodeName(node)}", node);
 
-        public static Diagnostic ERR006_UnexpectedEndOfLine(Node node, char expected)
-            => new Diagnostic(DiagnosticLevel.Error, 6, $"Expected '{expected}' but reached end of line in {NodeName(node)}", node);
-
-        public static Diagnostic ERR007_UnexpectedEndOfLine(Node node, char expected, char found)
-            => new Diagnostic(DiagnosticLevel.Error, 7, $"Expected '{expected}' but found '{found}' in {NodeName(node)}", node);
+        public static Diagnostic ERR006_UnexpectedEndOfLine(Node node, char expected, char found)
+            => new Diagnostic(DiagnosticLevel.Error, 6, $"Expected '{expected}' but found '{found}' in {NodeName(node)}", node);
 
         // WARNINGS
         public static Diagnostic WARN001_TaskInsideLoop(Node node)

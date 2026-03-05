@@ -11,7 +11,7 @@ namespace DEvahebLibTests
     {
         [TestMethod]
         [DynamicData(nameof(Helper.IBITestFiles), typeof(Helper))]
-        public void ValidateIBI(string file)
+        public void ValidateIBI(string file, bool jediAcademyFlag)
         {
             var nodes = Helper.ReadIBI(file);
 

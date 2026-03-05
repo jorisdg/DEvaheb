@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using DEvahebLib.Enums;
 using DEvahebLib.Nodes;
@@ -62,20 +63,35 @@ namespace DEvahebLib.Parser
             { "random",     args => new Nodes.Random(args) },
         };
 
-        private string[] lines;
         private int lineIndex;
         private string currentLine;
         private int pos;
         private bool convertComments;
         private bool includeRem;
+        private TextReader reader;
 
         public List<Diagnostic> Diagnostics { get; } = new();
 
-        public List<Node> Parse(string sourceText, bool convertComments = false, bool includeRem = true)
+        public List<Node> ParseSourceFile(string filename, bool convertComments = false, bool includeRem = true)
+        {
+            using (var sr = new StreamReader(filename))
+            {
+                return Parse(sr, convertComments, includeRem);
+            }
+        }
+
+        public List<Node> ParseSourceText(string sourceText, bool convertComments = false, bool includeRem = true)
+        {
+            using (var sr = new StringReader(sourceText))
+            {
+                return Parse(sr, convertComments, includeRem);
+            }
+        }
+
+        public List<Node> Parse(TextReader reader, bool convertComments = false, bool includeRem = true)
         {
             Diagnostics.Clear();
 
-            lines = sourceText.Replace("\r\n", "\n").Split('\n'); // TODO clean up this mess
             lineIndex = -1;
             currentLine = string.Empty;
             pos = 0;
@@ -83,6 +99,8 @@ namespace DEvahebLib.Parser
             this.convertComments = convertComments;
             this.includeRem = includeRem;
             var nodes = new List<Node>();
+
+            this.reader = reader;
 
             while (ReadNextLine())
             {
@@ -112,12 +130,11 @@ namespace DEvahebLib.Parser
 
         private bool ReadNextLine()
         {
-            lineIndex++;
-
-            if (lineIndex >= lines.Length)
+            if (reader.Peek() < 0)
                 return false;
 
-            currentLine = lines[lineIndex];
+            currentLine = reader.ReadLine();
+            lineIndex++;
             pos = 0;
 
             return true;
@@ -136,7 +153,7 @@ namespace DEvahebLib.Parser
             {
                 if (FunctionMap.TryGetValue(keyword, out var factory))
                 {
-                    var node = ParseMappedFunction(factory);
+                    var node = ParseMappedFunction(keyword, factory);
 
                     if (includeRem || !(node is Rem))
                     {
@@ -145,7 +162,7 @@ namespace DEvahebLib.Parser
                 }
                 else
                 {
-                    var node = ParseMappedFunction(args => new GenericFunction(keyword, args));
+                    var node = ParseMappedFunction(keyword, args => new GenericFunction(keyword, args));
                     nodes.Add(node);
                 }
             }
@@ -161,8 +178,6 @@ namespace DEvahebLib.Parser
 
             return nodes;
         }
-
-        #region Block Parsers
 
         private void ParseBlockBody(BlockNode block)
         {
@@ -212,13 +227,14 @@ namespace DEvahebLib.Parser
             }
         }
 
-        #endregion
-
-        #region Function Parsers
-
-        private Node ParseMappedFunction(Func<Node[], FunctionNode> factory)
+        private Node ParseMappedFunction(string keyword, Func<Node[], FunctionNode> factory)
         {
+            int startPos = pos - keyword.Length;
+            int startLine = lineIndex;
+
             var node = factory(arg: null);
+            node.Metadata[Metadata.SourceLine] = startLine.ToString();
+            node.Metadata[Metadata.SourceColumn] = startPos.ToString();
 
             Node[] args;
             try
@@ -232,6 +248,8 @@ namespace DEvahebLib.Parser
             }
 
             node = factory(args);
+            node.Metadata[Metadata.SourceLine] = startLine.ToString();
+            node.Metadata[Metadata.SourceColumn] = startPos.ToString();
 
             if (node is BlockNode block)
             {
@@ -293,15 +311,25 @@ namespace DEvahebLib.Parser
 
         private Node ParseInnerFunction(string name, Node parent)
         {
+            Node node = null;
+
+            int startPos = pos;
+            int startLine = lineIndex;
+
             if (FunctionMap.TryGetValue(name, out var factory))
-                return factory(ParseArgList(parent));
+            {
+                node = factory(ParseArgList(parent));
+            }
+            else
+            {
+                node = new GenericFunction(name, ParseArgList(parent));
+            }
 
-            return new GenericFunction(name, ParseArgList(parent));
+            node.Metadata[Metadata.SourceLine] = startLine.ToString();
+            node.Metadata[Metadata.SourceColumn] = (startPos - name.Length).ToString();
+
+            return node;
         }
-
-        #endregion
-
-        #region Value Parsing
 
         // When source has an identifier like FLOAT, ORIGIN, FLUSH — resolve to FloatValue
         // so CreateOrPassThrough produces EnumFloatValue matching the IBI parser output.
@@ -314,15 +342,17 @@ namespace DEvahebLib.Parser
 
         private static Node ResolveEnumIdentifier(Node value, Type enumType)
         {
-            if (IdentifierEnumTypes.Contains(enumType))
-                return value;
-
-            if (value is IdentifierValue id)
+            if (!IdentifierEnumTypes.Contains(enumType) && value is IdentifierValue id)
             {
                 var table = EnumTableFloat.FromEnum(enumType);
 
                 if (table.HasEnum(id.IdentifierName))
-                    return new FloatValue(table.GetValue(id.IdentifierName));
+                {
+                    FloatValue newValue = new FloatValue(table.GetValue(id.IdentifierName));
+                    newValue.CopyMetadataFrom(value);
+
+                    value = newValue;
+                }
             }
 
             return value;
@@ -341,7 +371,7 @@ namespace DEvahebLib.Parser
                 value = ResolveEnumIdentifier(value, enumType);
                 value = EnumValue.CreateOrPassThrough(value, enumType);
             }
-
+            
             return value;
         }
 
@@ -355,58 +385,79 @@ namespace DEvahebLib.Parser
                 throw new ParseException(Diagnostics.Last());
             }
 
+            int startPos = pos;
+            int startLine = lineIndex;
+
             char c = currentLine[pos];
+            Node node = null;
 
             // Vector: < x y z > OR operator: < (less-than)
-            if (c == '<')
+            switch (c)
             {
-                if (IsVectorAhead())
-                    return ParseVector(parent);
+                case '<':
+                    if (IsVectorAhead())
+                    {
+                        node = ParseVector(parent);
+                    }
+                    else
+                    {
+                        pos++;
+                        node = new OperatorNode(Operator.Lt);
+                    }
+                    break;
 
-                pos++;
-                return new OperatorNode(Operator.Lt);
+                case '>':
+                    pos++;
+                    node = new OperatorNode(Operator.Gt);
+                    break;
+
+                case '=':
+                    pos++;
+                    node = new OperatorNode(Operator.Eq);
+                    break;
+
+                case '!':
+                    pos++;
+                    node = new OperatorNode(Operator.Ne);
+                    break;
+
+                case '"':
+                    node = ParseString(parent);
+                    break;
+
+                // Number: digit, minus, or dot
+                default:
+                    if (char.IsDigit(c) || c == '-' || c == '.')
+                    {
+                        node = ParseNumber();
+                    }
+                    else if (char.IsLetter(c))
+                    {
+                        string ident = ReadIdentifier();
+
+                        SkipWhitespaceAndComments();
+
+                        if (pos < currentLine.Length && currentLine[pos] == '(')
+                        {
+                            node = ParseInnerFunction(ident, parent);
+                        }
+                        else
+                        {
+                            node = new IdentifierValue(ident);
+                        }
+                    }
+                    else
+                    {
+                        Diagnostics.Add(Diagnostic.ERR005_UnexpectedCharacter(parent));
+                        throw new ParseException(Diagnostics.Last());
+                    }
+                    break;
             }
 
-            // Operators: >, =, !
-            if (c == '>')
-            {
-                pos++;
-                return new OperatorNode(Operator.Gt);
-            }
-            if (c == '=')
-            {
-                pos++;
-                return new OperatorNode(Operator.Eq);
-            }
-            if (c == '!')
-            {
-                pos++;
-                return new OperatorNode(Operator.Ne);
-            }
+            node.Metadata[Metadata.SourceLine] = startLine.ToString();
+            node.Metadata[Metadata.SourceColumn] = startPos.ToString();
 
-            // String: "..."
-            if (c == '"')
-                return ParseString(parent);
-
-            // Number: digit, minus, or dot
-            if (char.IsDigit(c) || c == '-' || c == '.')
-                return ParseNumber();
-
-            // Identifier: alpha or underscore
-            if (char.IsLetter(c) || c == '_')
-            {
-                string ident = ReadIdentifier();
-
-                SkipWhitespaceAndComments();
-
-                if (pos < currentLine.Length && currentLine[pos] == '(')
-                    return ParseInnerFunction(ident, parent);
-
-                return new IdentifierValue(ident);
-            }
-
-            Diagnostics.Add(Diagnostic.ERR005_UnexpectedCharacter(parent));
-            throw new ParseException(Diagnostics.Last());
+            return node;
         }
 
         private VectorValue ParseVector(Node parent)
@@ -489,9 +540,6 @@ namespace DEvahebLib.Parser
             }
         }
 
-        #endregion
-
-        #region Tokenizer Helpers
 
         private void SkipWhitespaceAndComments()
         {
@@ -587,6 +635,7 @@ namespace DEvahebLib.Parser
 
                 return enumName;
             }
+
             return null;
         }
 
@@ -651,13 +700,13 @@ namespace DEvahebLib.Parser
 
             if (pos >= currentLine.Length)
             {
-                Diagnostics.Add(Diagnostic.ERR006_UnexpectedEndOfLine(parent, expected));
+                Diagnostics.Add(Diagnostic.ERR004_UnexpectedEndOfLine(parent));
                 throw new ParseException(Diagnostics.Last());
             }
 
             if (currentLine[pos] != expected)
             {
-                Diagnostics.Add(Diagnostic.ERR007_UnexpectedEndOfLine(parent, expected, found: currentLine[pos]));
+                Diagnostics.Add(Diagnostic.ERR006_UnexpectedEndOfLine(parent, expected, found: currentLine[pos]));
                 throw new ParseException(Diagnostics.Last());
             }
 
@@ -677,7 +726,5 @@ namespace DEvahebLib.Parser
                 Diagnostics.Add(Diagnostic.WARN002_NoSemiColonFound(parent));
             }
         }
-
-        #endregion
     }
 }

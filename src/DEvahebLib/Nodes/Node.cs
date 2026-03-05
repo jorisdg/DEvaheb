@@ -6,14 +6,33 @@ using System.Threading.Tasks;
 
 namespace DEvahebLib.Nodes
 {
+    public enum Metadata
+    {
+        Custom = 0,
+
+        SourceLine,
+        SourceColumn,
+    }
+
     public abstract class Node
     {
         abstract public int Size { get; }
 
         public virtual Type ValueType => typeof(VoidValue);
 
+        public Dictionary<Metadata, string> Metadata { get;  } = new Dictionary<Metadata, string>();
+
         public Node()
         {
+        }
+
+        public void CopyMetadataFrom(Node from)
+        {
+            this.Metadata.Clear();
+            foreach (var kvp in from.Metadata)
+            {
+                this.Metadata[kvp.Key] = kvp.Value;
+            }
         }
     }
 
