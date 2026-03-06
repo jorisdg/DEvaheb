@@ -133,7 +133,7 @@ namespace DEvahebLibTests
             var originalBytes = File.ReadAllBytes(filename);
             var ibiVersion = Helper.ReadIBIVersion(filename);
             var nodes = Helper.ReadIBI(filename);
-            var generatedBytes = Helper.GenerateIBI(nodes, version: ibiVersion, jediAcademyFlag: true);
+            var generatedBytes = Helper.GenerateIBI(nodes, version: ibiVersion, v133: true);
 
             int difference = Helper.FindIBIByteDifference(originalBytes, generatedBytes);
 

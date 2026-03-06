@@ -44,28 +44,28 @@ namespace DEvahebLib
 
         // ERRORS
         public static Diagnostic ERR001_InvalidArgumentCount(FunctionNode node, int expected, int actual)
-            => new Diagnostic(DiagnosticLevel.Error, 1, $"{node?.Name} requires {expected} argument{(expected == 1 ? "" : "s")}, got {actual}", node);
+            => new Diagnostic(DiagnosticLevel.Error, 1, $"'{node?.Name}' requires {expected} argument{(expected == 1 ? "" : "s")}, got {actual}", node);
 
         public static Diagnostic ERR002_FunctionArgumentIsVoid(FunctionNode node, int argIndex)
-            => new Diagnostic(DiagnosticLevel.Error, 2, $"Argument {argIndex + 1} of {node?.Name} is a void function, which is not allowed", node);
+            => new Diagnostic(DiagnosticLevel.Error, 2, $"Argument '{argIndex + 1}()' of function '{node?.Name}' is a void function, which is not allowed", node);
 
         public static Diagnostic ERR003_IfSecondArgumentNotOperator(FunctionNode node)
-            => new Diagnostic(DiagnosticLevel.Error, 3, $"The second argument of an if() must be an operator", node);
+            => new Diagnostic(DiagnosticLevel.Error, 3, $"The second argument of an 'if()' must be an operator", node);
 
         public static Diagnostic ERR004_UnexpectedEndOfLine(Node node)
-            => new Diagnostic(DiagnosticLevel.Error, 4, $"Unexpected end of line in {NodeName(node)}", node);
+            => new Diagnostic(DiagnosticLevel.Error, 4, $"Unexpected end of line in '{NodeName(node)}'", node);
 
         public static Diagnostic ERR005_UnexpectedCharacter(Node node)
-            => new Diagnostic(DiagnosticLevel.Error, 5, $"Unexpected character in {NodeName(node)}", node);
+            => new Diagnostic(DiagnosticLevel.Error, 5, $"Unexpected character in '{NodeName(node)}'", node);
 
         public static Diagnostic ERR006_UnexpectedEndOfLine(Node node, char expected, char found)
-            => new Diagnostic(DiagnosticLevel.Error, 6, $"Expected '{expected}' but found '{found}' in {NodeName(node)}", node);
+            => new Diagnostic(DiagnosticLevel.Error, 6, $"Expected '{expected}' but found '{found}' in '{NodeName(node)}'", node);
 
         // WARNINGS
         public static Diagnostic WARN001_TaskInsideLoop(Node node)
             => new Diagnostic(DiagnosticLevel.Warning, 1, $"Defining a task inside a loop is not allowed", node);
 
         public static Diagnostic WARN002_NoSemiColonFound(Node node)
-            => new Diagnostic(DiagnosticLevel.Warning, 2, $"No semi-colon found at the end of expression {NodeName(node)}", node);
+            => new Diagnostic(DiagnosticLevel.Warning, 2, $"No semi-colon found at the end of expression '{NodeName(node)}'", node);
     }
 }

@@ -239,13 +239,13 @@ namespace DEvahebLibTests
                 || text.TrimStart().StartsWith("//");
         }
 
-        public static byte[] GenerateIBI(List<Node> nodes, float version, bool jediAcademyFlag)
+        public static byte[] GenerateIBI(List<Node> nodes, float version, bool v133)
         {
             using (var ms = new MemoryStream())
             {
                 using (var writer = new BinaryWriter(ms, IbiEncoding.Windows1252, leaveOpen: true))
                 {
-                    var generator = new GenerateIBI(writer, version) { JediAcademyFlag = jediAcademyFlag };
+                    var generator = new GenerateIBI(writer, version) { v133 = v133 };
                     generator.Visit(nodes);
                 }
 

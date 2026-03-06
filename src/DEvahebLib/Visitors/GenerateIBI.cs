@@ -13,7 +13,7 @@ namespace DEvahebLib.Visitors
         private float version;
         private bool isNested = false;
 
-        public bool JediAcademyFlag { get; set; } = false;
+        public bool v133 { get; set; } = false;
 
         public GenerateIBI(BinaryWriter writer, float version = 1.57f)
         {
@@ -47,7 +47,7 @@ namespace DEvahebLib.Visitors
                 {
                     writer.Write(0.0f);
                 }
-                else if (token == IBIToken.random && JediAcademyFlag)
+                else if (token == IBIToken.random && v133)
                 {
                     // Q3_INFINITE
                     writer.Write((float)16777216);

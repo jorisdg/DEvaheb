@@ -27,10 +27,10 @@ The visitors can be used to implement type checkers and other code checks, as we
 
 ## Games
 From what I can find, Icarus scripting is used in the following Raven Software games:
-- Star Trek: Voyager Elite Force (2000)
-- Star Wars Jedi Knight 2: Jedi Outcast (2002)
-- Soldier Of Fortune 2: Double Helix (2002)
-- Star Wars Jedi Knight: Jedi Academy (2003)
+- Star Trek: Voyager Elite Force (2000) : Icarus v1.32
+- Soldier Of Fortune 2: Double Helix (2002) : Icarus v1.32
+- Star Wars Jedi Knight 2: Jedi Outcast (2002) : Icarus v1.33
+- Star Wars Jedi Knight: Jedi Academy (2003) : Icarus v1.33
 - X-Men Origins: Wolverine (2009)
 
 ## Community
