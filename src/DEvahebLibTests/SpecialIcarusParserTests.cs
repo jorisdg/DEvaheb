@@ -44,6 +44,21 @@ namespace DEvahebLibTests
         }
 
         [TestMethod]
+        [DataRow(@"IcarusParserTests\else_syntax.txt")]
+        public void TestElseSyntaxes(string filename)
+        {
+            var parser = new DEvahebLib.Parser.IcarusParser();
+
+            var ifElseNodes = parser.ParseSourceFile(filename);
+
+            Assert.AreEqual(4, ifElseNodes.Count, "Four valid nodes");
+            Assert.AreEqual(2, ifElseNodes.Count(n => n.GetType() == typeof(Else)), "Two valid ELSE syntaxes");
+
+            Assert.AreEqual(1, (ifElseNodes[1] as Else).SubNodes.Count(n => n.GetType() == typeof(Rem)), "REM inside first else block");
+            Assert.AreEqual(1, (ifElseNodes[3] as Else).SubNodes.Count(n => n.GetType() == typeof(Rem)), "REM inside second else block");
+        }
+
+        [TestMethod]
         [DataRow(@"IcarusParserTests\no_semicolon.txt")]
         public void TestNoSemiColons(string filename)
         {

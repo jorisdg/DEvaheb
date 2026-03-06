@@ -265,10 +265,20 @@ namespace DEvahebLib.Parser
 
         private Node[] ParseArgList(Node parent)
         {
-            Expect('(', parent);
-
             var args = new List<Node>();
             bool skippedComma = false;
+
+            if (parent is BlockNode block)
+            {
+                SkipWhitespaceAndComments();
+
+                if (block.ExpectedArgCount == 0 && (pos >= currentLine.Length || currentLine[pos] != '('))
+                {
+                    return args.ToArray();
+                }
+            }
+
+            Expect('(', parent);
 
             while (true)
             {

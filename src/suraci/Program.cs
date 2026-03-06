@@ -23,7 +23,6 @@ namespace suraci
                 Console.WriteLine("   -output \"filepath\"      path and filename to save compiled IBI to");
                 Console.WriteLine("   -v132                   create IBI files compatible with v1.32 of Icarus (Elite Force, SoF2)");
                 Console.WriteLine("   -v133   (default)       create IBI files compatible with v1.33 of Icarus (Jedi Knight, Jedi Academy)");
-                Console.WriteLine("   -variables \"csv path\"   path to alternate variables CSV file");
                 Console.WriteLine("   -a                      compile all files recursively");
                 Console.WriteLine();
                 Console.WriteLine("   The original -e flag of IBIze.exe is ignored");
@@ -39,7 +38,6 @@ namespace suraci
                 List<string> sourceFiles = new List<string>();
                 string targetPath = string.Empty;
                 bool v133 = true;
-                string variablesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "variable_types.csv");
                 bool allFilesRecursively = false;
 
                 for (int i = 0; i < args.Length; i++)
@@ -66,25 +64,6 @@ namespace suraci
                     else if (args[i].Equals("-v132", StringComparison.InvariantCultureIgnoreCase))
                     {
                         v133 = false;
-                    }
-                    else if (args[i].Equals("-variables", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        if (i + 1 < args.Length)
-                        {
-                            i++;
-                            variablesPath = args[i];
-
-                            if (variablesPath.StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                Console.WriteLine("ERROR! Expected file path after \"-variables\" parameter");
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("ERROR! Expected file path after \"-variables\" parameter");
-                            return;
-                        }
                     }
                     else if (args[i].Equals("-a", StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -121,11 +100,11 @@ namespace suraci
                     return;
                 }
 
+                bool anyErrors = false;
+
                 string targetFile = targetPath;
                 foreach (var sourceFile in sourceFiles)
                 {
-                    var vars = DEvahebLib.Variables.FromCsv(variablesPath);
-
                     // if no target specified
                     if (string.IsNullOrEmpty(targetPath))
                     {
@@ -150,6 +129,11 @@ namespace suraci
 
                     foreach(var diagnostic in parser.Diagnostics)
                     {
+                        if (diagnostic.Level == DiagnosticLevel.Error)
+                        {
+                            anyErrors = true;
+                        }
+
                         Console.WriteLine($"{diagnostic.Level} {diagnostic.DiagnosticCode} : {diagnostic.Message}, line {diagnostic.Node.Metadata[DEvahebLib.Nodes.Metadata.SourceLine]} column {diagnostic.Node.Metadata[DEvahebLib.Nodes.Metadata.SourceColumn]}");
                     }
                     Console.WriteLine();
@@ -167,6 +151,11 @@ namespace suraci
                 }
 
                 Console.WriteLine("Done");
+
+                if (anyErrors)
+                {
+                    Environment.ExitCode = -1;
+                }
             }
         }
     }
