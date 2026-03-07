@@ -8,6 +8,10 @@ namespace DEvahebLib.Visitors
     {
         public List<Diagnostic> Diagnostics { get; } = new();
 
+        Stack<string> entityContext = new(["__THIS"]);
+
+        Dictionary<string, List<string>> entityTasks = new();
+
         public static List<Diagnostic> Validate(Node node)
         {
             var validator = new ValidateNodes();
@@ -35,7 +39,35 @@ namespace DEvahebLib.Visitors
         {
             ValidateNode(node);
 
+            if (node is Affect affect)
+            {
+                entityContext.Push((affect.EntityName as StringValue)?.String ?? "__UNKNOWN");
+            }
+            else if ( node is Task task)
+            {
+                string currentEntity = entityContext.Peek();
+
+                if (!entityTasks.ContainsKey(currentEntity))
+                {
+                    entityTasks[currentEntity] = new List<string>();
+                }
+
+                entityTasks[currentEntity].Add((task.TaskName as StringValue).String);
+            }
+
             base.VisitBlockNode(node);
+
+            if (node is Affect)
+            {
+                // since we don't know what entity this was for, let's make sure we don't remember any tasks
+                // so any subsequent unknown entities don't assume they are defined
+                if (entityContext.Peek().Equals("__UNKNOWN"))
+                {
+                    entityTasks.Remove(entityContext.Peek());
+                }
+
+                entityContext.Pop();
+            }
         }
 
         private void ValidateNode(FunctionNode node)
@@ -60,7 +92,7 @@ namespace DEvahebLib.Visitors
             {
                 Diagnostics.Add(Diagnostic.ERR003_IfSecondArgumentNotOperator(node));
             }
-            else if (node is Task && HasParentBlockOfType<Loop>())
+            else if (node is Task task && HasParentBlockOfType<Loop>())
             {
                 blockStack.Any(block => block is Loop && 
                     (
@@ -69,6 +101,16 @@ namespace DEvahebLib.Visitors
                         (((Loop)block).Count is IntegerValue intCount && intCount.Integer != 0)
                     ));
                 Diagnostics.Add(Diagnostic.WARN001_TaskInsideLoop(node));
+            }
+            else if (node is Do || node is DoWait)
+            {
+                string taskName = (node is Do doNode) ? (doNode.Target as StringValue)?.String : ((node as DoWait).WaitName as StringValue)?.String;
+
+                string currentEntity = entityContext.Peek();
+                if (!entityTasks.ContainsKey(currentEntity) || !entityTasks[currentEntity].Contains(taskName))
+                {
+                    Diagnostics.Add(Diagnostic.WARN003_UnknownTask(node, currentEntity.StartsWith("__") ? null : currentEntity, taskName));
+                }
             }
         }
     }

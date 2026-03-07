@@ -67,5 +67,8 @@ namespace DEvahebLib
 
         public static Diagnostic WARN002_NoSemiColonFound(Node node)
             => new Diagnostic(DiagnosticLevel.Warning, 2, $"No semi-colon found at the end of expression '{NodeName(node)}'", node);
+
+        public static Diagnostic WARN003_UnknownTask(Node node, string entityName, string taskName)
+            => new Diagnostic(DiagnosticLevel.Warning, 3, $"Task '{taskName}' {(!string.IsNullOrEmpty(entityName) ? $"for entity '{entityName}' " : "")}is not defined in this script", node);
     }
 }

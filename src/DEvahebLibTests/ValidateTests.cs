@@ -10,7 +10,10 @@ namespace DEvahebLibTests
         [DataRow(@"IcarusParserTests\errors\err001.txt", DiagnosticLevel.Error, 1)]
         [DataRow(@"IcarusParserTests\errors\err002.txt", DiagnosticLevel.Error, 2)]
         [DataRow(@"IcarusParserTests\errors\err003.txt", DiagnosticLevel.Error, 3)]
-        public void TestValidationErrors(string filename, DiagnosticLevel diagnosticLevel, int diagnosticCode)
+        //[DataRow(@"IcarusParserTests\errors\war001.txt", DiagnosticLevel.Warning, 1)]
+        //[DataRow(@"IcarusParserTests\errors\war002.txt", DiagnosticLevel.Warning, 2)]
+        [DataRow(@"IcarusParserTests\errors\war003.txt", DiagnosticLevel.Warning, 3)]
+        public void TestValidations(string filename, DiagnosticLevel diagnosticLevel, int diagnosticCode)
         {
             var parser = new DEvahebLib.Parser.IcarusParser();
 
