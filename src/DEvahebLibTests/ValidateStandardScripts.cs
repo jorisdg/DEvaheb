@@ -18,7 +18,7 @@ namespace DEvahebLibTests
             var errors = ValidateNodes.Validate(nodes).Where(d => d.Level == DiagnosticLevel.Error);
             if (errors.Count() > 0)
             {
-                Console.WriteLine(string.Join(Environment.NewLine, errors));
+                Console.WriteLine(string.Join(Environment.NewLine, errors.Select(d => d.Message)));
             }
 
             Assert.AreEqual(0, errors.Count(), "Standard IBI files are expected to have no errors");

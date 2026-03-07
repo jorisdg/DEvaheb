@@ -1,5 +1,5 @@
 ﻿using System;
-using System.IO;
+using System.Linq;
 using DEvahebLib.Visitors;
 
 namespace DEvahebLibTests
@@ -44,7 +44,7 @@ namespace DEvahebLibTests
 
             if (errors.Count > 0)
             {
-                Console.WriteLine(string.Join(Environment.NewLine, errors));
+                Console.WriteLine(string.Join(Environment.NewLine, errors.Select(d => d.Message)));
             }
 
             Assert.AreEqual(0, errors.Count);
@@ -87,7 +87,7 @@ namespace DEvahebLibTests
 
             if (errors.Count > 0)
             {
-                Console.WriteLine(string.Join(Environment.NewLine, errors));
+                Console.WriteLine(string.Join(Environment.NewLine, errors.Select(d => d.Message)));
             }
 
             Assert.AreEqual(0, errors.Count);
