@@ -92,10 +92,14 @@ namespace ConsoleApp
                             i++;
                             extension = args[i];
 
-                            if (extension.Contains("\\", StringComparison.InvariantCultureIgnoreCase))
+                            if (extension.StartsWith("\\", StringComparison.InvariantCultureIgnoreCase))
                             {
-                                Console.WriteLine("ERROR! Expected file extension after \"-extension\" parameter, for example \"icarus\" or \"txt\"");
-                                return;
+                                extension = extension.Substring(1);
+
+                                if (extension.EndsWith("\\", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    extension = extension.Substring(0, extension.Length - 1);
+                                }
                             }
 
                             if (extension.StartsWith(".", StringComparison.InvariantCultureIgnoreCase))

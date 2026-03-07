@@ -20,24 +20,31 @@ namespace suraci
                 Console.WriteLine("suraci.exe \"path_to_icarus_sourcefile\"");
                 Console.WriteLine();
                 Console.WriteLine("Optional arguments:");
-                Console.WriteLine("   -output \"filepath\"      path and filename to save compiled IBI to");
+                Console.WriteLine("   -output \"filepath\"      path or filename to save compiled IBI to");
+                Console.WriteLine("   -extension \"icarus\"     file extension to look for when searching folders for source files, default is \"txt\"");
                 Console.WriteLine("   -v132                   create IBI files compatible with v1.32 of Icarus (Elite Force, SoF2)");
                 Console.WriteLine("   -v133   (default)       create IBI files compatible with v1.33 of Icarus (Jedi Knight, Jedi Academy)");
                 Console.WriteLine("   -a                      compile all files recursively");
-                Console.WriteLine("   -strict                 report warnings as errors");
+                Console.WriteLine("   -e                      output errors and warnings to a temp file and open it when done");
+                Console.WriteLine("   -strict                 report warnings as errors (and fail compile on warnings)");
                 Console.WriteLine();
-                Console.WriteLine("   The original -e flag of IBIze.exe is ignored");
+                Console.WriteLine("   Note: The original -e flag of IBIze.exe was \"pause on error\" which was used by the BehavED editor to show output.");
+                Console.WriteLine("         Newer versions of Windows don't show the cmd window, essentially hanging BehavED. Using a file is the alternative.");
                 Console.WriteLine();
                 Console.WriteLine("if output file path is ommitted, IBI file will be placed next to the original source file");
                 Console.WriteLine();
                 Console.WriteLine("Examples:");
-                Console.WriteLine("    suraci.exe \"C:\\Temp\\real_scripts\\intro.txt\"");
+                Console.WriteLine("    suraci.exe \"C:\\Temp\\real_scripts\\intro.txt\" [compile intro.txt to intro.IBI]");
+                Console.WriteLine("    suraci.exe \"C:\\Temp\\real_scripts\" -a [compile all scripts in real_scripts and all subdirectories");
+                Console.WriteLine("    suraci.exe \"C:\\Temp\\real_scripts\" -extension icarus [compile all scripts in real_scripts that have extension .icarus");
                 Console.WriteLine();
             }
             else
             {
-                List<string> sourceFiles = new List<string>();
+                string extension = "txt";
+                List<string> sourceFiles = new();
                 string targetPath = string.Empty;
+                List<string> sourceDirectories = new();
                 bool v133 = true;
                 bool allFilesRecursively = false;
                 bool strict = false;
@@ -54,12 +61,43 @@ namespace suraci
                             if (targetPath.StartsWith("-", StringComparison.InvariantCultureIgnoreCase))
                             {
                                 Console.WriteLine("ERROR! Expected file path after \"-output\" parameter");
+                                Environment.ExitCode = -1;
                                 return;
                             }
                         }
                         else
                         {
                             Console.WriteLine("ERROR! Expected file path after \"-output\" parameter");
+                            Environment.ExitCode = -1;
+                            return;
+                        }
+                    }
+                    else if (args[i].Equals("-extension", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        if (i + 1 < args.Length)
+                        {
+                            i++;
+                            extension = args[i];
+
+                            if (extension.StartsWith("\\", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                extension = extension.Substring(1);
+
+                                if (extension.EndsWith("\\", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    extension = extension.Substring(0, extension.Length - 1);
+                                }
+                            }
+
+                            if (extension.StartsWith(".", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                extension = extension.Substring(1);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("ERROR! Expected file extension after \"-extension\" parameter, for example \"icarus\" or \"txt\"");
+                            Environment.ExitCode = -1;
                             return;
                         }
                     }
@@ -79,30 +117,49 @@ namespace suraci
                     {
                         var sourceFile = args[i];
 
-                        if (!File.Exists(sourceFile))
+                        if (Directory.Exists(sourceFile))
                         {
-                            Console.WriteLine($"ERROR! File \"{sourceFile}\" doesn't exist");
+                            sourceDirectories.Add(sourceFile);
+                        }
+                        else if (!File.Exists(sourceFile))
+                        {
+                            Console.WriteLine($"ERROR! File or directory \"{sourceFile}\" doesn't exist");
+                            Environment.ExitCode = -1;
                             return;
                         }
-
-                        sourceFiles.Add(sourceFile);
+                        else
+                        {
+                            sourceFiles.Add(sourceFile);
+                        }
                     }
                     else if (!args[i].Equals("-e", StringComparison.InvariantCultureIgnoreCase)) // error on anything other than -e which is an IBIze.exe parameter that BehavED uses
                     {
                         Console.WriteLine($"Unknown argument {args[i]}");
+                        Environment.ExitCode = -1;
                         return;
                     }
                 }
 
-                if (allFilesRecursively)
+                if (sourceDirectories.Any())
                 {
-                    var txtFiles = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.txt", SearchOption.AllDirectories);
+                    foreach (var sourceDirectory in sourceDirectories)
+                    {
+                        var txtFiles = Directory.GetFiles(sourceDirectory, $"*.{extension}", allFilesRecursively ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+                        sourceFiles.AddRange(txtFiles);
+                    }
+                }
+                else if (allFilesRecursively)
+                {
+                    var txtFiles = Directory.GetFiles(Directory.GetCurrentDirectory(), $"*.{extension}", SearchOption.AllDirectories);
                     sourceFiles.AddRange(txtFiles);
                 }
 
+                sourceFiles = sourceFiles.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
                 if (!sourceFiles.Any())
                 {
-                    Console.WriteLine("No source file specified");
+                    Console.WriteLine("No source file specified or found in directories");
+                    Environment.ExitCode = -1;
                     return;
                 }
 
