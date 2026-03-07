@@ -1,0 +1,7 @@
+loop(1)
+{
+	task ("My Task" )
+	{
+		set ("var", 1234.000 );
+	}
+}

@@ -53,6 +53,12 @@
     <None Update="IcarusParserTests\errors\err006.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="IcarusParserTests\errors\war001.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="IcarusParserTests\errors\war002.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="IcarusParserTests\errors\war003.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
