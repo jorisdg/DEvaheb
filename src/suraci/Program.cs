@@ -1,4 +1,5 @@
-﻿using DEvahebLib;
+﻿using System.Text;
+using DEvahebLib;
 using DEvahebLib.Parser;
 using DEvahebLib.Visitors;
 
@@ -25,7 +26,8 @@ namespace suraci
                 Console.WriteLine("   -v132                   create IBI files compatible with v1.32 of Icarus (Elite Force, SoF2)");
                 Console.WriteLine("   -v133   (default)       create IBI files compatible with v1.33 of Icarus (Jedi Knight, Jedi Academy)");
                 Console.WriteLine("   -a                      compile all files recursively");
-                Console.WriteLine("   -e                      output errors and warnings to a temp file and open it when done");
+                Console.WriteLine("   -e                      output errors and warnings to a log file and open it when done");
+                Console.WriteLine("   -logpath                path to save log file when using -e option (default is in /logs/ subdirectory of location of suraci.exe)");
                 Console.WriteLine("   -strict                 report warnings as errors (and fail compile on warnings)");
                 Console.WriteLine();
                 Console.WriteLine("   Note: The original -e flag of IBIze.exe was \"pause on error\" which was used by the BehavED editor to show output.");
@@ -42,12 +44,14 @@ namespace suraci
             else
             {
                 string extension = "txt";
+                string logDirectory = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "logs");
                 List<string> sourceFiles = new();
                 string targetPath = string.Empty;
                 List<string> sourceDirectories = new();
                 bool v133 = true;
                 bool allFilesRecursively = false;
                 bool strict = false;
+                bool openLog = false;
 
                 for (int i = 0; i < args.Length; i++)
                 {
@@ -132,7 +136,36 @@ namespace suraci
                             sourceFiles.Add(sourceFile);
                         }
                     }
-                    else if (!args[i].Equals("-e", StringComparison.InvariantCultureIgnoreCase)) // error on anything other than -e which is an IBIze.exe parameter that BehavED uses
+                    else if (args[i].Equals("-e", StringComparison.InvariantCultureIgnoreCase)) // error on anything other than -e which is an IBIze.exe parameter that BehavED uses
+                    {
+                        openLog = true;
+                    }
+                    else if (args[i].Equals("-logpath", StringComparison.InvariantCultureIgnoreCase)) // error on anything other than -e which is an IBIze.exe parameter that BehavED uses
+                    {
+                        if (i + 1 < args.Length)
+                        {
+                            i++;
+                            logDirectory = args[i];
+
+                            if (logDirectory.StartsWith("\\", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                logDirectory = logDirectory.Substring(1);
+
+                                if (logDirectory.EndsWith("\\", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    logDirectory = logDirectory.Substring(0, logDirectory.Length - 1);
+                                }
+                            }
+
+                            if (!Directory.Exists (logDirectory))
+                            {
+                                Console.WriteLine($"ERROR! Log directory \"{logDirectory}\" doesn't exist");
+                                Environment.ExitCode = -1;
+                                return;
+                            }
+                        }
+                    }
+                    else
                     {
                         Console.WriteLine($"Unknown argument {args[i]}");
                         Environment.ExitCode = -1;
@@ -165,6 +198,8 @@ namespace suraci
 
                 bool anyErrors = false;
 
+                StringBuilder log = new();
+
                 string targetFile = targetPath;
                 foreach (var sourceFile in sourceFiles)
                 {
@@ -189,6 +224,8 @@ namespace suraci
                     var parser = new IcarusParser();
 
                     Console.WriteLine($"Parsing '{sourceFile}'");
+                    if (openLog)
+                        log.AppendLine($"Parsing '{sourceFile}'");
 
                     var nodes = parser.ParseSourceFile(sourceFile, convertComments: false, includeRem: false);
                     TransformNodes.Transform(nodes);
@@ -203,9 +240,16 @@ namespace suraci
                             thisFileErrors = true;
                         }
 
-                        Console.WriteLine($"{level} {diagnostic.Level.ToString().Substring(0, 3).ToUpper()}{diagnostic.DiagnosticCode.ToString("D4")} : {diagnostic.Message}, line {diagnostic.Node.Metadata[DEvahebLib.Nodes.Metadata.SourceLine]} column {diagnostic.Node.Metadata[DEvahebLib.Nodes.Metadata.SourceColumn]}");
+                        string logEntry = $"{level} {diagnostic.Level.ToString().Substring(0, 3).ToUpper()}{diagnostic.DiagnosticCode.ToString("D4")} : {diagnostic.Message}, line {diagnostic.Node.Metadata[DEvahebLib.Nodes.Metadata.SourceLine]} column {diagnostic.Node.Metadata[DEvahebLib.Nodes.Metadata.SourceColumn]}";
+                        Console.WriteLine(logEntry);
+                        if (openLog)
+                            log.AppendLine(logEntry);
                     }
+
                     Console.WriteLine();
+                    if (openLog)
+                        log.AppendLine();
+
 
                     if (!thisFileErrors)
                     {
@@ -217,6 +261,29 @@ namespace suraci
                                 generator.Visit(nodes);
                             }
                         }
+                    }
+                }
+
+                if (openLog)
+                {
+                    if (!Directory.Exists(logDirectory))
+                    {
+                        Directory.CreateDirectory(logDirectory);
+                    }
+
+                    string filename = Path.Join(logDirectory, $"{DateTime.Now:yyyyMMddHHmmss}.txt");
+                    File.WriteAllText(filename, log.ToString());
+
+                    try
+                    {
+                        System.Diagnostics.Process process = new();
+                        process.StartInfo.FileName = filename;
+                        process.StartInfo.UseShellExecute = true;
+                        process.Start();
+                    }
+                    catch
+                    {
+                        Console.WriteLine($"Failed to open log file {filename}");
                     }
                 }
 
