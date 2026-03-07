@@ -323,7 +323,7 @@ namespace DEvahebLib.Visitors
             {
                 SourceCode.Append($"{node.Name}(");
             }
-            else
+            else if (Parity != SourceCodeParity.BareExpressions || node.ExpectedArgCount > 0) // TODO explicit check for functions can go without parentheses? right now just 'else'
             {
                 SourceCode.Append($"{node.Name} (");
             }
@@ -339,7 +339,7 @@ namespace DEvahebLib.Visitors
             {
                 SourceCode.Append(")");
             }
-            else
+            else if (Parity != SourceCodeParity.BareExpressions || node.ExpectedArgCount > 0) // TODO explicit check for functions can go without parentheses? right now just 'else'
             {
                 SourceCode.Append(" )");
             }
