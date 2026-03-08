@@ -10,19 +10,24 @@ namespace DEvahebLib.Visitors
 
         Stack<string> entityContext = new(["__THIS"]);
 
-        Dictionary<string, List<string>> entityTasks = new();
+        Dictionary<string, SymbolTable> entitySymbols;
 
-        public static List<Diagnostic> Validate(Node node)
+        public ValidateNodes(Dictionary<string, SymbolTable> symbols = null)
         {
-            var validator = new ValidateNodes();
+            entitySymbols = symbols != null ? new(symbols) : new();
+        }
+
+        public static List<Diagnostic> Validate(Node node, Dictionary<string, SymbolTable> symbols = null)
+        {
+            var validator = new ValidateNodes(symbols);
             validator.Visit(node);
 
             return validator.Diagnostics;
         }
 
-        public static List<Diagnostic> Validate(List<Node> nodes)
+        public static List<Diagnostic> Validate(List<Node> nodes, Dictionary<string, SymbolTable> symbols = null)
         {
-            var validator = new ValidateNodes();
+            var validator = new ValidateNodes(symbols);
             validator.Visit(nodes);
 
             return validator.Diagnostics;
@@ -47,12 +52,12 @@ namespace DEvahebLib.Visitors
             {
                 string currentEntity = entityContext.Peek();
 
-                if (!entityTasks.ContainsKey(currentEntity))
+                if (!entitySymbols.ContainsKey(currentEntity))
                 {
-                    entityTasks[currentEntity] = new List<string>();
+                    entitySymbols[currentEntity] = new SymbolTable();
                 }
 
-                entityTasks[currentEntity].Add((task.TaskName as StringValue).String);
+                entitySymbols[currentEntity].AddTask((task.TaskName as StringValue).String);
             }
 
             base.VisitBlockNode(node);
@@ -63,7 +68,7 @@ namespace DEvahebLib.Visitors
                 // so any subsequent unknown entities don't assume they are defined
                 if (entityContext.Peek().Equals("__UNKNOWN"))
                 {
-                    entityTasks.Remove(entityContext.Peek());
+                    entitySymbols.Remove(entityContext.Peek());
                 }
 
                 entityContext.Pop();
@@ -107,7 +112,7 @@ namespace DEvahebLib.Visitors
                 string taskName = (node is Do doNode) ? (doNode.Target as StringValue)?.String : ((node as DoWait).WaitName as StringValue)?.String;
 
                 string currentEntity = entityContext.Peek();
-                if (!entityTasks.ContainsKey(currentEntity) || !entityTasks[currentEntity].Contains(taskName))
+                if (!entitySymbols.ContainsKey(currentEntity) || !entitySymbols[currentEntity].TaskExists(taskName))
                 {
                     Diagnostics.Add(Diagnostic.WARN003_UnknownTask(node, currentEntity.StartsWith("__") ? null : currentEntity, taskName));
                 }
