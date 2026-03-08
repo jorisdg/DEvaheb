@@ -12,6 +12,11 @@ namespace DEvahebLibTests
 {
     internal class Helper
     {
+        /// <summary>
+        /// The bool flag indicates v1.33 of the scripts, versus v1.32. The only difference is the output of the random() function.
+        /// Note that some JK2 scripts are still in v1.32, where most others are v1.33, so it's effectively a mix so no matter what
+        /// version you choose you will find some test failures - but they will be in different files.
+        /// </summary>
         protected static Dictionary<string, bool> OriginalGameScripts = new() 
         {
             { @"C:\temp\JA_Scripts", true },
