@@ -114,9 +114,6 @@ namespace DEvahebLib.Visitors
             if (node is BlockEnd) return IBIToken.blockEnd;
             if (node is GenericFunction gf)
             {
-                if (Enum.TryParse<IBIToken>(gf.Name, out var token))
-                    return token;
-
                 throw new Exception($"Unknown generic function name: {gf.Name}");
             }
 
@@ -164,6 +161,10 @@ namespace DEvahebLib.Visitors
                 WriteTokenHeader(IBIToken.Char, 1);
                 writer.Write((byte)charVal.Char);
             }
+            else
+            {
+                throw new Exception($"Unknown value node type: {node.GetType().Name}");
+            }
         }
 
         private void WriteVector(VectorValue vector)
@@ -206,6 +207,10 @@ namespace DEvahebLib.Visitors
             {
                 WriteTokenHeader(IBIToken.Float, 4);
                 writer.Write((float)eintv.Integer);
+            }
+            else
+            {
+                throw new Exception($"Unknown enum value type: {enumValue.GetType().Name}");
             }
         }
 
