@@ -82,7 +82,10 @@ namespace DEvahebLibTests
 
         public static string GenerateSource(Variables variables, List<Node> nodes, SourceCodeParity parity = SourceCodeParity.BehavED)
         {
-            var icarusText = new GenerateIcarusWithAliases(variables) { Parity = parity };
+            var doWait = new CollapseDoWait();
+            doWait.Visit(nodes);
+
+            var icarusText = new GenerateIcarus(variables) { Parity = parity };
             icarusText.Visit(nodes);
 
             StringBuilder sb = new StringBuilder();
