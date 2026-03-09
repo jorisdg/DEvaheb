@@ -44,6 +44,7 @@ namespace DEvahebLibTests
         }
 
         [TestMethod]
+        [TestCategory("LocalTest")]
         [DynamicData(nameof(Helper.IBITestFiles), typeof(Helper))]
         public void TransformIsIdempotent_IBI(string filename, bool jediAcademyFlag)
         {
@@ -62,6 +63,7 @@ namespace DEvahebLibTests
         }
 
         [TestMethod]
+        [TestCategory("LocalTest")]
         [DynamicData(nameof(Helper.IcarusTestFiles), typeof(Helper))]
         public void TransformIsIdempotent_Icarus(string filename)
         {
