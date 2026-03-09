@@ -79,6 +79,24 @@ namespace DEvahebLib.Nodes
         }
     }
 
+    public class BooleanValue : ValueNode
+    {
+        public bool? Boolean { get { return (bool?)Value; } set { Value = value; } }
+
+        public override int Size => 1;
+
+        public BooleanValue()
+            : this(false)
+        {
+        }
+
+        public BooleanValue(bool boolean)
+            : base()
+        {
+            Boolean = boolean;
+        }
+    }
+
     public class IdentifierValue : StringValue
     {
         public string IdentifierName { get { return (string)Value; } set { Value = value; } }
@@ -272,6 +290,11 @@ namespace DEvahebLib.Nodes
             }
         }
 
+        public EnumFloatValue(float value, EnumTableFloat enumTableFloat)
+            : this(new FloatValue(value), enumTableFloat)
+        {
+        }
+
         public EnumFloatValue(ValueNode valueNode, EnumTableFloat enumTableFloat)
             : base(valueNode)
         {
@@ -446,6 +469,11 @@ namespace DEvahebLib.Nodes
             {
                 valueNode.Value = value;
             }
+        }
+
+        public EnumIdentifierValue(string enumValue, EnumTableString enumTableString)
+            : this(new IdentifierValue(enumValue), enumTableString)
+        {
         }
 
         public EnumIdentifierValue(ValueNode valueNode, EnumTableString enumTableString)

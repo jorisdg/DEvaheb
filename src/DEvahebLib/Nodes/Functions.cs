@@ -15,13 +15,18 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 2;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue), typeof(EnumIdentifierValue) }
+        };
+
         public Tag()
             : this(new StringValue(""), Enums.TagType.ORIGIN)
         {
         }
 
         public Tag(Node tagName, TagType tagType)
-            : this(tagName, new FloatValue((int)tagType))
+            : this(tagName, new EnumIdentifierValue(typeof(Enums.TagType).GetEnumName(tagType), EnumTableString.FromEnum(typeof(TagType))))
         {
         }
 
@@ -55,6 +60,11 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 2;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(EnumIdentifierValue), typeof(StringValue) }
+        };
+
         public Get()
             : this(Enums.DECLARE_TYPE.FLOAT, new StringValue(""))
         {
@@ -78,6 +88,16 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 2;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue), typeof(StringValue) },
+            new[] { typeof(StringValue), typeof(FloatValue) },
+            new[] { typeof(StringValue), typeof(VectorValue) },
+            new[] { typeof(StringValue), typeof(IntegerValue) },
+            new[] { typeof(StringValue), typeof(BooleanValue) }
+            // TODO Enum values?
+        };
+
         public Set(params Node[] args) : base("set", args)
         {
         }
@@ -92,6 +112,11 @@ namespace DEvahebLib.Nodes
         public override Type ValueType => typeof(FloatValue);
 
         public override int ExpectedArgCount => 2;
+
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(FloatValue), typeof(FloatValue) }
+        };
 
         public Random()
             : this(new FloatValue(0.0f), new FloatValue(0.0f))
@@ -110,6 +135,11 @@ namespace DEvahebLib.Nodes
         public Node VariableName { get => GetArg(1); set => SetArg(1, value); }
 
         public override int ExpectedArgCount => 2;
+
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(EnumIdentifierValue), typeof(StringValue) }
+        };
 
         public Declare()
             : this(Enums.DECLARE_TYPE.FLOAT, new StringValue(""))
@@ -134,6 +164,11 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 2;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(EnumIdentifierValue), typeof(StringValue) }
+        };
+
         public Sound()
             : this(CHANNELS.CHAN_AUTO, new StringValue(""))
         {
@@ -157,6 +192,11 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 2;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(EnumStringValue), typeof(StringValue) }
+        };
+
         public Play()
             : this(PLAY_TYPES.PLAY_ROFF, new StringValue(""))
         {
@@ -178,6 +218,11 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 1;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue) }
+        };
+
         public Use(params Node[] args) : base("use", args)
         {
         }
@@ -189,6 +234,11 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 1;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue) }
+        };
+
         public Print(params Node[] args) : base("print", args)
         {
         }
@@ -197,6 +247,8 @@ namespace DEvahebLib.Nodes
     public class Flush : FunctionNode
     {
         public override int ExpectedArgCount => 0;
+
+        public override List<Type[]> ExpectedArgTypes => new();
 
         public Flush(params Node[] args) : base("flush", args)
         {
@@ -211,6 +263,11 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 2;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(VectorValue), typeof(FloatValue) }
+        };
+
         public Rotate(params Node[] args) : base("rotate", args)
         {
         }
@@ -221,6 +278,11 @@ namespace DEvahebLib.Nodes
         public Node SignalName { get => GetArg(0); set => SetArg(0, value); }
 
         public override int ExpectedArgCount => 1;
+
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue) }
+        };
 
         public WaitSignal(params Node[] args) : base("waitsignal", args)
         {
@@ -249,6 +311,12 @@ namespace DEvahebLib.Nodes
             }
         }
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(VectorValue), typeof(FloatValue) },
+            new[] { typeof(VectorValue), typeof(VectorValue), typeof(FloatValue) }
+        };
+
         public Move(params Node[] args) : base("move", args)
         {
         }
@@ -259,6 +327,11 @@ namespace DEvahebLib.Nodes
         public Node Target { get => GetArg(0); set => SetArg(0, value); }
 
         public override int ExpectedArgCount => 1;
+
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue) }
+        };
 
         public Remove(params Node[] args) : base("remove", args)
         {
@@ -271,6 +344,11 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 1;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue) }
+        };
+
         public Free(params Node[] args) : base("free", args)
         {
         }
@@ -281,6 +359,11 @@ namespace DEvahebLib.Nodes
         public Node SignalName { get => GetArg(0); set => SetArg(0, value); }
 
         public override int ExpectedArgCount => 1;
+
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue) }
+        };
 
         public Signal(params Node[] args) : base("signal", args)
         {
@@ -293,6 +376,11 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 1;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue) }
+        };
+
         public Do(params Node[] args) : base("do", args)
         {
         }
@@ -303,6 +391,11 @@ namespace DEvahebLib.Nodes
         public Node Filename { get => GetArg(0); set => SetArg(0, value); }
 
         public override int ExpectedArgCount => 1;
+
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue) }
+        };
 
         public Run(params Node[] args) : base("run", args)
         {
@@ -315,6 +408,11 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 1;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue) }
+        };
+
         public Kill(params Node[] args) : base("kill", args)
         {
         }
@@ -325,6 +423,12 @@ namespace DEvahebLib.Nodes
         public Node Duration { get => GetArg(0); set => SetArg(0, value); }
 
         public override int ExpectedArgCount => 1;
+
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(FloatValue) },
+            new[] { typeof(StringValue) }
+        };
 
         public Wait(params Node[] args) : base("wait", args)
         {
@@ -337,6 +441,11 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 1;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue) }
+        };
+
         public Rem(params Node[] args) : base("rem", args)
         {
         }
@@ -347,6 +456,11 @@ namespace DEvahebLib.Nodes
         public Node WaitName { get => GetArg(0); set => SetArg(0, value); }
 
         public override int ExpectedArgCount => 1;
+
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue) }
+        };
 
         public DoWait(params Node[] args) : base("dowait", args)
         {

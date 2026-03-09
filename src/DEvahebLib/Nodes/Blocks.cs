@@ -15,6 +15,17 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 3;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(FloatValue), typeof(OperatorNode), typeof(FloatValue) },
+            new[] { typeof(IntegerValue), typeof(OperatorNode), typeof(IntegerValue) },
+            new[] { typeof(StringValue), typeof(OperatorNode), typeof(StringValue) },
+            new[] { typeof(BooleanValue), typeof(OperatorNode), typeof(BooleanValue) },
+            new[] { typeof(VectorValue), typeof(OperatorNode), typeof(VectorValue) }
+
+            // TODO enum values?
+        };
+
         public If(Node expression1, OperatorNode operatorNode, Node expression2)
             : this(new Node[] { expression1, operatorNode, expression2 })
         {
@@ -45,6 +56,11 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 1;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue) }
+        };
+
         public Task()
             : this(new StringValue("DEFAULT"))
         {
@@ -64,6 +80,11 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 2;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(StringValue), typeof(FloatValue) }
+        };
+
         public Affect()
             : this(new StringValue("DEFAULT"), new FloatValue((float)AFFECT_TYPE.INSERT))
         {
@@ -79,6 +100,8 @@ namespace DEvahebLib.Nodes
     {
         public override int ExpectedArgCount => 0;
 
+        public override List<Type[]> ExpectedArgTypes => new();
+
         public Else(params Node[] args)
             : base("else", args)
         {
@@ -91,13 +114,18 @@ namespace DEvahebLib.Nodes
 
         public override int ExpectedArgCount => 1;
 
+        public override List<Type[]> ExpectedArgTypes => new()
+        {
+            new[] { typeof(IntegerValue) }
+        };
+
         public Loop()
             : this(10)
         {
         }
 
         public Loop(int count)
-            : this(new FloatValue(count))
+            : this(new IntegerValue(count))
         {
         }
 

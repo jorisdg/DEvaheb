@@ -137,6 +137,15 @@ namespace DEvahebLib.Visitors
                 WriteTokenHeader(IBIToken.Float, 4);
                 writer.Write((float)(int)intVal.Integer);
             }
+            else if (node is BooleanValue boolVal)
+            {
+                // IBI format stores booleans as strings "true" or "false"
+                // BooleanValues are parser-side conversions ()
+                string boolStr = ((bool)boolVal.Boolean) ? "true" : "false";
+                WriteTokenHeader(IBIToken.String, boolStr.Length + 1);
+                writer.Write(IbiEncoding.Windows1252.GetBytes(boolStr));
+                writer.Write((byte)0);
+            }
             else if (node is FloatValue floatVal)
             {
                 WriteTokenHeader(IBIToken.Float, 4);

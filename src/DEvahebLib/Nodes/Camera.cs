@@ -18,6 +18,7 @@ namespace DEvahebLib.Nodes
         {
             if (arguments.Count > 0 && arguments[0] is EnumFloatValue enumValue && enumValue.Name == nameof(CAMERA_COMMANDS))
                 return (CAMERA_COMMANDS)(float)enumValue.Value;
+
             return null;
         }
 
@@ -26,7 +27,7 @@ namespace DEvahebLib.Nodes
             get
             {
                 var cmd = GetCommand();
-                if (cmd == null) return -1;
+                if (cmd == null) return 1;
 
                 switch (cmd.Value)
                 {
@@ -48,50 +49,20 @@ namespace DEvahebLib.Nodes
                     case CAMERA_COMMANDS.FADE:
                         return 6;
                     default:
-                        return -1;
+                        return 1;
                 }
             }
         }
-    }
 
-    public class Helper
-    {
-        public static bool ValidateArgumentEnumValue(Node argument, string enumName, float value)
+        public override List<Type[]> ExpectedArgTypes => new()
         {
-            return argument is EnumFloatValue enumValue && enumValue.Name == enumName && enumValue.Float == value;
-        }
-
-        public static bool ValidateArgumentEnumValue(Node argument, string enumName, int value)
-        {
-            return argument is EnumIntValue enumValue && enumValue.Name == enumName && enumValue.Integer == value;
-        }
-
-        public static bool ValidateArgumentEnumValue(Node argument, string enumName, string value)
-        {
-            return argument is EnumStringValue enumValue && enumValue.Name == enumName && enumValue.String == value;
-        }
-
-        public static bool ValidateArgumentValue(Node argument, float value)
-        {
-            return argument is FloatValue floatValue && floatValue.Float == value;
-        }
-
-        public static bool ValidateArgumentValue(Node argument, int value)
-        {
-            return argument is IntegerValue intValue && intValue.Integer == value;
-        }
-
-        public static bool ValidateArgumentValue(Node argument, string value)
-        {
-            return argument is StringValue stringValue && stringValue.String == value;
-        }
-
-        public static bool ValidateArgumentValue(Node argument, float x, float y, float z)
-        {
-            return argument is VectorValue vectorValue 
-                && vectorValue.Values[0] is FloatValue xValue && xValue.Float == x
-                && vectorValue.Values[1] is FloatValue yValue && yValue.Float == y
-                && vectorValue.Values[2] is FloatValue zValue && zValue.Float == z;
-        }
+            new[] { typeof(EnumIdentifierValue) }, // ENABLE, DISABLE
+            new[] { typeof(EnumIdentifierValue), typeof(StringValue) }, // PATH
+            new[] { typeof(EnumIdentifierValue), typeof(FloatValue), typeof(FloatValue) }, // ZOOM, DISTANCE, ROLL, SHAKE
+            new[] { typeof(EnumIdentifierValue), typeof(VectorValue), typeof(FloatValue) }, // MOVE
+            new[] { typeof(EnumIdentifierValue), typeof(VectorValue), typeof(VectorValue), typeof(FloatValue) }, // PAN
+            new[] { typeof(EnumIdentifierValue), typeof(StringValue), typeof(FloatValue), typeof(FloatValue) }, // TRACK, FOLLOW
+            new[] { typeof(EnumIdentifierValue), typeof(VectorValue), typeof(FloatValue), typeof(VectorValue), typeof(FloatValue), typeof(FloatValue) }, // FADE
+        };
     }
 }

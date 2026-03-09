@@ -92,6 +92,12 @@ namespace DEvahebLib.Nodes
         /// </summary>
         public virtual int ExpectedArgCount => 0;
 
+        /// <summary>
+        /// List of valid argument type signatures (overloads). Each entry is a Type[] of expected ValueTypes
+        /// per argument position. null in a position means any type. null return means no type checking.
+        /// </summary>
+        public virtual List<Type[]> ExpectedArgTypes => null;
+
         public override string ToString()
         {
             return $"function {Name}()";
