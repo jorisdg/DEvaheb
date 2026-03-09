@@ -11,12 +11,9 @@ namespace DEvahebLib
     {
         Dictionary<string, string> types;
 
-        List<string> readonlyVariables;
-
-        public Variables(Dictionary<string, string> types, List<string> readonlyVariables)
+        public Variables(Dictionary<string, string> types)
         {
             this.types = types ?? new Dictionary<string, string>();
-            this.readonlyVariables = readonlyVariables ?? new List<string>();
         }
 
         public bool Exists(string variableName)
@@ -27,11 +24,6 @@ namespace DEvahebLib
         public string GetVariableType(string variableName)
         {
             return types.ContainsKey(variableName) ? types[variableName] : "STRING";
-        }
-
-        public bool IsVariablesReadOnly(string variableName)
-        {
-            return readonlyVariables.Contains(variableName);
         }
 
         public static Variables FromCsv(string filename)
@@ -60,10 +52,10 @@ namespace DEvahebLib
                     }
                 }
 
-                return new Variables(types, readOnly);
+                return new Variables(types);
             }
 
-            return new Variables(types: null, readonlyVariables: null);
+            return new Variables(types: null);
         }
     }
 }

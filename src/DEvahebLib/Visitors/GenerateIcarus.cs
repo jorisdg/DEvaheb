@@ -36,7 +36,7 @@ namespace DEvahebLib.Visitors
         public GenerateIcarus(Variables variables)
             : base()
         {
-            Variables = variables ?? new Variables(new Dictionary<string, string>(), new List<string>());
+            Variables = variables ?? new Variables(new Dictionary<string, string>());
         }
 
         public override void Visit(Node node)
