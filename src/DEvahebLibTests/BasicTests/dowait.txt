@@ -20,6 +20,18 @@ task ( "Do Nested" )
 {
 }
 
+task ( "foo1" )
+{
+}
+
+task ( "foo2" )
+{
+}
+
+task ( "foobar" )
+{
+}
+
 dowait ( "Do Wait Combo String" );
 dowait ( "dont_shoot" );
 do ( "Do Before Block" );
