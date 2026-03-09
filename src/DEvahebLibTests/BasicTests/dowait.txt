@@ -38,3 +38,8 @@ task ( "Task Name" )
 	wait ( "Do Nested" );
 }
 
+do ( "foo1" );
+wait ( "foo2" );
+
+do ( "FooBar" );
+wait ( 100.000 );
